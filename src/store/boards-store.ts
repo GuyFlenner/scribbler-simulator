@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { BoardState } from '../sim/boards/schema';
 import { parseBoard } from '../sim/boards/schema';
-import { defaultBoard } from '../sim/boards/default';
+import { bundledBoards, defaultBoard, findBundledBoard, isBundledBoardId } from '../sim/boards/default';
 import type { RunRecord } from '../sim/replay';
 
 const BOARDS_KEY = 'scribbler-sim:boards:v1';
@@ -111,13 +111,14 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
 
   getActiveBoard: () => {
     const { activeBoardId, customBoards } = get();
-    if (activeBoardId === defaultBoard.id) return defaultBoard;
+    const bundled = findBundledBoard(activeBoardId);
+    if (bundled) return bundled;
     return customBoards[activeBoardId] ?? defaultBoard;
   },
 
   listBoards: () => {
     const { customBoards } = get();
-    return [defaultBoard, ...Object.values(customBoards)];
+    return [...bundledBoards, ...Object.values(customBoards)];
   },
 
   setActiveBoard: (id) => {
@@ -126,14 +127,14 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
   },
 
   saveBoard: (board) => {
-    if (board.id === defaultBoard.id) return;
+    if (isBundledBoardId(board.id)) return;
     const customBoards = { ...get().customBoards, [board.id]: board };
     set({ customBoards });
     persistBoards(customBoards, get().activeBoardId);
   },
 
   deleteBoard: (id) => {
-    if (id === defaultBoard.id) return;
+    if (isBundledBoardId(id)) return;
     const customBoards = { ...get().customBoards };
     delete customBoards[id];
     const runsByBoard = { ...get().runsByBoard };

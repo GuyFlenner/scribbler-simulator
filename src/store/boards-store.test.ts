@@ -9,18 +9,19 @@ beforeEach(() => {
 });
 
 describe('boards-store — list + select', () => {
-  it('lists default board only on a fresh state', () => {
+  it('lists both bundled boards (default + bonus) on a fresh state', () => {
     const boards = useBoardsStore.getState().listBoards();
-    expect(boards).toHaveLength(1);
+    expect(boards).toHaveLength(2);
     expect(boards[0].id).toBe(defaultBoard.id);
+    expect(boards[1].id).toBe('default-bonus');
   });
 
-  it('saves a custom board and lists it after the default', () => {
+  it('saves a custom board and lists it after the bundled boards', () => {
     const board = createBlankBoard('Practice 1');
     useBoardsStore.getState().saveBoard(board);
     const boards = useBoardsStore.getState().listBoards();
-    expect(boards).toHaveLength(2);
-    expect(boards[1].name).toBe('Practice 1');
+    expect(boards).toHaveLength(3);
+    expect(boards[2].name).toBe('Practice 1');
   });
 
   it('persists boards across store rebuilds via localStorage', () => {

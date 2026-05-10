@@ -159,13 +159,16 @@ describe('App — boards mode', () => {
     expect(await screen.findByRole('button', { name: /replay/i })).toBeInTheDocument();
   });
 
-  it('records bonusHit=true on a run that passes through the bonus zone', () => {
+  it('records bonusHit=true on a run that passes through the bonus zone', async () => {
+    // The default board has no bonus; switch to the bundled bonus board first.
+    const { bonusBoard } = await import('./sim/boards/default');
+    useSimStore.getState().setBoard(bonusBoard);
     render(<App />);
     const board = useSimStore.getState().board;
     const bonus = board.elements.find((e) => e.kind === 'bonus');
     const goal = board.elements.find((e) => e.kind === 'goal');
-    if (!bonus || bonus.kind !== 'bonus') throw new Error('default board missing bonus');
-    if (!goal || goal.kind !== 'goal') throw new Error('default board missing goal');
+    if (!bonus || bonus.kind !== 'bonus') throw new Error('bonus board missing bonus');
+    if (!goal || goal.kind !== 'goal') throw new Error('bonus board missing goal');
 
     act(() => {
       useSimStore.getState().pressButton(2, [{ kind: 'drive', cm: 1 }]);
@@ -193,6 +196,20 @@ describe('App — boards mode', () => {
     const runs = useBoardsStore.getState().getRunsForBoard(board.id);
     expect(runs).toHaveLength(1);
     expect(runs[0].bonusHit).toBe(true);
+  });
+});
+
+describe('App — load sample program', () => {
+  it('Load sample button populates press 1..6 with drive_wheels steps', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
+    const loadBtn = await screen.findByRole('button', { name: /load sample program/i });
+    fireEvent.click(loadBtn);
+    const programs = useEditorStore.getState().programs;
+    expect(programs[1]?.[0]).toMatchObject({ kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: 100, durationMs: 1000 });
+    expect(programs[6]?.[0]).toMatchObject({ kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: -100, durationMs: 2000 });
+    expect(programs[7]).toBeUndefined();
+    expect(programs[8]).toBeUndefined();
   });
 });
 

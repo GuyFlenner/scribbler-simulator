@@ -35,6 +35,9 @@
     "tab_label": "Press {{count}}×",
     "reset_all": "Reset all behaviors…",
     "reset_confirm": "Reset all behaviors? This cannot be undone.",
+    "load_sample": "Load sample program",
+    "load_sample_tooltip": "Loads a starter program transcribed from the kid's class photo (Scribbler Program Maker). Verify the values before competition.",
+    "load_sample_confirm": "Load the sample program? Existing behaviors will be overwritten.",
     "instructions_with_blocks": "Drag blocks to define what the robot does when you press reset {{count}}×. Currently: {{blocks}} block(s).",
     "instructions_empty": "Drag blocks to define what the robot does when you press reset {{count}}×. Empty — nothing will happen until you add blocks."
   },

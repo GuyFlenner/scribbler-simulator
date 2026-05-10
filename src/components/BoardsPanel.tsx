@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBoardsStore, createBlankBoard } from '../store/boards-store';
 import { useSimStore } from '../store/sim-store';
-import { defaultBoard } from '../sim/boards/default';
+import { bundledBoards, defaultBoard, isBundledBoardId } from '../sim/boards/default';
 import type { BoardState } from '../sim/boards/schema';
 import { BoardEditor } from './BoardEditor';
 import { BoardThumbnail } from './BoardThumbnail';
@@ -12,7 +12,7 @@ export function BoardsPanel(): ReactElement {
   const { t } = useTranslation();
   const customBoards = useBoardsStore((s) => s.customBoards);
   const boards = useMemo<BoardState[]>(
-    () => [defaultBoard, ...Object.values(customBoards)],
+    () => [...bundledBoards, ...Object.values(customBoards)],
     [customBoards],
   );
   const activeBoardId = useBoardsStore((s) => s.activeBoardId);
@@ -32,12 +32,12 @@ export function BoardsPanel(): ReactElement {
   };
 
   const handleEdit = (board: BoardState): void => {
-    if (board.id === defaultBoard.id) return;
+    if (isBundledBoardId(board.id)) return;
     setEditing(board);
   };
 
   const handleDelete = (board: BoardState): void => {
-    if (board.id === defaultBoard.id) return;
+    if (isBundledBoardId(board.id)) return;
     if (window.confirm(t('boards.delete_confirm', { name: board.name }))) {
       deleteBoard(board.id);
       if (activeBoardId === board.id) setSimBoard(defaultBoard);
@@ -76,7 +76,7 @@ export function BoardsPanel(): ReactElement {
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {boards.map((board) => {
             const isActive = board.id === activeBoardId;
-            const isDefault = board.id === defaultBoard.id;
+            const isBundled = isBundledBoardId(board.id);
             return (
               <li
                 key={board.id}
@@ -94,7 +94,7 @@ export function BoardsPanel(): ReactElement {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
                   <BoardThumbnail board={board} size={56} ariaLabel={board.name} />
                   <span>
-                    {board.id === defaultBoard.id ? t('boards.default_name') : board.name}
+                    {board.name}
                     {isActive && (
                       <span style={{ marginInlineStart: 8, fontSize: '0.75rem', color: '#2c5cff' }}>
                         ({t('boards.active_badge')})
@@ -110,7 +110,7 @@ export function BoardsPanel(): ReactElement {
                   >
                     {t('boards.select')}
                   </button>
-                  {!isDefault && (
+                  {!isBundled && (
                     <>
                       <button
                         type="button"

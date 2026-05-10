@@ -2,18 +2,28 @@ import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BlocklyEditor } from '../editor/BlocklyEditor';
 import { useEditorStore } from '../store/editor-store';
+import { classProgramSample } from '../sim/behaviors/starter';
 import { PressCountTabs } from './PressCountTabs';
 
 export function EditorView(): ReactElement {
   const { t, i18n } = useTranslation();
   const selected = useEditorStore((s) => s.selectedPressCount);
   const resetAll = useEditorStore((s) => s.resetAll);
+  const setBehavior = useEditorStore((s) => s.setBehavior);
   const programs = useEditorStore((s) => s.programs);
   const stepsForSelected = programs[selected];
 
   const handleResetAll = (): void => {
     if (window.confirm(t('editor.reset_confirm'))) {
       resetAll();
+    }
+  };
+
+  const handleLoadSample = (): void => {
+    const hasExisting = Object.values(programs).some((s) => (s?.length ?? 0) > 0);
+    if (hasExisting && !window.confirm(t('editor.load_sample_confirm'))) return;
+    for (const entry of classProgramSample) {
+      setBehavior(entry.pressCount, entry.steps);
     }
   };
 
@@ -31,24 +41,43 @@ export function EditorView(): ReactElement {
           alignItems: 'flex-end',
           justifyContent: 'space-between',
           marginBottom: 0,
+          gap: 8,
         }}
       >
         <PressCountTabs />
-        <button
-          type="button"
-          onClick={handleResetAll}
-          style={{
-            padding: '0.4rem 0.8rem',
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            borderRadius: 4,
-            border: '1px solid #c0392b',
-            background: '#fff',
-            color: '#c0392b',
-          }}
-        >
-          {t('editor.reset_all')}
-        </button>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            type="button"
+            onClick={handleLoadSample}
+            title={t('editor.load_sample_tooltip')}
+            style={{
+              padding: '0.4rem 0.8rem',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              borderRadius: 4,
+              border: '1px solid #2c5cff',
+              background: '#fff',
+              color: '#2c5cff',
+            }}
+          >
+            {t('editor.load_sample')}
+          </button>
+          <button
+            type="button"
+            onClick={handleResetAll}
+            style={{
+              padding: '0.4rem 0.8rem',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              borderRadius: 4,
+              border: '1px solid #c0392b',
+              background: '#fff',
+              color: '#c0392b',
+            }}
+          >
+            {t('editor.reset_all')}
+          </button>
+        </div>
       </div>
       <div
         style={{
