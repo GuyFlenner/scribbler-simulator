@@ -1,0 +1,119 @@
+<mxfile host="app.diagrams.net" modified="2026-05-10T00:00:00.000Z" agent="claude-sdlc/architect" version="24.0.0">
+  <diagram id="simulator-arch" name="Simulator Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Lane labels -->
+        <mxCell id="lane-ui" value="UI Components (React)" style="text;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="20" y="40" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-store" value="State Stores (Zustand)" style="text;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="20" y="220" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-sim" value="Sim Engine (pure TypeScript)" style="text;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="20" y="380" width="240" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-persist" value="Persistence + i18n (browser APIs)" style="text;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="20" y="600" width="280" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- UI lane: 6 boxes -->
+        <mxCell id="ui-app" value="App.tsx" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-sim-view" value="SimulatorView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="190" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-canvas" value="BoardCanvas&#10;(Canvas2D)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-buttons" value="PressButtons&#10;(2x..8x)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="490" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-editor" value="BlocklyEditor&#10;(Blockly 11)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="640" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-toggle" value="LanguageToggle&#10;(He / En)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="790" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Store lane: 3 boxes -->
+        <mxCell id="store-sim" value="sim-store&#10;(SimState, current run)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="190" y="260" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="store-editor" value="editor-store&#10;(authored programs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="500" y="260" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="store-boards" value="boards-store&#10;(boards + run history)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="700" y="260" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Sim engine lane: 5 boxes -->
+        <mxCell id="sim-runtime" value="runtime.ts&#10;(Step executor, fixed-step loop)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="190" y="430" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sim-physics" value="physics.ts&#10;(diff drive, collision)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="400" y="430" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sim-sensors" value="sensors.ts&#10;(line / IR / light)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="580" y="430" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sim-types" value="types.ts + schema.ts&#10;(RobotState, Step, Board)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="430" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sim-codegen" value="editor/codegen.ts&#10;(Blockly XML to Step[])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="540" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Persistence + i18n lane -->
+        <mxCell id="persist-local" value="localStorage&#10;programs:v1, boards:v1, runs:v1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="640" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="persist-i18n" value="i18next&#10;he.json + en.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="700" y="640" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: UI → Store -->
+        <mxCell id="e-app-sim-view" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ui-app" target="ui-sim-view"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-app-editor" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ui-app" target="ui-editor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-app-toggle" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ui-app" target="ui-toggle"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-sim-canvas" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ui-sim-view" target="ui-canvas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-sim-buttons" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ui-sim-view" target="ui-buttons"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- UI → Store -->
+        <mxCell id="e-canvas-store" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="ui-canvas" target="store-sim"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-buttons-store" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="ui-buttons" target="store-sim"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-editor-store" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="ui-editor" target="store-editor"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Store → Sim engine -->
+        <mxCell id="e-store-runtime" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="store-sim" target="sim-runtime"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-store-codegen" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="store-editor" target="sim-codegen"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Sim engine internal -->
+        <mxCell id="e-runtime-physics" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="sim-runtime" target="sim-physics"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-physics-sensors" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="sim-physics" target="sim-sensors"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-runtime-types" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="sim-runtime" target="sim-types"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-codegen-runtime" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="sim-codegen" target="sim-runtime"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Persistence -->
+        <mxCell id="e-store-editor-persist" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="store-editor" target="persist-local"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-store-boards-persist" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="store-boards" target="persist-local"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-toggle-i18n" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="ui-toggle" target="persist-i18n"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-title" value="Legend" style="text;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="970" y="80" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-solid" value="solid: composes / calls" style="text;align=left;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="970" y="110" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-dashed" value="dashed: state read / write" style="text;align=left;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="970" y="130" width="200" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
