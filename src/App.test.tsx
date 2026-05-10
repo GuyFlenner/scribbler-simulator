@@ -200,7 +200,7 @@ describe('App — boards mode', () => {
 });
 
 describe('App — load sample program', () => {
-  it('Load sample button populates press 1..6 with drive_wheels steps', async () => {
+  it('Load sample button populates press 1..6 with the competition button layout', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
     // Two buttons render with this label — the prominent banner (empty-state)
@@ -209,8 +209,12 @@ describe('App — load sample program', () => {
     expect(buttons.length).toBeGreaterThanOrEqual(1);
     fireEvent.click(buttons[0]);
     const programs = useEditorStore.getState().programs;
-    expect(programs[1]?.[0]).toMatchObject({ kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: 100, durationMs: 1000 });
-    expect(programs[6]?.[0]).toMatchObject({ kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: -100, durationMs: 2000 });
+    expect(programs[1]?.[0]).toMatchObject({ kind: 'drive', cm: 12 });
+    expect(programs[2]?.[0]).toMatchObject({ kind: 'drive', cm: 24 });
+    expect(programs[3]?.[0]).toMatchObject({ kind: 'drive', cm: 48 });
+    expect(programs[4]?.[0]).toMatchObject({ kind: 'rotate', degrees: 90 });
+    expect(programs[5]?.[0]).toMatchObject({ kind: 'rotate', degrees: -90 });
+    expect(programs[6]?.[0]).toMatchObject({ kind: 'rotate', degrees: 180 });
     expect(programs[7]).toBeUndefined();
     expect(programs[8]).toBeUndefined();
   });
@@ -226,7 +230,7 @@ describe('App — load sample program', () => {
     expect(ws[1]).toBeDefined();
     expect(ws[6]).toBeDefined();
     const press1Json = ws[1] as { blocks?: { blocks?: { type: string }[] } };
-    expect(press1Json.blocks?.blocks?.[0]?.type).toBe('drive_wheels');
+    expect(press1Json.blocks?.blocks?.[0]?.type).toBe('drive_distance');
   });
 });
 
