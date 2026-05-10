@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSimStore } from '../store/sim-store';
 import { ROBOT_LENGTH_M, ROBOT_WIDTH_M } from '../sim/types';
 
@@ -67,6 +68,7 @@ const draw = (ctx: CanvasRenderingContext2D, state: ReturnType<typeof useSimStor
 };
 
 export function BoardCanvas(): ReactElement {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tick = useSimStore((s) => s.tick);
 
@@ -97,7 +99,7 @@ export function BoardCanvas(): ReactElement {
       width={CANVAS_PX}
       height={CANVAS_PX}
       role="img"
-      aria-label="Simulator board"
+      aria-label={t('simulator.board_aria')}
       style={{ border: '2px solid #333', borderRadius: 4, background: '#f4f1e8' }}
     />
   );

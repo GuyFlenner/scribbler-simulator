@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "סקריבלר סימולטור"
+  },
+  "mode": {
+    "simulator": "סימולטור",
+    "editor": "עריכת התנהגויות",
+    "aria_group": "מצב"
+  },
+  "language": {
+    "switch_aria": "שפה",
+    "english": "English",
+    "hebrew": "עברית"
+  },
+  "simulator": {
+    "well_done": "כל הכבוד!",
+    "time_label": "זמן: {{seconds}} שנ׳",
+    "stall": "התנגשות — עצור",
+    "board_aria": "לוח הסימולטור",
+    "behaviors_heading": "התנהגויות",
+    "reset_board": "אפס לוח",
+    "press_aria": "לחיצה על Reset ‎{{count}}‎ פעמים — {{description}}",
+    "press_label": "לחיצה ‎{{count}}‎×",
+    "no_behavior": "— לא מוגדר —",
+    "block_count_one": "בלוק אחד",
+    "block_count_other": "‎{{count}}‎ בלוקים",
+    "empty_program": "לא הוגדרו בלוקים עבור ‎{{count}}‎× — גרור בלוקים בעורך",
+    "no_behavior_msg": "אין התנהגות עבור ‎{{count}}‎× — פתח את העורך כדי להוסיף"
+  },
+  "editor": {
+    "tab_aria": "עריכת ‎{{count}}‎ לחיצות",
+    "tab_label": "לחיצה ‎{{count}}‎×",
+    "reset_all": "אפס את כל ההתנהגויות…",
+    "reset_confirm": "לאפס את כל ההתנהגויות? פעולה זו אינה הפיכה.",
+    "instructions_with_blocks": "גרור בלוקים כדי להגדיר את התנהגות הרובוט בלחיצה ‎{{count}}‎×. כרגע: {{blocks}} בלוקים.",
+    "instructions_empty": "גרור בלוקים כדי להגדיר את התנהגות הרובוט בלחיצה ‎{{count}}‎×. ריק — שום דבר לא יקרה עד שתוסיף בלוקים."
+  },
+  "behaviors": {
+    "forward_30cm": "קדימה 30 ס\"מ",
+    "backward_30cm": "אחורה 30 ס\"מ",
+    "rotate_90_right": "פנייה 90° ימינה",
+    "rotate_90_left": "פנייה 90° שמאלה"
+  }
+}

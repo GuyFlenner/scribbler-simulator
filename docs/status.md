@@ -1,8 +1,8 @@
 # Scribbler Simulator — SDLC Status
 
 **Last updated**: 2026-05-10
-**Current phase**: Items 1, 2, 3 shipped → Item 4 (bilingual UI) is next
-**Active backlog item**: Item 4 — Bilingual UI Hebrew + English with RTL (P1, M)
+**Current phase**: Items 1, 2, 3, 4 shipped → competition-ready MVP. Item 5 (P2) optional.
+**Active backlog item**: Item 5 — Practice features (P2, M) — optional / stretch
 
 ---
 
@@ -95,11 +95,48 @@ Acceptance criteria (Item 3, all 7 met):
 
 ---
 
+### Item 4 — Bilingual UI (this commit)
+| Phase | Status |
+|-------|--------|
+| 4 (TDD) | 5 new tests written first → green |
+| 4.5 Test review | PASS — i18n key parity, empty-leaf scan, hardcoded-string scanner, language-toggle integration |
+| 5 Security | APPROVED — versioned localStorage key, React JSX escape preserves XSS protection through t() |
+| 6 Code review | PROCEED — automated hardcoded-string scanner enforces "no literal UI text" rule per AC#6 |
+| 7 Tests | exit=0, 73/73 (was 68) |
+| 8 Commit | this commit |
+
+**Files added** (8): `src/i18n/{en,he}.json`, `src/i18n/index.ts`, `src/i18n/deep-keys.ts`, `src/i18n/keys.test.ts`, `src/i18n/hardcoded-strings.test.ts`, `src/components/LanguageToggle.tsx`
+**Files modified** (8): App, BoardCanvas, EditorView, PressButtons, PressCountTabs, SimulatorView all use `t()`. main.tsx imports `./i18n`. test-setup.ts forces `en` deterministically. BlocklyEditor wires `blockly/msg/he` and the `rtl` flag.
+
+Acceptance criteria (Item 4, all 7 met):
+- ✅ Top-right toggle switches all UI strings between EN/HE without page reload
+- ✅ Hebrew → `dir=rtl` on `<html>`; LTR-embedded numerals via `‎` markers in keys
+- ✅ `i18next-browser-languagedetector` reads `navigator.language`; defaults to Hebrew if browser locale is `he*`
+- ✅ Selection persists in `scribbler-sim:lang:v1` localStorage key, restored on reload
+- ✅ Blockly built-in messages load `msg/he` and `rtl: true` injection when Hebrew active
+- ✅ Hardcoded-string scanner test fails any future PR that ships a literal `>text<` in `src/components/*.tsx`
+- ✅ All existing tests pass (68 → 73)
+- ✅ No new security warnings — scanner test catches regressions
+
+---
+
+## Known limitations / follow-ups
+
+- **Custom Blockly block labels** (drive_distance, rotate_degrees, etc.) remain in English — only Blockly's built-in messages use `msg/he`. Translating custom block labels is post-MVP (would need Blockly's `Blockly.Msg` per-locale registration).
+- **Blockly language change requires re-mount**: switching language while inside the editor doesn't re-localise the open workspace — leaving and re-entering editor mode picks up the new language. Acceptable for an 8-year-old user; document.
+- **Bundle size** crossed 1 MB (279 KB gzipped). Lazy-loading the editor + i18n resources is the natural fix; filed as follow-up.
+
+---
+
 ## Next action
 
+The MVP is competition-ready. Item 5 is **optional** (P2):
+
 ```
-use sdlc: implement Item 4 — bilingual UI (Hebrew + English with RTL)
+use sdlc: implement Item 5 — practice features (board editor, multiple boards, time tracking)
 ```
+
+Or focus on hardening: lazy-load editor for faster first paint, calibration panel, replay export, etc.
 
 ---
 

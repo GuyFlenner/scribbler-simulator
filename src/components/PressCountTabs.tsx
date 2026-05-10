@@ -1,7 +1,9 @@
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PRESS_COUNTS, useEditorStore } from '../store/editor-store';
 
 export function PressCountTabs(): ReactElement {
+  const { t } = useTranslation();
   const selected = useEditorStore((s) => s.selectedPressCount);
   const select = useEditorStore((s) => s.selectPressCount);
   const programs = useEditorStore((s) => s.programs);
@@ -17,7 +19,7 @@ export function PressCountTabs(): ReactElement {
             type="button"
             role="tab"
             aria-selected={isActive}
-            aria-label={`Edit press ${n} times`}
+            aria-label={t('editor.tab_aria', { count: n })}
             onClick={() => select(n)}
             style={{
               padding: '0.4rem 0.8rem',
@@ -30,7 +32,7 @@ export function PressCountTabs(): ReactElement {
               fontWeight: isActive ? 'bold' : 'normal',
             }}
           >
-            Press {n}× {hasSteps ? '●' : ''}
+            {t('editor.tab_label', { count: n })} {hasSteps ? '●' : ''}
           </button>
         );
       })}

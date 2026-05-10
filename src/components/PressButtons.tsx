@@ -1,16 +1,22 @@
 import { useState, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSimStore } from '../store/sim-store';
 import { useEditorStore, PRESS_COUNTS } from '../store/editor-store';
 import { hardcodedBehaviors } from '../sim/behaviors/hardcoded';
 import type { Step } from '../sim/behaviors/schema';
 
-const hardcodedLabel = (n: number): string | undefined =>
-  hardcodedBehaviors.find((b) => b.pressCount === n)?.label;
+const HARDCODED_LABEL_KEY: Record<number, string> = {
+  2: 'behaviors.forward_30cm',
+  3: 'behaviors.backward_30cm',
+  4: 'behaviors.rotate_90_right',
+  5: 'behaviors.rotate_90_left',
+};
 
 const hardcodedSteps = (n: number): Step[] | undefined =>
   hardcodedBehaviors.find((b) => b.pressCount === n)?.steps;
 
 export function PressButtons(): ReactElement {
+  const { t } = useTranslation();
   const pressButton = useSimStore((s) => s.pressButton);
   const resetBoard = useSimStore((s) => s.resetBoard);
   const programs = useEditorStore((s) => s.programs);
@@ -19,33 +25,39 @@ export function PressButtons(): ReactElement {
   const handleClick = (n: number): void => {
     const userSteps = programs[n];
     if (userSteps && userSteps.length === 0) {
-      setEmptyMessage(`Press ${n}× has no blocks yet — drag some in the editor`);
+      setEmptyMessage(t('simulator.empty_program', { count: n }));
       return;
     }
     const steps = userSteps ?? hardcodedSteps(n);
     if (!steps || steps.length === 0) {
-      setEmptyMessage(`Press ${n}× has no behavior defined — open the editor to add one`);
+      setEmptyMessage(t('simulator.no_behavior_msg', { count: n }));
       return;
     }
     setEmptyMessage(null);
     pressButton(n, steps);
   };
 
+  const labelFor = (n: number, userSteps: Step[] | undefined): string => {
+    if (userSteps && userSteps.length > 0) {
+      return t('simulator.block_count', { count: userSteps.length });
+    }
+    const key = HARDCODED_LABEL_KEY[n];
+    if (key) return t(key);
+    return t('simulator.no_behavior');
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 240 }}>
-      <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Behaviors</h2>
+      <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{t('simulator.behaviors_heading')}</h2>
       {PRESS_COUNTS.map((n) => {
         const userSteps = programs[n];
-        const label =
-          userSteps && userSteps.length > 0
-            ? `${userSteps.length} block${userSteps.length === 1 ? '' : 's'}`
-            : hardcodedLabel(n) ?? '— not defined —';
+        const label = labelFor(n, userSteps);
         const isUser = !!(userSteps && userSteps.length > 0);
         return (
           <button
             key={n}
             type="button"
-            aria-label={`Press reset ${n} times — ${label}`}
+            aria-label={t('simulator.press_aria', { count: n, description: label })}
             onClick={() => handleClick(n)}
             style={{
               padding: '0.5rem 1rem',
@@ -54,10 +66,10 @@ export function PressButtons(): ReactElement {
               borderRadius: 4,
               border: '1px solid #555',
               background: isUser ? '#e8f4ff' : '#fff',
-              textAlign: 'left',
+              textAlign: 'start',
             }}
           >
-            <strong>Press {n}×</strong> — {label}
+            <strong>{t('simulator.press_label', { count: n })}</strong> — {label}
           </button>
         );
       })}
@@ -77,7 +89,7 @@ export function PressButtons(): ReactElement {
           background: '#eee',
         }}
       >
-        Reset board
+        {t('simulator.reset_board')}
       </button>
       {emptyMessage && (
         <p

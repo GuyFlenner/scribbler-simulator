@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
 import App from './App';
+import i18n from './i18n';
 import { useSimStore } from './store/sim-store';
 import { useEditorStore } from './store/editor-store';
 import { defaultBoard } from './sim/boards/default';
 import { makeRobotState } from './sim/physics';
 
-beforeEach(() => {
+beforeEach(async () => {
   localStorage.clear();
+  await i18n.changeLanguage('en');
   useSimStore.getState().resetBoard();
   useEditorStore.getState().resetAll();
 });
@@ -109,6 +111,30 @@ describe('App — editor mode toggle', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
     expect(screen.getByRole('tab', { name: /edit press 2 times/i })).toBeInTheDocument();
+  });
+});
+
+describe('App — language toggle', () => {
+  it('switches all UI strings to Hebrew and sets html dir=rtl when Hebrew is clicked', async () => {
+    render(<App />);
+    expect(screen.getByRole('heading', { name: /scribbler simulator/i })).toBeInTheDocument();
+    expect(document.documentElement.dir).toBe('ltr');
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^עברית$/ }));
+    });
+
+    expect(screen.getByRole('heading', { name: /סקריבלר/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /אפס לוח/ })).toBeInTheDocument();
+    expect(document.documentElement.dir).toBe('rtl');
+  });
+
+  it('persists the chosen language across reloads via localStorage', async () => {
+    render(<App />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^עברית$/ }));
+    });
+    expect(localStorage.getItem('scribbler-sim:lang:v1')).toBe('he');
   });
 });
 

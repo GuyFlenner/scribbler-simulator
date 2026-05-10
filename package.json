@@ -16,6 +16,7 @@
   "dependencies": {
     "blockly": "^11.1.1",
     "i18next": "^23.16.0",
+    "i18next-browser-languagedetector": "^8.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-i18next": "^15.1.0",

@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "Scribbler Simulator"
+  },
+  "mode": {
+    "simulator": "Simulator",
+    "editor": "Edit behaviors",
+    "aria_group": "Mode"
+  },
+  "language": {
+    "switch_aria": "Language",
+    "english": "English",
+    "hebrew": "עברית"
+  },
+  "simulator": {
+    "well_done": "Well done!",
+    "time_label": "Time: {{seconds}}s",
+    "stall": "Stalled — collision",
+    "board_aria": "Simulator board",
+    "behaviors_heading": "Behaviors",
+    "reset_board": "Reset board",
+    "press_aria": "Press reset {{count}} times — {{description}}",
+    "press_label": "Press {{count}}×",
+    "no_behavior": "— not defined —",
+    "block_count_one": "{{count}} block",
+    "block_count_other": "{{count}} blocks",
+    "empty_program": "Press {{count}}× has no blocks yet — drag some in the editor",
+    "no_behavior_msg": "Press {{count}}× has no behavior defined — open the editor to add one"
+  },
+  "editor": {
+    "tab_aria": "Edit press {{count}} times",
+    "tab_label": "Press {{count}}×",
+    "reset_all": "Reset all behaviors…",
+    "reset_confirm": "Reset all behaviors? This cannot be undone.",
+    "instructions_with_blocks": "Drag blocks to define what the robot does when you press reset {{count}}×. Currently: {{blocks}} block(s).",
+    "instructions_empty": "Drag blocks to define what the robot does when you press reset {{count}}×. Empty — nothing will happen until you add blocks."
+  },
+  "behaviors": {
+    "forward_30cm": "Forward 30 cm",
+    "backward_30cm": "Backward 30 cm",
+    "rotate_90_right": "Rotate 90° right",
+    "rotate_90_left": "Rotate 90° left"
+  }
+}
