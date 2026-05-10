@@ -14,12 +14,12 @@ export const hardcodedBehaviors: Behavior[] = [
   {
     pressCount: 4,
     label: 'Rotate 90° right',
-    steps: [{ kind: 'rotate', degrees: -90 }],
+    steps: [{ kind: 'rotate', degrees: 90 }],
   },
   {
     pressCount: 5,
     label: 'Rotate 90° left',
-    steps: [{ kind: 'rotate', degrees: 90 }],
+    steps: [{ kind: 'rotate', degrees: -90 }],
   },
 ];
 

@@ -165,13 +165,13 @@ describe('App — cheat-sheet', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent(/L=50%.*R=-50%.*1000/);
   });
 
-  it('describes a user-defined drive_arc program', () => {
+  it('describes a user-defined drive_arc program (positive degrees = right)', () => {
     useEditorStore.getState().setBehavior(3, [
       { kind: 'drive_arc', radiusCm: 25, degrees: 90 },
     ]);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
-    expect(screen.getByRole('dialog')).toHaveTextContent(/arc left.*radius 25.*90/i);
+    expect(screen.getByRole('dialog')).toHaveTextContent(/arc right.*radius 25.*90/i);
   });
 });
 

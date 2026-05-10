@@ -93,6 +93,24 @@ describe('runtime — if block (sensor predicate)', () => {
   });
 });
 
+describe('runtime — turn-direction convention', () => {
+  // Locks in the screen-coord convention: positive degrees = right turn (CW on screen).
+  // Repro guard for the press-4-rotates-the-wrong-way bug.
+  it('rotate with positive degrees increases heading (right turn on screen)', () => {
+    const { state, done } = runProgram([{ kind: 'rotate', degrees: 90 }]);
+    expect(done).toBe(true);
+    expect(state.robot.heading).toBeGreaterThan(0);
+    expect(state.robot.heading).toBeCloseTo(Math.PI / 2, 1);
+  });
+
+  it('rotate with negative degrees decreases heading (left turn on screen)', () => {
+    const { state, done } = runProgram([{ kind: 'rotate', degrees: -90 }]);
+    expect(done).toBe(true);
+    expect(state.robot.heading).toBeLessThan(0);
+    expect(state.robot.heading).toBeCloseTo(-Math.PI / 2, 1);
+  });
+});
+
 describe('runtime — drive_wheels', () => {
   it('drives straight when both wheels at equal positive speed', () => {
     const { state, done } = runProgram([

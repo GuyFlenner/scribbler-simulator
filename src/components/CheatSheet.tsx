@@ -28,15 +28,15 @@ const describeStep = (step: Step, t: TFunction): string => {
         return t('cheatsheet.step_drive_arc_spin', { degrees: step.degrees });
       }
       return step.degrees >= 0
-        ? t('cheatsheet.step_drive_arc_left', { radius: step.radiusCm, degrees: step.degrees })
-        : t('cheatsheet.step_drive_arc_right', {
+        ? t('cheatsheet.step_drive_arc_right', { radius: step.radiusCm, degrees: step.degrees })
+        : t('cheatsheet.step_drive_arc_left', {
             radius: step.radiusCm,
             degrees: -step.degrees,
           });
     case 'rotate':
       return step.degrees >= 0
-        ? t('cheatsheet.step_rotate_left', { degrees: step.degrees })
-        : t('cheatsheet.step_rotate_right', { degrees: -step.degrees });
+        ? t('cheatsheet.step_rotate_right', { degrees: step.degrees })
+        : t('cheatsheet.step_rotate_left', { degrees: -step.degrees });
     case 'stop':
       return t('cheatsheet.step_stop');
     case 'beep':
