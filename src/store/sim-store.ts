@@ -54,7 +54,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
 
     let nextRobot = state.robot;
     if (activeProgram) {
-      const { vLinear, vAngular, done } = activeProgram.step(state.robot, dtSeconds);
+      const { vLinear, vAngular, done } = activeProgram.step(state.robot, dtSeconds, state.board);
       nextRobot = { ...state.robot, vLinear, vAngular };
       if (done) {
         activeProgram = null;

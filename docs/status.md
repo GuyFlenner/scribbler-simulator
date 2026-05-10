@@ -1,8 +1,8 @@
 # Scribbler Simulator — SDLC Status
 
 **Last updated**: 2026-05-10
-**Current phase**: Items 1 & 2 shipped → Item 3 (sensor sim) is next
-**Active backlog item**: Item 3 — Sensor simulation + reactive blocks (P1, M)
+**Current phase**: Items 1, 2, 3 shipped → Item 4 (bilingual UI) is next
+**Active backlog item**: Item 4 — Bilingual UI Hebrew + English with RTL (P1, M)
 
 ---
 
@@ -71,10 +71,34 @@ src/App.test.tsx                   ← +3 integration tests (user override, empt
 
 ---
 
+### Item 3 — Sensor simulation + reactive blocks (this commit)
+| Phase | Status |
+|-------|--------|
+| 4 (TDD) | 24 tests written first → green; runtime rewritten to generator-based interpreter |
+| 4.5 Test review | PASS — sensor reads against fixture boards, predicate eval, while/if/repeat semantics |
+| 5 Security | APPROVED — pure functions, no new external surface |
+| 6 Code review | PROCEED — generator runtime is simpler than prior state-machine; removed unused import |
+| 7 Tests | exit=0, 68/68 (was 44 → +24) |
+| 8 Commit | this commit |
+
+**Files added** (2): `src/sim/sensors.ts` (+ test), `src/sim/runtime.test.ts`
+**Files modified** (4): `src/sim/runtime.ts` (rewritten with generators), `src/store/sim-store.ts` (passes board), `src/editor/codegen.ts` (+ if_sensor / while_sensor / while_not_sensor), `src/editor/toolbox.ts` (+ sensor blocks, message2/args2)
+
+Acceptance criteria (Item 3, all 7 met):
+- ✅ line_sensor_left/right react to painted-line elements with correct lateral offsets
+- ✅ obstacle_left/right detect obstacles within 15cm and ±30° front cone
+- ✅ light_sensor returns 0..255 inverse-square in 90° front cone
+- ✅ Toolbox includes sensor blocks combinable with if/while/repeat-until
+- ✅ Reactive program "while NOT line_left drive 1cm" stops on line crossing (verified by runtime test)
+- ✅ All existing tests pass (44 → 68)
+- ✅ No new security findings
+
+---
+
 ## Next action
 
 ```
-use sdlc: implement Item 3 — sensor simulation + reactive blocks
+use sdlc: implement Item 4 — bilingual UI (Hebrew + English with RTL)
 ```
 
 ---

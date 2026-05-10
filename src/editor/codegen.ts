@@ -1,4 +1,4 @@
-import type { Step } from '../sim/behaviors/schema';
+import type { SensorPredicate, Step } from '../sim/behaviors/schema';
 
 export interface BlocklyBlock {
   type: string;
@@ -22,6 +22,28 @@ const numField = (block: BlocklyBlock, name: string, fallback: number): number =
 const childBlock = (block: BlocklyBlock, inputName: string): BlocklyBlock | undefined =>
   block.inputs?.[inputName]?.block ?? block.inputs?.[inputName]?.shadow;
 
+const SENSOR_KINDS = new Set([
+  'line_left',
+  'line_right',
+  'obstacle_left',
+  'obstacle_right',
+]);
+
+const sensorFromField = (block: BlocklyBlock): SensorPredicate | null => {
+  const raw = block.fields?.SENSOR;
+  if (typeof raw !== 'string') return null;
+  if (raw === 'line_left' || raw === 'line_right' || raw === 'obstacle_left' || raw === 'obstacle_right') {
+    return { kind: raw };
+  }
+  if (SENSOR_KINDS.has(raw)) return { kind: raw as SensorPredicate['kind'] } as SensorPredicate;
+  return null;
+};
+
+const compileBody = (block: BlocklyBlock, inputName: string): Step[] => {
+  const inner = childBlock(block, inputName);
+  return inner ? compileBlocks([inner]) : [];
+};
+
 const compileSingle = (block: BlocklyBlock): Step | null => {
   switch (block.type) {
     case 'drive_distance':
@@ -36,8 +58,37 @@ const compileSingle = (block: BlocklyBlock): Step | null => {
       return { kind: 'wait', seconds: numField(block, 'SECONDS', 1) };
     case 'repeat': {
       const times = numField(block, 'TIMES', 1);
-      const body = compileBlocks(childBlock(block, 'DO') ? [childBlock(block, 'DO') as BlocklyBlock] : []);
+      const body = compileBody(block, 'DO');
       return { kind: 'repeat', times, body };
+    }
+    case 'if_sensor': {
+      const sensor = sensorFromField(block);
+      if (!sensor) return null;
+      const thenBody = compileBody(block, 'DO');
+      const elseBody = childBlock(block, 'ELSE') ? compileBody(block, 'ELSE') : undefined;
+      const out: Step = { kind: 'if', condition: sensor, then: thenBody };
+      if (elseBody) out.else = elseBody;
+      return out;
+    }
+    case 'while_sensor': {
+      const sensor = sensorFromField(block);
+      if (!sensor) return null;
+      return {
+        kind: 'while',
+        condition: sensor,
+        body: compileBody(block, 'DO'),
+        maxIterations: 10000,
+      };
+    }
+    case 'while_not_sensor': {
+      const sensor = sensorFromField(block);
+      if (!sensor) return null;
+      return {
+        kind: 'while',
+        condition: { kind: 'not', inner: sensor },
+        body: compileBody(block, 'DO'),
+        maxIterations: 10000,
+      };
     }
     default:
       return null;

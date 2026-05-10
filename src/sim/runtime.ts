@@ -1,159 +1,158 @@
 import type { Step } from './behaviors/schema';
+import type { BoardState } from './boards/schema';
+import { evalPredicate } from './sensors';
 import { TICKS_PER_M, type RobotState } from './types';
 
 const DEFAULT_LINEAR_SPEED = 0.15;
 const DEFAULT_ANGULAR_SPEED = Math.PI / 2;
 
-interface RuntimeContext {
-  steps: Step[];
-  index: number;
-  startEncoderLeft: number;
-  startEncoderRight: number;
-  startHeading: number;
-  targetEncoderDelta: number;
-  targetHeadingDelta: number;
-  waitElapsedSeconds: number;
-  waitDurationSeconds: number;
+export interface ProgramHandle {
+  step(
+    robot: RobotState,
+    dtSeconds: number,
+    board: BoardState,
+  ): { vLinear: number; vAngular: number; done: boolean };
 }
 
-export interface ProgramHandle {
-  isComplete(): boolean;
-  step(robot: RobotState, dtSeconds: number): { vLinear: number; vAngular: number; done: boolean };
+interface Context {
+  robot: RobotState;
+  board: BoardState;
+  dtSeconds: number;
 }
+
+interface Velocities {
+  vLinear: number;
+  vAngular: number;
+}
+
+const ZERO: Velocities = { vLinear: 0, vAngular: 0 };
+
+function* executeDrive(step: { kind: 'drive'; cm: number; speed?: number }, ctx: Context): Generator<Velocities> {
+  const distanceM = Math.abs(step.cm) / 100;
+  const direction = step.cm >= 0 ? 1 : -1;
+  const speed = (step.speed ?? DEFAULT_LINEAR_SPEED) * direction;
+  const targetTicks = distanceM * TICKS_PER_M;
+  const startLeft = ctx.robot.encoderTicksLeft;
+  const startRight = ctx.robot.encoderTicksRight;
+  while (true) {
+    if (ctx.robot.isStalled) return;
+    const leftDelta = Math.abs(ctx.robot.encoderTicksLeft - startLeft);
+    const rightDelta = Math.abs(ctx.robot.encoderTicksRight - startRight);
+    if ((leftDelta + rightDelta) / 2 >= targetTicks) return;
+    yield { vLinear: speed, vAngular: 0 };
+  }
+}
+
+function* executeRotate(step: { kind: 'rotate'; degrees: number; speed?: number }, ctx: Context): Generator<Velocities> {
+  const radians = (Math.abs(step.degrees) * Math.PI) / 180;
+  const direction = step.degrees >= 0 ? 1 : -1;
+  const speed = (step.speed ?? DEFAULT_ANGULAR_SPEED) * direction;
+  const startHeading = ctx.robot.heading;
+  while (true) {
+    if (ctx.robot.isStalled) return;
+    if (Math.abs(ctx.robot.heading - startHeading) >= radians) return;
+    yield { vLinear: 0, vAngular: speed };
+  }
+}
+
+function* executeWait(step: { kind: 'wait'; seconds: number }, ctx: Context): Generator<Velocities> {
+  let elapsed = 0;
+  while (elapsed < step.seconds) {
+    yield ZERO;
+    elapsed += ctx.dtSeconds;
+  }
+}
+
+function* executeSequence(steps: Step[], ctx: Context): Generator<Velocities> {
+  for (const step of steps) {
+    yield* executeStep(step, ctx);
+    if (ctx.robot.isStalled) return;
+  }
+}
+
+function* executeStep(step: Step, ctx: Context): Generator<Velocities> {
+  switch (step.kind) {
+    case 'drive':
+      yield* executeDrive(step, ctx);
+      return;
+    case 'rotate':
+      yield* executeRotate(step, ctx);
+      return;
+    case 'wait':
+      yield* executeWait(step, ctx);
+      return;
+    case 'stop':
+      yield ZERO;
+      return;
+    case 'beep':
+    case 'set_led':
+      return;
+    case 'if': {
+      const cond = evalPredicate(step.condition, ctx.robot, ctx.board);
+      if (cond) {
+        yield* executeSequence(step.then, ctx);
+      } else if (step.else) {
+        yield* executeSequence(step.else, ctx);
+      }
+      return;
+    }
+    case 'while': {
+      let iter = 0;
+      while (
+        iter < step.maxIterations &&
+        evalPredicate(step.condition, ctx.robot, ctx.board)
+      ) {
+        yield* executeSequence(step.body, ctx);
+        if (ctx.robot.isStalled) return;
+        iter += 1;
+      }
+      return;
+    }
+    case 'repeat': {
+      const times = Math.max(0, Math.floor(step.times));
+      for (let i = 0; i < times; i++) {
+        yield* executeSequence(step.body, ctx);
+        if (ctx.robot.isStalled) return;
+      }
+      return;
+    }
+  }
+}
+
+const blankBoard: BoardState = {
+  version: 1,
+  id: 'blank',
+  name: 'blank',
+  width: 1,
+  height: 1,
+  elements: [],
+};
 
 export function startProgram(steps: Step[]): ProgramHandle {
-  const ctx: RuntimeContext = {
-    steps,
-    index: -1,
-    startEncoderLeft: 0,
-    startEncoderRight: 0,
-    startHeading: 0,
-    targetEncoderDelta: 0,
-    targetHeadingDelta: 0,
-    waitElapsedSeconds: 0,
-    waitDurationSeconds: 0,
+  const ctx: Context = {
+    robot: {
+      x: 0,
+      y: 0,
+      heading: 0,
+      vLinear: 0,
+      vAngular: 0,
+      isStalled: false,
+      encoderTicksLeft: 0,
+      encoderTicksRight: 0,
+    },
+    board: blankBoard,
+    dtSeconds: 1 / 60,
   };
-
-  let pendingStart = true;
-
-  const beginStep = (robot: RobotState): { vLinear: number; vAngular: number } => {
-    const step = ctx.steps[ctx.index];
-    if (!step) return { vLinear: 0, vAngular: 0 };
-    switch (step.kind) {
-      case 'drive': {
-        const distanceM = step.cm / 100;
-        const speed = step.speed ?? DEFAULT_LINEAR_SPEED;
-        ctx.startEncoderLeft = robot.encoderTicksLeft;
-        ctx.startEncoderRight = robot.encoderTicksRight;
-        ctx.targetEncoderDelta = Math.abs(distanceM) * TICKS_PER_M;
-        return { vLinear: distanceM >= 0 ? speed : -speed, vAngular: 0 };
-      }
-      case 'rotate': {
-        const radians = (step.degrees * Math.PI) / 180;
-        const speed = step.speed ?? DEFAULT_ANGULAR_SPEED;
-        ctx.startHeading = robot.heading;
-        ctx.targetHeadingDelta = Math.abs(radians);
-        return { vLinear: 0, vAngular: radians >= 0 ? speed : -speed };
-      }
-      case 'wait': {
-        ctx.waitElapsedSeconds = 0;
-        ctx.waitDurationSeconds = step.seconds;
-        return { vLinear: 0, vAngular: 0 };
-      }
-      case 'stop':
-      case 'beep':
-      case 'set_led':
-      case 'if':
-      case 'while':
-      case 'repeat':
-        return { vLinear: 0, vAngular: 0 };
-    }
-  };
+  const gen = executeSequence(steps, ctx);
 
   return {
-    isComplete: () => ctx.index >= ctx.steps.length,
-    step(robot: RobotState, dtSeconds: number) {
-      if (pendingStart) {
-        ctx.index = 0;
-        pendingStart = false;
-        if (ctx.steps.length === 0) return { vLinear: 0, vAngular: 0, done: true };
-        const v = beginStep(robot);
-        return { ...v, done: false };
-      }
-
-      if (ctx.index >= ctx.steps.length) {
-        return { vLinear: 0, vAngular: 0, done: true };
-      }
-
-      const step = ctx.steps[ctx.index];
-
-      let stepDone = false;
-      switch (step.kind) {
-        case 'drive': {
-          const avgTicks =
-            (Math.abs(robot.encoderTicksLeft - ctx.startEncoderLeft) +
-              Math.abs(robot.encoderTicksRight - ctx.startEncoderRight)) /
-            2;
-          if (avgTicks >= ctx.targetEncoderDelta) stepDone = true;
-          break;
-        }
-        case 'rotate': {
-          const headingDelta = Math.abs(robot.heading - ctx.startHeading);
-          if (headingDelta >= ctx.targetHeadingDelta) stepDone = true;
-          break;
-        }
-        case 'wait': {
-          ctx.waitElapsedSeconds += dtSeconds;
-          if (ctx.waitElapsedSeconds >= ctx.waitDurationSeconds) stepDone = true;
-          break;
-        }
-        case 'stop':
-        case 'beep':
-        case 'set_led':
-        case 'if':
-        case 'while':
-        case 'repeat':
-          stepDone = true;
-          break;
-      }
-
-      if (robot.isStalled) {
-        ctx.index = ctx.steps.length;
-        return { vLinear: 0, vAngular: 0, done: true };
-      }
-
-      if (stepDone) {
-        ctx.index += 1;
-        if (ctx.index >= ctx.steps.length) {
-          return { vLinear: 0, vAngular: 0, done: true };
-        }
-        const v = beginStep(robot);
-        return { ...v, done: false };
-      }
-
-      const current = step;
-      switch (current.kind) {
-        case 'drive': {
-          const distanceM = current.cm / 100;
-          const speed = current.speed ?? DEFAULT_LINEAR_SPEED;
-          return {
-            vLinear: distanceM >= 0 ? speed : -speed,
-            vAngular: 0,
-            done: false,
-          };
-        }
-        case 'rotate': {
-          const radians = (current.degrees * Math.PI) / 180;
-          const speed = current.speed ?? DEFAULT_ANGULAR_SPEED;
-          return {
-            vLinear: 0,
-            vAngular: radians >= 0 ? speed : -speed,
-            done: false,
-          };
-        }
-        default:
-          return { vLinear: 0, vAngular: 0, done: false };
-      }
+    step(robot, dtSeconds, board) {
+      ctx.robot = robot;
+      ctx.dtSeconds = dtSeconds;
+      ctx.board = board;
+      const r = gen.next();
+      if (r.done) return { vLinear: 0, vAngular: 0, done: true };
+      return { vLinear: r.value.vLinear, vAngular: r.value.vAngular, done: false };
     },
   };
 }

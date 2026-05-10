@@ -6,6 +6,8 @@ export interface BlockDefinition {
   nextStatement?: string | null;
   message1?: string;
   args1?: Array<Record<string, unknown>>;
+  message2?: string;
+  args2?: Array<Record<string, unknown>>;
   colour?: number;
   tooltip?: string;
   helpUrl?: string;
@@ -67,6 +69,74 @@ export const blockDefinitions: BlockDefinition[] = [
     colour: 290,
     tooltip: 'Repeat the inner blocks N times',
   },
+  {
+    type: 'if_sensor',
+    message0: 'if %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SENSOR',
+        options: [
+          ['line on left', 'line_left'],
+          ['line on right', 'line_right'],
+          ['obstacle on left', 'obstacle_left'],
+          ['obstacle on right', 'obstacle_right'],
+        ],
+      },
+    ],
+    message1: 'then %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    message2: 'else %1',
+    args2: [{ type: 'input_statement', name: 'ELSE' }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 210,
+    tooltip: 'Run different blocks depending on a sensor reading',
+  },
+  {
+    type: 'while_sensor',
+    message0: 'while %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SENSOR',
+        options: [
+          ['line on left', 'line_left'],
+          ['line on right', 'line_right'],
+          ['obstacle on left', 'obstacle_left'],
+          ['obstacle on right', 'obstacle_right'],
+        ],
+      },
+    ],
+    message1: 'do %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 290,
+    tooltip: 'Repeat blocks while a sensor is reading TRUE',
+  },
+  {
+    type: 'while_not_sensor',
+    message0: 'while NOT %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SENSOR',
+        options: [
+          ['line on left', 'line_left'],
+          ['line on right', 'line_right'],
+          ['obstacle on left', 'obstacle_left'],
+          ['obstacle on right', 'obstacle_right'],
+        ],
+      },
+    ],
+    message1: 'do %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 290,
+    tooltip: 'Repeat blocks until a sensor reads TRUE (e.g. follow a line)',
+  },
 ];
 
 export const toolboxXml = `
@@ -82,6 +152,11 @@ export const toolboxXml = `
   </category>
   <category name="Loops" colour="290">
     <block type="repeat"></block>
+    <block type="while_sensor"></block>
+    <block type="while_not_sensor"></block>
+  </category>
+  <category name="Sensors" colour="210">
+    <block type="if_sensor"></block>
   </category>
 </xml>
 `.trim();

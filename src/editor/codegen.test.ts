@@ -55,6 +55,43 @@ describe('codegen — repeat block', () => {
   });
 });
 
+describe('codegen — sensor blocks (predicates)', () => {
+  it('compiles if_sensor_then with line_left and a body', () => {
+    const block: BlocklyBlock = {
+      type: 'if_sensor',
+      fields: { SENSOR: 'line_left' },
+      inputs: {
+        DO: { block: { type: 'drive_distance', fields: { CM: 5 } } },
+      },
+    };
+    expect(compileBlocks([block])).toEqual([
+      {
+        kind: 'if',
+        condition: { kind: 'line_left' },
+        then: [{ kind: 'drive', cm: 5 }],
+      },
+    ]);
+  });
+
+  it('compiles while_sensor with NOT obstacle_left', () => {
+    const block: BlocklyBlock = {
+      type: 'while_not_sensor',
+      fields: { SENSOR: 'obstacle_left' },
+      inputs: {
+        DO: { block: { type: 'drive_distance', fields: { CM: 1 } } },
+      },
+    };
+    expect(compileBlocks([block])).toEqual([
+      {
+        kind: 'while',
+        condition: { kind: 'not', inner: { kind: 'obstacle_left' } },
+        body: [{ kind: 'drive', cm: 1 }],
+        maxIterations: 10000,
+      },
+    ]);
+  });
+});
+
 describe('codegen — workspace serialization', () => {
   it('compiles multiple top-level blocks in order', () => {
     const ws = {
