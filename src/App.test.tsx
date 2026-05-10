@@ -4,6 +4,7 @@ import App from './App';
 import i18n from './i18n';
 import { useSimStore } from './store/sim-store';
 import { useEditorStore } from './store/editor-store';
+import { useBoardsStore } from './store/boards-store';
 import { defaultBoard } from './sim/boards/default';
 import { makeRobotState } from './sim/physics';
 
@@ -12,6 +13,7 @@ beforeEach(async () => {
   await i18n.changeLanguage('en');
   useSimStore.getState().resetBoard();
   useEditorStore.getState().resetAll();
+  useBoardsStore.getState().resetAll();
 });
 
 afterEach(() => {
@@ -111,6 +113,35 @@ describe('App — editor mode toggle', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
     expect(screen.getByRole('tab', { name: /edit press 2 times/i })).toBeInTheDocument();
+  });
+});
+
+describe('App — boards mode', () => {
+  it('switches to the boards panel and lists at least the default board', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: /boards/i }));
+    expect(screen.getByRole('heading', { name: /boards/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByText(/default 1m/i)).toBeInTheDocument();
+  });
+
+  it('records a successful run and shows it in the run history', () => {
+    render(<App />);
+    act(() => {
+      useSimStore.getState().pressButton(2, [{ kind: 'drive', cm: 1 }]);
+    });
+    const goal = defaultBoard.elements.find((e) => e.kind === 'goal');
+    if (!goal || goal.kind !== 'goal') throw new Error('no goal');
+    act(() => {
+      useSimStore.setState({
+        robot: makeRobotState({ x: goal.x, y: goal.y, heading: 0 }),
+        status: 'running',
+        runStartedAt: Date.now() - 3000,
+      });
+      useSimStore.getState().tick(1 / 60);
+    });
+    fireEvent.click(screen.getByRole('tab', { name: /boards/i }));
+    expect(useBoardsStore.getState().getRunsForBoard(defaultBoard.id)).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /replay/i })).toBeInTheDocument();
   });
 });
 

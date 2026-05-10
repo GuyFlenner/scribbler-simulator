@@ -2,9 +2,20 @@ import { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SimulatorView } from './components/SimulatorView';
 import { EditorView } from './components/EditorView';
+import { BoardsPanel } from './components/BoardsPanel';
 import { LanguageToggle } from './components/LanguageToggle';
 
-type Mode = 'simulator' | 'editor';
+type Mode = 'simulator' | 'editor' | 'boards';
+
+const TAB_BUTTON_STYLE = (active: boolean): React.CSSProperties => ({
+  padding: '0.4rem 0.9rem',
+  cursor: 'pointer',
+  borderRadius: 4,
+  border: '1px solid #555',
+  background: active ? '#2c5cff' : '#fff',
+  color: active ? '#fff' : '#000',
+  fontWeight: 'bold',
+});
 
 export default function App(): ReactElement {
   const { t } = useTranslation();
@@ -29,15 +40,7 @@ export default function App(): ReactElement {
               role="tab"
               aria-selected={mode === 'simulator'}
               onClick={() => setMode('simulator')}
-              style={{
-                padding: '0.4rem 0.9rem',
-                cursor: 'pointer',
-                borderRadius: 4,
-                border: '1px solid #555',
-                background: mode === 'simulator' ? '#2c5cff' : '#fff',
-                color: mode === 'simulator' ? '#fff' : '#000',
-                fontWeight: 'bold',
-              }}
+              style={TAB_BUTTON_STYLE(mode === 'simulator')}
             >
               {t('mode.simulator')}
             </button>
@@ -46,23 +49,26 @@ export default function App(): ReactElement {
               role="tab"
               aria-selected={mode === 'editor'}
               onClick={() => setMode('editor')}
-              style={{
-                padding: '0.4rem 0.9rem',
-                cursor: 'pointer',
-                borderRadius: 4,
-                border: '1px solid #555',
-                background: mode === 'editor' ? '#2c5cff' : '#fff',
-                color: mode === 'editor' ? '#fff' : '#000',
-                fontWeight: 'bold',
-              }}
+              style={TAB_BUTTON_STYLE(mode === 'editor')}
             >
               {t('mode.editor')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'boards'}
+              onClick={() => setMode('boards')}
+              style={TAB_BUTTON_STYLE(mode === 'boards')}
+            >
+              {t('boards.tab_label')}
             </button>
           </div>
           <LanguageToggle />
         </div>
       </header>
-      {mode === 'simulator' ? <SimulatorView /> : <EditorView />}
+      {mode === 'simulator' && <SimulatorView />}
+      {mode === 'editor' && <EditorView />}
+      {mode === 'boards' && <BoardsPanel />}
     </main>
   );
 }

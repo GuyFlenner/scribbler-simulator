@@ -1,8 +1,8 @@
 # Scribbler Simulator — SDLC Status
 
 **Last updated**: 2026-05-10
-**Current phase**: Items 1, 2, 3, 4 shipped → competition-ready MVP. Item 5 (P2) optional.
-**Active backlog item**: Item 5 — Practice features (P2, M) — optional / stretch
+**Current phase**: All 5 backlog items shipped. Full feature set complete.
+**Active backlog item**: none — backlog drained
 
 ---
 
@@ -128,15 +128,46 @@ Acceptance criteria (Item 4, all 7 met):
 
 ---
 
-## Next action
+### Item 5 — Practice features (this commit)
+| Phase | Status |
+|-------|--------|
+| 0.5 HITL | scope clarification: pragmatic palette + click-to-place + property panel (operator-approved) instead of literal drag-resize |
+| 4 (TDD) | 12 tests written first → green; 1 in-cycle fix (Zustand selectors returning new arrays) |
+| 4.5 Test review | PASS — store CRUD + cap + persistence + replay sort + boards-mode integration |
+| 5 Security | APPROVED — 2 new versioned localStorage keys, parseBoard re-validation on load |
+| 6 Code review | PROCEED |
+| 7 Tests | exit=0, 85/85 (was 73 → +12) |
+| 8 Commit | this commit |
 
-The MVP is competition-ready. Item 5 is **optional** (P2):
+**Files added** (7): `src/sim/replay.ts` (+ test), `src/store/boards-store.ts` (+ test), `src/components/BoardsPanel.tsx`, `src/components/BoardEditor.tsx`, `src/components/RunHistoryPanel.tsx`
+**Files modified** (5): `src/App.tsx` (3rd "Boards" tab), `src/store/sim-store.ts` (run recording + setBoard + startReplay), `src/i18n/{en,he}.json` (boards/board_editor namespaces), `src/App.test.tsx` (+2 boards-mode integration tests)
 
-```
-use sdlc: implement Item 5 — practice features (board editor, multiple boards, time tracking)
-```
+Acceptance criteria (Item 5):
+- ✅ Boards panel lists default + user-created (text list, no thumbnail rendering — operator-approved trim)
+- ⚠ Pragmatic editor (palette + click-to-place + property panel) per HITL clarification — full drag-resize was descoped at AC#2
+- ✅ Custom boards persist in `scribbler-sim:boards:v1` localStorage; loaded boards re-validated through `parseBoard`
+- ✅ Successful runs auto-recorded (time + press count) on goal-reach
+- ✅ Last 10 runs per board shown in run-history panel
+- ✅ Replay button → `startReplay(record)` resets state, queues events sorted by tickIndex, fires them as ticks advance
+- ✅ All existing tests pass (73 → 85)
+- ✅ No new security findings
 
-Or focus on hardening: lazy-load editor for faster first paint, calibration panel, replay export, etc.
+---
+
+## Final status: backlog drained
+
+All 5 items shipped. The simulator covers:
+- Differential-drive physics + 4 hardcoded press-2..5 fallback behaviors
+- Blockly editor with deterministic + reactive blocks
+- Sensor sim (line/obstacle/light) with reactive runtime
+- Bilingual UI (English + Hebrew RTL) with hardcoded-string-scanner test
+- Multiple boards + click-to-place editor + run history + deterministic replay
+
+**Open follow-ups** (not blocking competition):
+- Browser smoke-test by the user — code-level gates have been the only quality signal across all 5 items; visual fidelity needs human eyes
+- Lazy-load the editor + boards panel to keep simulator-only first-paint at ~64 KB gzipped (current bundle: ~284 KB gzipped)
+- Custom Blockly block labels remain English-only when Hebrew is active (only built-in messages localised via `msg/he`)
+- Calibration panel against a real S3 (post-competition; no robot available now)
 
 ---
 
