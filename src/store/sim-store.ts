@@ -19,12 +19,23 @@ interface SimStoreState extends SimState {
   pressCount: number;
   currentRunEvents: RunEvent[];
   replayQueue: RunEvent[] | null;
+  bonusHit: boolean;
   pressButton: (presses: number, steps?: Step[]) => void;
   tick: (dtSeconds: number) => void;
   resetBoard: () => void;
   setBoard: (board: BoardState) => void;
   startReplay: (record: RunRecord) => void;
 }
+
+const checkBonusHit = (robot: RobotState, board: BoardState): boolean => {
+  for (const el of board.elements) {
+    if (el.kind !== 'bonus') continue;
+    const dx = robot.x - el.x;
+    const dy = robot.y - el.y;
+    if (Math.hypot(dx, dy) <= el.toleranceCm / 100) return true;
+  }
+  return false;
+};
 
 let activeProgram: ProgramHandle | null = null;
 
@@ -51,6 +62,7 @@ const recordRunIfDone = (
     events: sortEvents(state.currentRunEvents),
     outcome: nextStatus,
     pressCountTotal: state.currentRunEvents.length,
+    bonusHit: state.bonusHit,
   };
   useBoardsStore.getState().recordRun(record);
 };
@@ -64,6 +76,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
   pressCount: 0,
   currentRunEvents: [],
   replayQueue: null,
+  bonusHit: false,
 
   pressButton: (presses, steps) => {
     const resolvedSteps = steps ?? findBehavior(presses)?.steps;
@@ -108,11 +121,16 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
 
     const physicsResult = tick({ ...state, robot: nextRobot }, dtSeconds);
     const prevStatus = state.status;
+    const bonusHit =
+      state.bonusHit ||
+      (physicsResult.status === 'running' &&
+        checkBonusHit(physicsResult.robot, physicsResult.board));
     set({
       robot: physicsResult.robot,
       board: physicsResult.board,
       tickIndex: physicsResult.tickIndex,
       status: physicsResult.status,
+      bonusHit,
     });
     recordRunIfDone(prevStatus, physicsResult.status, get());
   },
@@ -128,6 +146,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       pressCount: 0,
       currentRunEvents: [],
       replayQueue: null,
+      bonusHit: false,
     });
   },
 
@@ -142,6 +161,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       pressCount: 0,
       currentRunEvents: [],
       replayQueue: null,
+      bonusHit: false,
     });
   },
 
@@ -156,6 +176,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       pressCount: 0,
       currentRunEvents: [],
       replayQueue: sortEvents(record.events),
+      bonusHit: false,
     });
   },
 }));

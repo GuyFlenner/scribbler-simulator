@@ -10,8 +10,9 @@ export type LineSegment = {
 export type LightSource = { kind: 'light'; x: number; y: number; intensity: number };
 export type StartMarker = { kind: 'start'; x: number; y: number; heading: number };
 export type GoalMarker = { kind: 'goal'; x: number; y: number; toleranceCm: number };
+export type BonusZone = { kind: 'bonus'; x: number; y: number; toleranceCm: number };
 
-export type BoardElement = Obstacle | LineSegment | LightSource | StartMarker | GoalMarker;
+export type BoardElement = Obstacle | LineSegment | LightSource | StartMarker | GoalMarker | BonusZone;
 
 export interface BoardState {
   version: 1;
@@ -86,6 +87,12 @@ const parseElement = (raw: unknown, idx: number): BoardElement => {
         return fail(`element ${idx} (goal) has non-numeric values`);
       }
       return { kind: 'goal', x: obj.x, y: obj.y, toleranceCm: obj.toleranceCm };
+    }
+    case 'bonus': {
+      if (!isFiniteNumber(obj.x) || !isFiniteNumber(obj.y) || !isFiniteNumber(obj.toleranceCm)) {
+        return fail(`element ${idx} (bonus) has non-numeric values`);
+      }
+      return { kind: 'bonus', x: obj.x, y: obj.y, toleranceCm: obj.toleranceCm };
     }
     default:
       return fail(`element ${idx} has unknown kind: ${String(kind)}`);

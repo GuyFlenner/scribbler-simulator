@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Behavior, Program, Step } from '../sim/behaviors/schema';
 import { loadProgram, saveProgram, clearProgram } from '../editor/persistence';
 
-export const PRESS_COUNT_MIN = 2;
+export const PRESS_COUNT_MIN = 1;
 export const PRESS_COUNT_MAX = 8;
 export const PRESS_COUNTS: number[] = Array.from(
   { length: PRESS_COUNT_MAX - PRESS_COUNT_MIN + 1 },

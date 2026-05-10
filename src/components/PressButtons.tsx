@@ -5,13 +5,6 @@ import { useEditorStore, PRESS_COUNTS } from '../store/editor-store';
 import { hardcodedBehaviors } from '../sim/behaviors/hardcoded';
 import type { Step } from '../sim/behaviors/schema';
 
-const HARDCODED_LABEL_KEY: Record<number, string> = {
-  2: 'behaviors.forward_30cm',
-  3: 'behaviors.backward_30cm',
-  4: 'behaviors.rotate_90_right',
-  5: 'behaviors.rotate_90_left',
-};
-
 const hardcodedSteps = (n: number): Step[] | undefined =>
   hardcodedBehaviors.find((b) => b.pressCount === n)?.steps;
 
@@ -37,12 +30,10 @@ export function PressButtons(): ReactElement {
     pressButton(n, steps);
   };
 
-  const labelFor = (n: number, userSteps: Step[] | undefined): string => {
+  const labelFor = (_n: number, userSteps: Step[] | undefined): string => {
     if (userSteps && userSteps.length > 0) {
       return t('simulator.block_count', { count: userSteps.length });
     }
-    const key = HARDCODED_LABEL_KEY[n];
-    if (key) return t(key);
     return t('simulator.no_behavior');
   };
 
@@ -53,8 +44,7 @@ export function PressButtons(): ReactElement {
         const userSteps = programs[n];
         const label = labelFor(n, userSteps);
         const isUser = !!(userSteps && userSteps.length > 0);
-        const hasHardcoded = HARDCODED_LABEL_KEY[n] !== undefined;
-        const isEmpty = !isUser && !hasHardcoded;
+        const isEmpty = !isUser;
         return (
           <button
             key={n}

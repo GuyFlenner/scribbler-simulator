@@ -30,9 +30,9 @@ describe('boards-editor: full lifecycle', () => {
   });
 
   it('successful run records a run in history and replay re-runs it', async () => {
-    // Use the default board. Drive the kid's hardcoded press-2 (forward 30cm) once
-    // to log a press event, then directly snap the robot to the goal so the run
-    // completes and the store records a RunRecord.
+    // Configure press-2 → drive 30cm, then drive once to log a press event,
+    // then snap the robot to the goal so the run completes and is recorded.
+    storeBridge.editorStore().setBehavior(2, [{ kind: 'drive', cm: 30 }]);
     const board = storeBridge.simStore().board;
     const goal = board.elements.find((el) => el.kind === 'goal');
     if (!goal || goal.kind !== 'goal') throw new Error('no goal');

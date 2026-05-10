@@ -15,7 +15,8 @@ describe('smoke: golden path', () => {
     await expect.element(page.getByRole('heading', { name: /scribbler simulator/i })).toBeVisible();
   });
 
-  it('press-2x-moves-robot ~30cm east', async () => {
+  it('press-2x-moves-robot ~30cm east when press-2 is configured to drive 30cm', async () => {
+    storeBridge.editorStore().setBehavior(2, [{ kind: 'drive', cm: 30 }]);
     const startX = storeBridge.simStore().robot.x;
     const startY = storeBridge.simStore().robot.y;
 
@@ -30,6 +31,7 @@ describe('smoke: golden path', () => {
   });
 
   it('reset-board-returns-to-A', async () => {
+    storeBridge.editorStore().setBehavior(2, [{ kind: 'drive', cm: 30 }]);
     const startX = storeBridge.simStore().robot.x;
     const startY = storeBridge.simStore().robot.y;
 

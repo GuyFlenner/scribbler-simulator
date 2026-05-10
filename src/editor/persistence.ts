@@ -127,7 +127,7 @@ const validateStep = (raw: unknown): Step => {
   }
 };
 
-const PRESS_COUNT_MIN = 2;
+const PRESS_COUNT_MIN = 1;
 const PRESS_COUNT_MAX = 8;
 
 const validateBehavior = (raw: unknown): Behavior => {

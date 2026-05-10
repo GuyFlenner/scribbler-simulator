@@ -16,6 +16,8 @@ export interface RunRecord {
   events: RunEvent[];
   outcome: RunOutcome;
   pressCountTotal: number;
+  /** True if the robot passed through a bonus zone during the run. Optional for backwards-compat with pre-bonus run logs in localStorage. */
+  bonusHit?: boolean;
 }
 
 export const newRunId = (): string => `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

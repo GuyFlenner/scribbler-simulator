@@ -15,6 +15,7 @@ export function SimulatorView(): ReactElement {
   const status = useSimStore((s) => s.status);
   const runStartedAt = useSimStore((s) => s.runStartedAt);
   const isStalled = useSimStore((s) => s.robot.isStalled);
+  const bonusHit = useSimStore((s) => s.bonusHit);
 
   return (
     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', padding: 24 }}>
@@ -38,10 +39,29 @@ export function SimulatorView(): ReactElement {
               gap: 8,
             }}
           >
-            <span>{t('simulator.well_done')}</span>
+            <span>{bonusHit ? t('simulator.well_done_with_bonus') : t('simulator.well_done')}</span>
             <span style={{ fontSize: '1rem', color: '#333' }}>
               {t('simulator.time_label', { seconds: formatElapsedSeconds(runStartedAt) })}
             </span>
+          </div>
+        )}
+        {status === 'running' && bonusHit && (
+          <div
+            data-testid="bonus-indicator"
+            role="status"
+            style={{
+              position: 'absolute',
+              top: 8,
+              insetInlineEnd: 8,
+              background: '#f1c40f',
+              color: '#000',
+              padding: '4px 10px',
+              borderRadius: 4,
+              fontSize: '0.85rem',
+              fontWeight: 'bold',
+            }}
+          >
+            {t('simulator.bonus_collected')}
           </div>
         )}
         {isStalled && (

@@ -4,11 +4,11 @@ import type { BoardElement, BoardState } from '../sim/boards/schema';
 
 const CANVAS_PX = 400;
 
-type Tool = 'select' | 'obstacle' | 'line' | 'light';
+type Tool = 'select' | 'obstacle' | 'line' | 'light' | 'bonus';
 
 const isMovableKind = (
   el: BoardElement,
-): el is Extract<BoardElement, { kind: 'obstacle' | 'light' | 'start' | 'goal' }> =>
+): el is Extract<BoardElement, { kind: 'obstacle' | 'light' | 'start' | 'goal' | 'bonus' }> =>
   el.kind !== 'line';
 
 interface Props {
@@ -57,6 +57,9 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
       case 'light':
         newEl = { kind: 'light', x, y, intensity: 100 };
         break;
+      case 'bonus':
+        newEl = { kind: 'bonus', x, y, toleranceCm: 8 };
+        break;
       default:
         return;
     }
@@ -77,6 +80,7 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
     { tool: 'obstacle', label: t('board_editor.obstacle') },
     { tool: 'line', label: t('board_editor.line') },
     { tool: 'light', label: t('board_editor.light') },
+    { tool: 'bonus', label: t('board_editor.bonus') },
   ];
 
   return (
@@ -169,31 +173,27 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                   />
                 );
               }
-              if (el.kind === 'start' || el.kind === 'goal') {
-                const colour = el.kind === 'start' ? '#3a8b3a' : '#c0392b';
+              if (el.kind === 'start' || el.kind === 'goal' || el.kind === 'bonus') {
+                const labelEmoji = el.kind === 'start' ? '🚩' : el.kind === 'goal' ? '🏁' : '⭐';
                 return (
                   <div
                     key={idx}
                     onClick={(e) => handleElementClick(idx, e)}
                     style={{
                       position: 'absolute',
-                      left: el.x * scaleX - 12,
-                      top: el.y * scaleY - 12,
-                      width: 24,
-                      height: 24,
-                      background: colour,
-                      color: '#fff',
-                      borderRadius: '50%',
+                      left: el.x * scaleX - 14,
+                      top: el.y * scaleY - 14,
+                      width: 28,
+                      height: 28,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '0.85rem',
-                      fontWeight: 'bold',
+                      fontSize: '1.4rem',
                       cursor: 'pointer',
                       ...ringStyle,
                     }}
                   >
-                    {el.kind === 'start' ? 'A' : 'B'}
+                    {labelEmoji}
                   </div>
                 );
               }
@@ -260,6 +260,13 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                 <>
                   <NumberField label={t('board_editor.x')} value={selected.x} onChange={(v) => updateElement(selectedIdx, { x: v })} />
                   <NumberField label={t('board_editor.y')} value={selected.y} onChange={(v) => updateElement(selectedIdx, { y: v })} />
+                </>
+              )}
+              {selected.kind === 'bonus' && (
+                <>
+                  <NumberField label={t('board_editor.x')} value={selected.x} onChange={(v) => updateElement(selectedIdx, { x: v })} />
+                  <NumberField label={t('board_editor.y')} value={selected.y} onChange={(v) => updateElement(selectedIdx, { y: v })} />
+                  <NumberField label={t('board_editor.tolerance_cm')} value={selected.toleranceCm} onChange={(v) => updateElement(selectedIdx, { toleranceCm: v })} />
                 </>
               )}
               <button

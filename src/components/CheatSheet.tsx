@@ -4,13 +4,6 @@ import type { TFunction } from 'i18next';
 import type { Step } from '../sim/behaviors/schema';
 import { useEditorStore, PRESS_COUNTS } from '../store/editor-store';
 
-const HARDCODED_LABEL_KEY: Record<number, string> = {
-  2: 'behaviors.forward_30cm',
-  3: 'behaviors.backward_30cm',
-  4: 'behaviors.rotate_90_right',
-  5: 'behaviors.rotate_90_left',
-};
-
 const describeStep = (step: Step, t: TFunction): string => {
   switch (step.kind) {
     case 'drive':
@@ -54,11 +47,10 @@ const describeStep = (step: Step, t: TFunction): string => {
   }
 };
 
-const describeBehavior = (steps: Step[] | undefined, t: TFunction, fallbackKey?: string): string => {
+const describeBehavior = (steps: Step[] | undefined, t: TFunction): string => {
   if (steps && steps.length > 0) {
     return steps.map((s) => describeStep(s, t)).join('  →  ');
   }
-  if (fallbackKey) return t(fallbackKey);
   return '';
 };
 
@@ -150,13 +142,10 @@ export function CheatSheet({ onClose }: Props): ReactElement {
         <tbody>
           {PRESS_COUNTS.map((n) => {
             const userSteps = programs[n];
-            const fallback = HARDCODED_LABEL_KEY[n];
             const description = userSteps && userSteps.length > 0
               ? describeBehavior(userSteps, t)
-              : fallback
-                ? t(fallback)
-                : t('cheatsheet.empty_row');
-            const isEmpty = !userSteps?.length && !fallback;
+              : t('cheatsheet.empty_row');
+            const isEmpty = !userSteps?.length;
             return (
               <tr key={n} style={{ borderBottom: '1px solid #ccc' }}>
                 <td

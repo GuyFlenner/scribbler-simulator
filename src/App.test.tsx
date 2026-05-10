@@ -26,18 +26,19 @@ describe('App — renders the simulator shell', () => {
     expect(screen.getByRole('heading', { name: /scribbler/i })).toBeInTheDocument();
   });
 
-  it('renders press buttons 2x through 5x and a reset board button', () => {
+  it('renders press buttons 1x through 8x and a reset board button', () => {
     render(<App />);
+    expect(screen.getByLabelText(/press reset 1 times/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/press reset 2 times/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/press reset 3 times/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/press reset 4 times/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/press reset 5 times/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/press reset 8 times/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reset board/i })).toBeInTheDocument();
   });
 });
 
-describe('App — drive forward on press 2x', () => {
+describe('App — drive forward on press 2x with a configured behavior', () => {
   it('moves the robot ~30 cm east after pressing 2x and advancing 2 simulated seconds', () => {
+    useEditorStore.getState().setBehavior(2, [{ kind: 'drive', cm: 30 }]);
     render(<App />);
     const initialX = useSimStore.getState().robot.x;
     const initialY = useSimStore.getState().robot.y;
@@ -53,6 +54,7 @@ describe('App — drive forward on press 2x', () => {
 
 describe('App — reset board returns to A', () => {
   it('returns the robot to point A after pressing reset', () => {
+    useEditorStore.getState().setBehavior(2, [{ kind: 'drive', cm: 30 }]);
     render(<App />);
     const startX = useSimStore.getState().robot.x;
     const startY = useSimStore.getState().robot.y;
@@ -64,6 +66,19 @@ describe('App — reset board returns to A', () => {
     fireEvent.click(screen.getByRole('button', { name: /reset board/i }));
     expect(useSimStore.getState().robot.x).toBeCloseTo(startX, 5);
     expect(useSimStore.getState().robot.y).toBeCloseTo(startY, 5);
+  });
+});
+
+describe('App — press 1 is now valid (was previously skipped)', () => {
+  it('accepts a behavior bound to press 1 and runs it', () => {
+    useEditorStore.getState().setBehavior(1, [{ kind: 'drive', cm: 20 }]);
+    render(<App />);
+    const initialX = useSimStore.getState().robot.x;
+    fireEvent.click(screen.getByLabelText(/press reset 1 times/i));
+    act(() => {
+      for (let i = 0; i < 100; i++) useSimStore.getState().tick(1 / 60);
+    });
+    expect(useSimStore.getState().robot.x - initialX).toBeCloseTo(0.2, 1);
   });
 });
 
@@ -143,17 +158,54 @@ describe('App — boards mode', () => {
     expect(useBoardsStore.getState().getRunsForBoard(defaultBoard.id)).toHaveLength(1);
     expect(await screen.findByRole('button', { name: /replay/i })).toBeInTheDocument();
   });
+
+  it('records bonusHit=true on a run that passes through the bonus zone', () => {
+    render(<App />);
+    const board = useSimStore.getState().board;
+    const bonus = board.elements.find((e) => e.kind === 'bonus');
+    const goal = board.elements.find((e) => e.kind === 'goal');
+    if (!bonus || bonus.kind !== 'bonus') throw new Error('default board missing bonus');
+    if (!goal || goal.kind !== 'goal') throw new Error('default board missing goal');
+
+    act(() => {
+      useSimStore.getState().pressButton(2, [{ kind: 'drive', cm: 1 }]);
+    });
+    // Snap robot through the bonus zone.
+    act(() => {
+      useSimStore.setState({
+        robot: makeRobotState({ x: bonus.x, y: bonus.y, heading: 0 }),
+        status: 'running',
+        runStartedAt: Date.now() - 1000,
+      });
+      useSimStore.getState().tick(1 / 60);
+    });
+    expect(useSimStore.getState().bonusHit).toBe(true);
+
+    // Snap to goal to record the run.
+    act(() => {
+      useSimStore.setState({
+        robot: makeRobotState({ x: goal.x, y: goal.y, heading: 0 }),
+        status: 'running',
+        runStartedAt: Date.now() - 2000,
+      });
+      useSimStore.getState().tick(1 / 60);
+    });
+    const runs = useBoardsStore.getState().getRunsForBoard(board.id);
+    expect(runs).toHaveLength(1);
+    expect(runs[0].bonusHit).toBe(true);
+  });
 });
 
 describe('App — cheat-sheet', () => {
-  it('opens the cheat-sheet modal and lists hardcoded fallbacks for press 2..5', () => {
+  it('opens the cheat-sheet modal and shows "(not defined)" for unconfigured press counts', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
     const dialog = screen.getByRole('dialog', { name: /cheat sheet/i });
     expect(dialog).toBeInTheDocument();
-    expect(dialog).toHaveTextContent(/forward 30 cm/i);
-    expect(dialog).toHaveTextContent(/backward 30 cm/i);
-    expect(dialog).toHaveTextContent(/rotate 90/i);
+    // No hardcoded fallbacks any more — every row is "(not defined)" until configured.
+    const notDefinedRows = dialog.querySelectorAll('tbody tr');
+    expect(notDefinedRows.length).toBe(8); // press 1..8
+    expect(dialog).toHaveTextContent(/not defined/i);
   });
 
   it('describes a user-defined drive_wheels program', () => {

@@ -106,6 +106,25 @@ export function drawBoard(
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('🏁', gx, gy);
+    } else if (el.kind === 'bonus') {
+      const bx = el.x * scaleX;
+      const by = el.y * scaleY;
+      // Halo to make the bonus zone read as a target zone, not just a sticker.
+      const haloR = (el.toleranceCm / 100) * Math.min(scaleX, scaleY);
+      if (haloR > 4) {
+        const grad = ctx.createRadialGradient(bx, by, 0, bx, by, haloR);
+        grad.addColorStop(0, 'rgba(255, 215, 0, 0.45)');
+        grad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(bx, by, haloR, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      const starSize = markerRadiusPx * 2.2;
+      ctx.font = emojiFont(starSize);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('⭐', bx, by);
     }
   }
 

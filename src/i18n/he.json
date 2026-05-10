@@ -14,7 +14,9 @@
   },
   "simulator": {
     "well_done": "כל הכבוד!",
+    "well_done_with_bonus": "כל הכבוד! ⭐ אספת בונוס",
     "time_label": "זמן: {{seconds}} שנ׳",
+    "bonus_collected": "⭐ בונוס נאסף!",
     "stall": "התנגשות — עצור",
     "board_aria": "לוח הסימולטור",
     "behaviors_heading": "התנהגויות",
@@ -117,6 +119,7 @@
     "no_runs": "אין הרצות עדיין — סיים הרצה כדי לראות אותה כאן.",
     "runs_heading": "היסטוריית הרצות (10 אחרונות)",
     "run_summary": "{{seconds}} שנ׳ · {{presses}} לחיצות",
+    "bonus_badge": "⭐",
     "replay": "השמע שוב"
   },
   "board_editor": {
@@ -126,6 +129,8 @@
     "obstacle": "מכשול",
     "line": "קו",
     "light": "אור",
+    "bonus": "בונוס ⭐",
+    "tolerance_cm": "מרווח (ס\"מ)",
     "selected_heading": "אלמנט נבחר",
     "x": "x (מ׳)",
     "y": "y (מ׳)",

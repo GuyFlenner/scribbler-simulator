@@ -1,27 +1,13 @@
 import type { Behavior } from './schema';
 
-export const hardcodedBehaviors: Behavior[] = [
-  {
-    pressCount: 2,
-    label: 'Forward 30 cm',
-    steps: [{ kind: 'drive', cm: 30 }],
-  },
-  {
-    pressCount: 3,
-    label: 'Backward 30 cm',
-    steps: [{ kind: 'drive', cm: -30 }],
-  },
-  {
-    pressCount: 4,
-    label: 'Rotate 90° right',
-    steps: [{ kind: 'rotate', degrees: 90 }],
-  },
-  {
-    pressCount: 5,
-    label: 'Rotate 90° left',
-    steps: [{ kind: 'rotate', degrees: -90 }],
-  },
-];
+/**
+ * No hardcoded fallback behaviors. The kid's class program is custom and the
+ * simulator's press-button semantics must match it exactly — see the teacher
+ * conversation logged in docs/research/competition-format.md. Until the parent
+ * configures each press-count via the editor, all press buttons render as
+ * "not configured" rather than guessing.
+ */
+export const hardcodedBehaviors: Behavior[] = [];
 
 export const findBehavior = (pressCount: number): Behavior | undefined =>
   hardcodedBehaviors.find((b) => b.pressCount === pressCount);

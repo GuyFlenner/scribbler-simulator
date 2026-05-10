@@ -59,4 +59,38 @@ describe('parseBoard — security', () => {
     expect(board.id).toBe('a');
     expect(board.elements).toHaveLength(3);
   });
+
+  it('accepts a bonus zone element', () => {
+    const valid = JSON.stringify({
+      version: 1,
+      id: 'b',
+      name: 'with bonus',
+      width: 1,
+      height: 1,
+      elements: [
+        { kind: 'start', x: 0, y: 0, heading: 0 },
+        { kind: 'goal', x: 1, y: 1, toleranceCm: 5 },
+        { kind: 'bonus', x: 0.5, y: 0.5, toleranceCm: 8 },
+      ],
+    });
+    const board = parseBoard(valid);
+    const bonus = board.elements.find((e) => e.kind === 'bonus');
+    expect(bonus).toBeDefined();
+    if (bonus && bonus.kind === 'bonus') {
+      expect(bonus.x).toBe(0.5);
+      expect(bonus.toleranceCm).toBe(8);
+    }
+  });
+
+  it('rejects a bonus zone with non-numeric coords', () => {
+    const malformed = JSON.stringify({
+      version: 1,
+      id: 'b',
+      name: 'bad',
+      width: 1,
+      height: 1,
+      elements: [{ kind: 'bonus', x: 'middle', y: 0.5, toleranceCm: 8 }],
+    });
+    expect(() => parseBoard(malformed)).toThrow(/numeric|number/i);
+  });
 });

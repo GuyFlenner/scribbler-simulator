@@ -14,7 +14,9 @@
   },
   "simulator": {
     "well_done": "Well done!",
+    "well_done_with_bonus": "Well done! ⭐ Bonus collected",
     "time_label": "Time: {{seconds}}s",
+    "bonus_collected": "⭐ Bonus collected!",
     "stall": "Stalled — collision",
     "board_aria": "Simulator board",
     "behaviors_heading": "Behaviors",
@@ -117,6 +119,7 @@
     "no_runs": "No runs yet — finish a run to see it here.",
     "runs_heading": "Run history (last 10)",
     "run_summary": "{{seconds}}s · {{presses}} press(es)",
+    "bonus_badge": "⭐",
     "replay": "Replay"
   },
   "board_editor": {
@@ -126,6 +129,8 @@
     "obstacle": "Obstacle",
     "line": "Line",
     "light": "Light",
+    "bonus": "Bonus ⭐",
+    "tolerance_cm": "tolerance (cm)",
     "selected_heading": "Selected element",
     "x": "x (m)",
     "y": "y (m)",

@@ -37,6 +37,7 @@ export function RunHistoryPanel({ boardId }: { boardId: string }): ReactElement 
                   presses: run.pressCountTotal,
                 })}
                 {run.outcome === 'reached-goal' ? ' ✅' : ' ⛔'}
+                {run.bonusHit ? ' ⭐' : ''}
               </span>
               <button
                 type="button"
