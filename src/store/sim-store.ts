@@ -4,6 +4,7 @@ import { defaultBoard } from '../sim/boards/default';
 import { findBehavior } from '../sim/behaviors/hardcoded';
 import { makeRobotState, tick } from '../sim/physics';
 import { startProgram, type ProgramHandle } from '../sim/runtime';
+import type { Step } from '../sim/behaviors/schema';
 import type { RobotState, SimState, SimStatus } from '../sim/types';
 
 const startMarker = (board: BoardState): { x: number; y: number; heading: number } => {
@@ -14,7 +15,7 @@ const startMarker = (board: BoardState): { x: number; y: number; heading: number
 
 interface SimStoreState extends SimState {
   pressCount: number;
-  pressButton: (presses: number) => void;
+  pressButton: (presses: number, steps?: Step[]) => void;
   tick: (dtSeconds: number) => void;
   resetBoard: () => void;
 }
@@ -34,10 +35,10 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
   runStartedAt: null,
   pressCount: 0,
 
-  pressButton: (presses: number) => {
-    const behavior = findBehavior(presses);
-    if (!behavior) return;
-    activeProgram = startProgram(behavior.steps);
+  pressButton: (presses: number, steps?: Step[]) => {
+    const resolvedSteps = steps ?? findBehavior(presses)?.steps;
+    if (!resolvedSteps || resolvedSteps.length === 0) return;
+    activeProgram = startProgram(resolvedSteps);
     const state = get();
     const startedAt = state.runStartedAt ?? Date.now();
     set({

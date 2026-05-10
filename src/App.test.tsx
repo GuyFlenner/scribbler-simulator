@@ -2,11 +2,14 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
 import App from './App';
 import { useSimStore } from './store/sim-store';
+import { useEditorStore } from './store/editor-store';
 import { defaultBoard } from './sim/boards/default';
 import { makeRobotState } from './sim/physics';
 
 beforeEach(() => {
+  localStorage.clear();
   useSimStore.getState().resetBoard();
+  useEditorStore.getState().resetAll();
 });
 
 afterEach(() => {
@@ -74,6 +77,38 @@ describe('App — success overlay on reaching goal', () => {
       useSimStore.getState().tick(1 / 60);
     });
     expect(screen.getByText(/well done/i)).toBeInTheDocument();
+  });
+});
+
+describe('App — user-defined behavior overrides hardcoded', () => {
+  it('runs the user program for press 2x when one is defined', () => {
+    useEditorStore.getState().setBehavior(2, [{ kind: 'rotate', degrees: 90 }]);
+    render(<App />);
+    const initialHeading = useSimStore.getState().robot.heading;
+    fireEvent.click(screen.getByLabelText(/press reset 2 times/i));
+    act(() => {
+      for (let i = 0; i < 120; i++) useSimStore.getState().tick(1 / 60);
+    });
+    const finalHeading = useSimStore.getState().robot.heading;
+    expect(Math.abs(finalHeading - initialHeading)).toBeGreaterThan(0.5);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(useSimStore.getState().robot.x, 3);
+  });
+});
+
+describe('App — empty user program shows friendly message', () => {
+  it('shows the empty-program message when pressing a button bound to an empty user program', () => {
+    useEditorStore.setState({ programs: { 6: [] } });
+    render(<App />);
+    fireEvent.click(screen.getByLabelText(/press reset 6 times/i));
+    expect(screen.getByTestId('press-button-message')).toHaveTextContent(/has no/i);
+  });
+});
+
+describe('App — editor mode toggle', () => {
+  it('switches to the editor view when the Edit behaviors tab is clicked', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
+    expect(screen.getByRole('tab', { name: /edit press 2 times/i })).toBeInTheDocument();
   });
 });
 
