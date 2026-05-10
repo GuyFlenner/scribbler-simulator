@@ -3,6 +3,7 @@ dist/
 coverage/
 .vite/
 *.log
+*.tsbuildinfo
 .env
 .env.local
 .env.*.local
@@ -10,3 +11,5 @@ coverage/
 Thumbs.db
 .vscode/
 .idea/
+.history/
+.claude/settings.local.json
