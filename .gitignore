@@ -13,3 +13,5 @@ Thumbs.db
 .idea/
 .history/
 .claude/settings.local.json
+tests/browser/__screenshots__/
+test-results/
