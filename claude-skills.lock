@@ -1,0 +1,89 @@
+{
+    "schema_version":  "1.0",
+    "source_repo":  "https://github.com/YOUR-ORG/claude-sdlc",
+    "source_local_path":  "C:\\code\\claude-sdlc",
+    "default_branch":  "main",
+    "last_synced_at":  "2026-05-10T04:43:31Z",
+    "skills":  {
+                   "sdlc":  {
+                                "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                "synced_at":  "2026-05-10T04:43:31Z",
+                                "local_modifications":  false
+                            },
+                   "product-owner":  {
+                                         "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                         "synced_at":  "2026-05-10T04:43:31Z",
+                                         "local_modifications":  false
+                                     },
+                   "team-lead":  {
+                                     "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                     "synced_at":  "2026-05-10T04:43:31Z",
+                                     "local_modifications":  false
+                                 },
+                   "architect":  {
+                                     "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                     "synced_at":  "2026-05-10T04:43:31Z",
+                                     "local_modifications":  false
+                                 },
+                   "developer":  {
+                                     "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                     "synced_at":  "2026-05-10T04:43:31Z",
+                                     "local_modifications":  false
+                                 },
+                   "react-developer":  {
+                                           "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                           "synced_at":  "2026-05-10T04:43:31Z",
+                                           "local_modifications":  false
+                                       },
+                   "test-reviewer":  {
+                                         "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                         "synced_at":  "2026-05-10T04:43:31Z",
+                                         "local_modifications":  false
+                                     },
+                   "security-researcher":  {
+                                               "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                               "synced_at":  "2026-05-10T04:43:31Z",
+                                               "local_modifications":  false
+                                           },
+                   "code-reviewer":  {
+                                         "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                         "synced_at":  "2026-05-10T04:43:31Z",
+                                         "local_modifications":  false
+                                     },
+                   "flow-reviewer":  {
+                                         "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                         "synced_at":  "2026-05-10T04:43:31Z",
+                                         "local_modifications":  false
+                                     },
+                   "diagram-generator":  {
+                                             "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                             "synced_at":  "2026-05-10T04:43:31Z",
+                                             "local_modifications":  false
+                                         },
+                   "btw-status":  {
+                                      "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                      "synced_at":  "2026-05-10T04:43:31Z",
+                                      "local_modifications":  false
+                                  },
+                   "skill-inventory":  {
+                                           "synced_from_commit":  "2fb02a83d47484f7f0c9082c0706fab3542a628b",
+                                           "synced_at":  "2026-05-10T04:43:31Z",
+                                           "local_modifications":  false
+                                       }
+               },
+    "skipped":  [
+                    "slack",
+                    "ai-llm-architect",
+                    "aws-architect",
+                    "azure-architect",
+                    "onprem-architect",
+                    "migration-architect",
+                    "streaming-architect",
+                    "data-architect",
+                    "job-seeking",
+                    "position-filter",
+                    "company-researcher",
+                    "cv-aligner",
+                    "interview-prep"
+                ]
+}
