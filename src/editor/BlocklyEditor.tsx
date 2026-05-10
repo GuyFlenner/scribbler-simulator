@@ -6,7 +6,7 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useEditorStore } from '../store/editor-store';
 import { buildBlockDefinitions, buildToolboxXml } from './toolbox';
-import { compileBlocklyJson } from './codegen';
+import { compileBlocklyJson, stepsToWorkspaceJson } from './codegen';
 
 const registerBlocks = (t: TFunction): void => {
   for (const def of buildBlockDefinitions(t)) {
@@ -55,7 +55,17 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
     // the change handler below writes back into the store, the subscription fires, and
     // the effect re-runs, disposing the freshly-injected workspace. This was the cause
     // of the editor-mode freeze reported in the browser.
-    const initialJson = useEditorStore.getState().workspaceJsonByPressCount[pressCount];
+    //
+    // Fallback: if no Blockly JSON has been stored for this press-count yet (e.g.
+    // because the program was loaded via the "Load sample" preset which only sets
+    // Step[]), regenerate it from the steps. Otherwise the workspace renders blank
+    // even though programs[N] has logic.
+    const editorState = useEditorStore.getState();
+    const storedJson = editorState.workspaceJsonByPressCount[pressCount];
+    const stepsForPress = editorState.programs[pressCount];
+    const initialJson =
+      storedJson ??
+      (stepsForPress && stepsForPress.length > 0 ? stepsToWorkspaceJson(stepsForPress) : undefined);
     if (initialJson && typeof initialJson === 'object') {
       try {
         Blockly.serialization.workspaces.load(initialJson as object, ws);

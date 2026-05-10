@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { compileBlocklyJson, compileBlocks, type BlocklyBlock } from './codegen';
+import { compileBlocklyJson, compileBlocks, stepsToWorkspaceJson, type BlocklyBlock } from './codegen';
+import type { Step } from '../sim/behaviors/schema';
 
 describe('codegen — single blocks', () => {
   it('compiles drive_distance to a drive Step', () => {
@@ -109,6 +110,51 @@ describe('codegen — sensor blocks (predicates)', () => {
         maxIterations: 10000,
       },
     ]);
+  });
+});
+
+describe('codegen — reverse (Step[] → Blockly JSON)', () => {
+  const roundTrip = (steps: Step[]): Step[] => compileBlocklyJson(stepsToWorkspaceJson(steps));
+
+  it('round-trips a single drive_wheels step', () => {
+    const steps: Step[] = [
+      { kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: -100, durationMs: 2000 },
+    ];
+    expect(roundTrip(steps)).toEqual(steps);
+  });
+
+  it('round-trips a chain of mixed steps', () => {
+    const steps: Step[] = [
+      { kind: 'drive', cm: 30 },
+      { kind: 'rotate', degrees: 90 },
+      { kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: 100, durationMs: 1000 },
+      { kind: 'wait', seconds: 2 },
+      { kind: 'beep', durationMs: 200 },
+      { kind: 'stop' },
+    ];
+    expect(roundTrip(steps)).toEqual(steps);
+  });
+
+  it('round-trips a repeat with body', () => {
+    const steps: Step[] = [
+      {
+        kind: 'repeat',
+        times: 3,
+        body: [{ kind: 'drive_wheels', leftSpeedPct: 100, rightSpeedPct: 100, durationMs: 500 }],
+      },
+    ];
+    expect(roundTrip(steps)).toEqual(steps);
+  });
+
+  it('renders a non-empty workspace JSON for non-empty steps', () => {
+    const ws = stepsToWorkspaceJson([{ kind: 'drive', cm: 10 }]);
+    expect(ws.blocks?.blocks?.length).toBe(1);
+    expect(ws.blocks?.blocks?.[0]?.type).toBe('drive_distance');
+  });
+
+  it('renders an empty blocks array for empty steps', () => {
+    const ws = stepsToWorkspaceJson([]);
+    expect(ws.blocks?.blocks).toEqual([]);
   });
 });
 

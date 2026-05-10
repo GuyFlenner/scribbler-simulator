@@ -2,6 +2,8 @@ import type { SensorPredicate, Step } from '../sim/behaviors/schema';
 
 export interface BlocklyBlock {
   type: string;
+  x?: number;
+  y?: number;
   fields?: Record<string, unknown>;
   inputs?: Record<string, { block?: BlocklyBlock; shadow?: BlocklyBlock }>;
   next?: { block?: BlocklyBlock; shadow?: BlocklyBlock };
@@ -127,4 +129,120 @@ export function compileBlocklyJson(input: unknown): Step[] {
   const roots = ws.blocks?.blocks;
   if (!Array.isArray(roots)) return [];
   return compileBlocks(roots);
+}
+
+// ============================================================================
+// Reverse codegen: Step[] → BlocklyWorkspaceJson
+//
+// Used when an editor program has a Step[] (e.g. from Load Sample, or from
+// pre-bonus-era localStorage saved before workspaceJson was tracked) but no
+// stored Blockly workspace JSON. Without this, the editor renders a blank
+// workspace even though programs[N] has steps.
+//
+// Lossy on if/while/while_not — they require a sensor predicate that maps
+// back to the dropdown SENSOR field, which only exists for leaf predicates.
+// `not(line_left)` round-trips via the dedicated `while_not_sensor` block.
+// `and`/`or`/`light_above` cannot be represented; those steps are silently
+// dropped from the workspace (the run-time Step[] is unaffected).
+// ============================================================================
+
+const sensorFieldFromPredicate = (
+  pred: SensorPredicate,
+): { value: string; negated: boolean } | null => {
+  if (
+    pred.kind === 'line_left' ||
+    pred.kind === 'line_right' ||
+    pred.kind === 'obstacle_left' ||
+    pred.kind === 'obstacle_right'
+  ) {
+    return { value: pred.kind, negated: false };
+  }
+  if (pred.kind === 'not') {
+    const inner = sensorFieldFromPredicate(pred.inner);
+    if (inner && !inner.negated) return { value: inner.value, negated: true };
+  }
+  return null;
+};
+
+const stepToBlock = (step: Step): BlocklyBlock | null => {
+  switch (step.kind) {
+    case 'drive':
+      return { type: 'drive_distance', fields: { CM: step.cm } };
+    case 'drive_wheels':
+      return {
+        type: 'drive_wheels',
+        fields: {
+          LEFT: step.leftSpeedPct,
+          RIGHT: step.rightSpeedPct,
+          DURATION_MS: step.durationMs,
+        },
+      };
+    case 'drive_arc':
+      return {
+        type: 'drive_arc',
+        fields: { RADIUS_CM: step.radiusCm, DEGREES: step.degrees },
+      };
+    case 'rotate':
+      return { type: 'rotate_degrees', fields: { DEGREES: step.degrees } };
+    case 'stop':
+      return { type: 'stop' };
+    case 'beep':
+      return { type: 'beep', fields: { DURATION_MS: step.durationMs } };
+    case 'wait':
+      return { type: 'wait', fields: { SECONDS: step.seconds } };
+    case 'repeat': {
+      const inner = stepsToBlockChain(step.body);
+      const block: BlocklyBlock = { type: 'repeat', fields: { TIMES: step.times } };
+      if (inner) block.inputs = { DO: { block: inner } };
+      return block;
+    }
+    case 'if': {
+      const sensor = sensorFieldFromPredicate(step.condition);
+      if (!sensor || sensor.negated) return null; // if_sensor doesn't expose negate
+      const block: BlocklyBlock = {
+        type: 'if_sensor',
+        fields: { SENSOR: sensor.value },
+      };
+      const thenInner = stepsToBlockChain(step.then);
+      const elseInner = step.else ? stepsToBlockChain(step.else) : null;
+      block.inputs = {};
+      if (thenInner) block.inputs.DO = { block: thenInner };
+      if (elseInner) block.inputs.ELSE = { block: elseInner };
+      return block;
+    }
+    case 'while': {
+      const sensor = sensorFieldFromPredicate(step.condition);
+      if (!sensor) return null;
+      const type = sensor.negated ? 'while_not_sensor' : 'while_sensor';
+      const block: BlocklyBlock = { type, fields: { SENSOR: sensor.value } };
+      const inner = stepsToBlockChain(step.body);
+      if (inner) block.inputs = { DO: { block: inner } };
+      return block;
+    }
+    case 'set_led':
+      return null;
+  }
+};
+
+const stepsToBlockChain = (steps: Step[]): BlocklyBlock | null => {
+  let head: BlocklyBlock | null = null;
+  let tail: BlocklyBlock | null = null;
+  for (const step of steps) {
+    const block = stepToBlock(step);
+    if (!block) continue;
+    if (!head) {
+      head = block;
+      tail = block;
+    } else if (tail) {
+      tail.next = { block };
+      tail = block;
+    }
+  }
+  return head;
+};
+
+export function stepsToWorkspaceJson(steps: Step[]): BlocklyWorkspaceJson {
+  const root = stepsToBlockChain(steps);
+  const rootWithCoords = root ? [{ ...root, x: 50, y: 50 }] : [];
+  return { blocks: { languageVersion: 0, blocks: rootWithCoords } };
 }
