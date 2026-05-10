@@ -48,6 +48,19 @@ const compileSingle = (block: BlocklyBlock): Step | null => {
   switch (block.type) {
     case 'drive_distance':
       return { kind: 'drive', cm: numField(block, 'CM', 0) };
+    case 'drive_wheels':
+      return {
+        kind: 'drive_wheels',
+        leftSpeedPct: numField(block, 'LEFT', 0),
+        rightSpeedPct: numField(block, 'RIGHT', 0),
+        durationMs: numField(block, 'DURATION_MS', 1000),
+      };
+    case 'drive_arc':
+      return {
+        kind: 'drive_arc',
+        radiusCm: numField(block, 'RADIUS_CM', 20),
+        degrees: numField(block, 'DEGREES', 0),
+      };
     case 'rotate_degrees':
       return { kind: 'rotate', degrees: numField(block, 'DEGREES', 0) };
     case 'stop':

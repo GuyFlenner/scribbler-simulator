@@ -1,10 +1,11 @@
 import type { Step } from './behaviors/schema';
 import type { BoardState } from './boards/schema';
 import { evalPredicate } from './sensors';
-import { TICKS_PER_M, type RobotState } from './types';
+import { TICKS_PER_M, WHEEL_BASE_M, type RobotState } from './types';
 
 const DEFAULT_LINEAR_SPEED = 0.15;
 const DEFAULT_ANGULAR_SPEED = Math.PI / 2;
+const MAX_LINEAR_SPEED = 0.15;
 
 export interface ProgramHandle {
   step(
@@ -43,6 +44,53 @@ function* executeDrive(step: { kind: 'drive'; cm: number; speed?: number }, ctx:
   }
 }
 
+function* executeDriveWheels(
+  step: { kind: 'drive_wheels'; leftSpeedPct: number; rightSpeedPct: number; durationMs: number },
+  ctx: Context,
+): Generator<Velocities> {
+  const clamp = (v: number): number => Math.max(-100, Math.min(100, v));
+  const leftMps = (clamp(step.leftSpeedPct) / 100) * MAX_LINEAR_SPEED;
+  const rightMps = (clamp(step.rightSpeedPct) / 100) * MAX_LINEAR_SPEED;
+  const vLinear = (leftMps + rightMps) / 2;
+  const vAngular = (rightMps - leftMps) / WHEEL_BASE_M;
+  const targetSeconds = Math.max(0, step.durationMs) / 1000;
+  let elapsed = 0;
+  while (elapsed < targetSeconds) {
+    if (ctx.robot.isStalled) return;
+    yield { vLinear, vAngular };
+    elapsed += ctx.dtSeconds;
+  }
+}
+
+function* executeDriveArc(
+  step: { kind: 'drive_arc'; radiusCm: number; degrees: number; speedPct?: number },
+  ctx: Context,
+): Generator<Velocities> {
+  const radians = (step.degrees * Math.PI) / 180;
+  const radiusM = Math.abs(step.radiusCm) / 100;
+  const speed = ((step.speedPct ?? 100) / 100) * MAX_LINEAR_SPEED;
+  if (Math.abs(radians) === 0) return;
+  const targetAngleDelta = Math.abs(radians);
+  const startHeading = ctx.robot.heading;
+
+  if (radiusM === 0) {
+    const angSpeed = DEFAULT_ANGULAR_SPEED * Math.sign(radians);
+    while (Math.abs(ctx.robot.heading - startHeading) < targetAngleDelta) {
+      if (ctx.robot.isStalled) return;
+      yield { vLinear: 0, vAngular: angSpeed };
+    }
+    return;
+  }
+
+  const direction = Math.sign(radians);
+  const vLinear = speed;
+  const vAngular = direction * (vLinear / radiusM);
+  while (Math.abs(ctx.robot.heading - startHeading) < targetAngleDelta) {
+    if (ctx.robot.isStalled) return;
+    yield { vLinear, vAngular };
+  }
+}
+
 function* executeRotate(step: { kind: 'rotate'; degrees: number; speed?: number }, ctx: Context): Generator<Velocities> {
   const radians = (Math.abs(step.degrees) * Math.PI) / 180;
   const direction = step.degrees >= 0 ? 1 : -1;
@@ -74,6 +122,12 @@ function* executeStep(step: Step, ctx: Context): Generator<Velocities> {
   switch (step.kind) {
     case 'drive':
       yield* executeDrive(step, ctx);
+      return;
+    case 'drive_wheels':
+      yield* executeDriveWheels(step, ctx);
+      return;
+    case 'drive_arc':
+      yield* executeDriveArc(step, ctx);
       return;
     case 'rotate':
       yield* executeRotate(step, ctx);

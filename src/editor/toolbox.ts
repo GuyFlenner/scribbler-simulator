@@ -42,6 +42,31 @@ export const buildBlockDefinitions = (t: TFunction): BlockDefinition[] => [
     tooltip: t('blocks.rotate_degrees_tooltip'),
   },
   {
+    type: 'drive_wheels',
+    message0: t('blocks.drive_wheels'),
+    args0: [
+      { type: 'field_number', name: 'LEFT', value: 50, min: -100, max: 100 },
+      { type: 'field_number', name: 'RIGHT', value: 50, min: -100, max: 100 },
+      { type: 'field_number', name: 'DURATION_MS', value: 1000, min: 0 },
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 230,
+    tooltip: t('blocks.drive_wheels_tooltip'),
+  },
+  {
+    type: 'drive_arc',
+    message0: t('blocks.drive_arc'),
+    args0: [
+      { type: 'field_number', name: 'RADIUS_CM', value: 20, min: 0 },
+      { type: 'field_number', name: 'DEGREES', value: 90 },
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 230,
+    tooltip: t('blocks.drive_arc_tooltip'),
+  },
+  {
     type: 'stop',
     message0: t('blocks.stop'),
     previousStatement: null,
@@ -120,6 +145,8 @@ export const buildToolboxXml = (t: TFunction): string => `
   <category name="${t('blocks.category_motion')}" colour="220">
     <block type="drive_distance"></block>
     <block type="rotate_degrees"></block>
+    <block type="drive_wheels"></block>
+    <block type="drive_arc"></block>
     <block type="stop"></block>
   </category>
   <category name="${t('blocks.category_sound')}" colour="60">

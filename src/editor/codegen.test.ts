@@ -12,6 +12,26 @@ describe('codegen — single blocks', () => {
     expect(compileBlocks([block])).toEqual([{ kind: 'rotate', degrees: -90 }]);
   });
 
+  it('compiles drive_wheels to a drive_wheels Step', () => {
+    const block: BlocklyBlock = {
+      type: 'drive_wheels',
+      fields: { LEFT: 50, RIGHT: -50, DURATION_MS: 1500 },
+    };
+    expect(compileBlocks([block])).toEqual([
+      { kind: 'drive_wheels', leftSpeedPct: 50, rightSpeedPct: -50, durationMs: 1500 },
+    ]);
+  });
+
+  it('compiles drive_arc to a drive_arc Step', () => {
+    const block: BlocklyBlock = {
+      type: 'drive_arc',
+      fields: { RADIUS_CM: 25, DEGREES: 45 },
+    };
+    expect(compileBlocks([block])).toEqual([
+      { kind: 'drive_arc', radiusCm: 25, degrees: 45 },
+    ]);
+  });
+
   it('compiles stop to a stop Step', () => {
     expect(compileBlocks([{ type: 'stop' }])).toEqual([{ kind: 'stop' }]);
   });

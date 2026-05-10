@@ -49,6 +49,29 @@ const validateStep = (raw: unknown): Step => {
       if (isFiniteNumber(raw.speed)) out.speed = raw.speed;
       return out;
     }
+    case 'drive_wheels': {
+      if (
+        !isFiniteNumber(raw.leftSpeedPct) ||
+        !isFiniteNumber(raw.rightSpeedPct) ||
+        !isFiniteNumber(raw.durationMs)
+      ) {
+        return fail('drive_wheels requires numeric leftSpeedPct, rightSpeedPct, durationMs');
+      }
+      return {
+        kind: 'drive_wheels',
+        leftSpeedPct: raw.leftSpeedPct,
+        rightSpeedPct: raw.rightSpeedPct,
+        durationMs: raw.durationMs,
+      };
+    }
+    case 'drive_arc': {
+      if (!isFiniteNumber(raw.radiusCm) || !isFiniteNumber(raw.degrees)) {
+        return fail('drive_arc requires numeric radiusCm, degrees');
+      }
+      const out: Step = { kind: 'drive_arc', radiusCm: raw.radiusCm, degrees: raw.degrees };
+      if (isFiniteNumber(raw.speedPct)) out.speedPct = raw.speedPct;
+      return out;
+    }
     case 'rotate': {
       if (!isFiniteNumber(raw.degrees)) return fail('rotate.degrees must be numeric');
       const out: Step = { kind: 'rotate', degrees: raw.degrees };
@@ -104,9 +127,17 @@ const validateStep = (raw: unknown): Step => {
   }
 };
 
+const PRESS_COUNT_MIN = 2;
+const PRESS_COUNT_MAX = 8;
+
 const validateBehavior = (raw: unknown): Behavior => {
   if (!isObject(raw)) return fail('behavior is not an object');
   if (!isFiniteNumber(raw.pressCount)) return fail('behavior.pressCount must be numeric');
+  if (raw.pressCount < PRESS_COUNT_MIN || raw.pressCount > PRESS_COUNT_MAX) {
+    return fail(
+      `behavior.pressCount must be between ${PRESS_COUNT_MIN} and ${PRESS_COUNT_MAX} (S3 has 8 reset slots)`,
+    );
+  }
   if (!isString(raw.label)) return fail('behavior.label must be a string');
   return {
     pressCount: raw.pressCount,

@@ -93,6 +93,46 @@ describe('runtime — if block (sensor predicate)', () => {
   });
 });
 
+describe('runtime — drive_wheels', () => {
+  it('drives straight when both wheels at equal positive speed', () => {
+    const { state, done } = runProgram([
+      { kind: 'drive_wheels', leftSpeedPct: 50, rightSpeedPct: 50, durationMs: 1000 },
+    ]);
+    expect(done).toBe(true);
+    expect(state.robot.x - 0.5).toBeGreaterThan(0.05);
+    expect(state.robot.heading).toBeCloseTo(0, 2);
+  });
+
+  it('rotates in place when wheels are equal-and-opposite', () => {
+    const { state, done } = runProgram([
+      { kind: 'drive_wheels', leftSpeedPct: -50, rightSpeedPct: 50, durationMs: 500 },
+    ]);
+    expect(done).toBe(true);
+    expect(Math.abs(state.robot.heading)).toBeGreaterThan(0.2);
+    expect(state.robot.x).toBeCloseTo(0.5, 2);
+  });
+});
+
+describe('runtime — drive_arc', () => {
+  it('completes a 90° arc and changes heading by π/2 radians', () => {
+    const { state, done } = runProgram([
+      { kind: 'drive_arc', radiusCm: 20, degrees: 90, speedPct: 50 },
+    ]);
+    expect(done).toBe(true);
+    expect(Math.abs(state.robot.heading)).toBeGreaterThan(1.4);
+    expect(Math.abs(state.robot.heading)).toBeLessThan(1.7);
+  });
+
+  it('with radius 0 behaves like in-place rotation', () => {
+    const { state, done } = runProgram([
+      { kind: 'drive_arc', radiusCm: 0, degrees: 45 },
+    ]);
+    expect(done).toBe(true);
+    expect(state.robot.heading).toBeCloseTo(Math.PI / 4, 1);
+    expect(state.robot.x).toBeCloseTo(0.5, 3);
+  });
+});
+
 describe('runtime — while block', () => {
   it('exits the while-loop as soon as the predicate becomes true (line crossing)', () => {
     const board: BoardState = {

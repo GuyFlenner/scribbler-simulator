@@ -65,6 +65,7 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
   },
 
   setBehavior: (pressCount, steps, workspaceJson) => {
+    if (pressCount < PRESS_COUNT_MIN || pressCount > PRESS_COUNT_MAX) return;
     const programs = { ...get().programs, [pressCount]: steps };
     const workspaceJsonByPressCount = workspaceJson
       ? { ...get().workspaceJsonByPressCount, [pressCount]: workspaceJson }

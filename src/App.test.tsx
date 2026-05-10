@@ -145,6 +145,36 @@ describe('App — boards mode', () => {
   });
 });
 
+describe('App — cheat-sheet', () => {
+  it('opens the cheat-sheet modal and lists hardcoded fallbacks for press 2..5', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
+    const dialog = screen.getByRole('dialog', { name: /cheat sheet/i });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveTextContent(/forward 30 cm/i);
+    expect(dialog).toHaveTextContent(/backward 30 cm/i);
+    expect(dialog).toHaveTextContent(/rotate 90/i);
+  });
+
+  it('describes a user-defined drive_wheels program', () => {
+    useEditorStore.getState().setBehavior(2, [
+      { kind: 'drive_wheels', leftSpeedPct: 50, rightSpeedPct: -50, durationMs: 1000 },
+    ]);
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(/L=50%.*R=-50%.*1000/);
+  });
+
+  it('describes a user-defined drive_arc program', () => {
+    useEditorStore.getState().setBehavior(3, [
+      { kind: 'drive_arc', radiusCm: 25, degrees: 90 },
+    ]);
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(/arc left.*radius 25.*90/i);
+  });
+});
+
 describe('App — language toggle', () => {
   it('switches all UI strings to Hebrew and sets html dir=rtl when Hebrew is clicked', async () => {
     render(<App />);

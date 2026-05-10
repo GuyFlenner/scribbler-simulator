@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SimulatorView } from './components/SimulatorView';
 import { LanguageToggle } from './components/LanguageToggle';
+import { CheatSheet } from './components/CheatSheet';
 
 const EditorView = lazy(() =>
   import('./components/EditorView').then((m) => ({ default: m.EditorView })),
@@ -25,6 +26,7 @@ const TAB_BUTTON_STYLE = (active: boolean): React.CSSProperties => ({
 export default function App(): ReactElement {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('simulator');
+  const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
 
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', padding: '1rem' }}>
@@ -68,9 +70,24 @@ export default function App(): ReactElement {
               {t('boards.tab_label')}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => setCheatSheetOpen(true)}
+            style={{
+              padding: '0.4rem 0.8rem',
+              cursor: 'pointer',
+              borderRadius: 4,
+              border: '1px solid #555',
+              background: '#fff',
+              fontSize: '0.85rem',
+            }}
+          >
+            {t('cheatsheet.open')}
+          </button>
           <LanguageToggle />
         </div>
       </header>
+      {cheatSheetOpen && <CheatSheet onClose={() => setCheatSheetOpen(false)} />}
       {mode === 'simulator' && <SimulatorView />}
       <Suspense fallback={<div role="status" aria-live="polite" style={{ padding: 16 }}>…</div>}>
         {mode === 'editor' && <EditorView />}

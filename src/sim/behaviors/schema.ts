@@ -10,6 +10,8 @@ export type SensorPredicate =
 
 export type Step =
   | { kind: 'drive'; cm: number; speed?: number }
+  | { kind: 'drive_wheels'; leftSpeedPct: number; rightSpeedPct: number; durationMs: number }
+  | { kind: 'drive_arc'; radiusCm: number; degrees: number; speedPct?: number }
   | { kind: 'rotate'; degrees: number; speed?: number }
   | { kind: 'stop' }
   | { kind: 'beep'; durationMs: number; freqHz?: number }
