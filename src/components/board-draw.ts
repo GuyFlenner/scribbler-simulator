@@ -131,37 +131,44 @@ export function drawBoard(
   if (showRobot && robot) {
     const cx = robot.x * scaleX;
     const cy = robot.y * scaleY;
-    const lengthPx = ROBOT_LENGTH_M * scaleX;
-    const widthPx = ROBOT_WIDTH_M * scaleY;
-    const noseInset = lengthPx * 0.28;
+    const L = ROBOT_LENGTH_M * scaleX;
+    const W = ROBOT_WIDTH_M * scaleY;
+    const noseInset = L * 0.35;
+    const bodyColor = robot.isStalled ? '#cc0000' : '#2c5cff';
 
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(robot.heading);
 
-    // Body: pentagon shape pointing forward (heading +x in robot-local frame)
-    ctx.fillStyle = robot.isStalled ? '#cc0000' : '#2c5cff';
+    // Side wheels — drawn before the body so the body edge covers their inside
+    const wheelLen = L * 0.58;
+    const wheelThick = Math.max(2, W * 0.22);
+    ctx.fillStyle = '#333';
+    ctx.fillRect(-wheelLen / 2, -W / 2 - wheelThick, wheelLen, wheelThick);
+    ctx.fillRect(-wheelLen / 2, W / 2, wheelLen, wheelThick);
+
+    // Body — pentagon pointing forward (+x in robot-local frame)
+    ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.moveTo(-lengthPx / 2, -widthPx / 2);
-    ctx.lineTo(-lengthPx / 2, widthPx / 2);
-    ctx.lineTo(lengthPx / 2 - noseInset, widthPx / 2);
-    ctx.lineTo(lengthPx / 2, 0);
-    ctx.lineTo(lengthPx / 2 - noseInset, -widthPx / 2);
+    ctx.moveTo(-L / 2, -W / 2);
+    ctx.lineTo(-L / 2, W / 2);
+    ctx.lineTo(L / 2 - noseInset, W / 2);
+    ctx.lineTo(L / 2, 0);
+    ctx.lineTo(L / 2 - noseInset, -W / 2);
     ctx.closePath();
     ctx.fill();
-
-    // Outline for definition
-    ctx.strokeStyle = '#1a3380';
-    ctx.lineWidth = Math.max(1, lengthPx / 60);
+    ctx.strokeStyle = robot.isStalled ? '#8b0000' : '#1a3380';
+    ctx.lineWidth = Math.max(1, L / 30);
     ctx.stroke();
 
-    // Yellow accent triangle at the very front so the nose pops visually
-    if (lengthPx > 14) {
+    // Yellow nose wedge — fills the entire triangular front section so the
+    // direction is obvious at a glance after any rotation.
+    if (L > 12) {
       ctx.fillStyle = '#ffe066';
       ctx.beginPath();
-      ctx.moveTo(lengthPx / 2 - noseInset * 0.3, -widthPx / 4);
-      ctx.lineTo(lengthPx / 2 - 1, 0);
-      ctx.lineTo(lengthPx / 2 - noseInset * 0.3, widthPx / 4);
+      ctx.moveTo(L / 2 - noseInset, -W / 2);
+      ctx.lineTo(L / 2, 0);
+      ctx.lineTo(L / 2 - noseInset, W / 2);
       ctx.closePath();
       ctx.fill();
     }

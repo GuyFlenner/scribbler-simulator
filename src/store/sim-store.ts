@@ -115,7 +115,11 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       nextRobot = { ...state.robot, vLinear, vAngular };
       if (done) {
         activeProgram = null;
-        nextRobot = { ...nextRobot, vLinear: 0, vAngular: 0 };
+        // Round to 10 decimal places to absorb floating-point drift accumulated
+        // across many ticks of integration. Preserves any meaningful angle while
+        // ensuring an exact-90° turn doesn't leave the robot at heading π/2 + ε.
+        const snappedHeading = Math.round(nextRobot.heading * 1e10) / 1e10;
+        nextRobot = { ...nextRobot, vLinear: 0, vAngular: 0, heading: snappedHeading };
       }
     }
 
