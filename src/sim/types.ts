@@ -27,7 +27,12 @@ export interface SimState {
   runStartedAt: number | null;
 }
 
-export const ROBOT_LENGTH_M = 0.19;
-export const ROBOT_WIDTH_M = 0.16;
+// Visual + collision footprint. Sized to fit within one 10cm grid square; the
+// elongated 9:6.5 ratio (vs near-square 19:16 before) makes heading direction
+// unambiguous after a 90° turn.
+export const ROBOT_LENGTH_M = 0.09;
+export const ROBOT_WIDTH_M = 0.065;
+// Wheel-base stays at the real S3's 10.5 cm — used by physics (encoder ticks,
+// differential wheel speeds), not by the visual.
 export const WHEEL_BASE_M = 0.105;
 export const TICKS_PER_M = 340;
