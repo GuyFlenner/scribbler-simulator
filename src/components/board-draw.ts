@@ -7,7 +7,6 @@ export interface DrawOptions {
   showLights?: boolean;
   showRobot?: boolean;
   markerRadiusPx?: number;
-  markerFontPx?: number;
 }
 
 export function drawBoard(
@@ -24,7 +23,6 @@ export function drawBoard(
     showLights = true,
     showRobot = true,
     markerRadiusPx = Math.max(6, Math.min(width, height) / 28),
-    markerFontPx = Math.max(8, Math.min(width, height) / 32),
   } = opts;
 
   const scaleX = width / board.width;
@@ -49,10 +47,27 @@ export function drawBoard(
     }
   }
 
+  const emojiFont = (sizePx: number): string =>
+    `${sizePx}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", system-ui`;
+
   for (const el of board.elements) {
     if (el.kind === 'obstacle') {
-      ctx.fillStyle = '#7a4a2b';
-      ctx.fillRect(el.x * scaleX, el.y * scaleY, el.w * scaleX, el.h * scaleY);
+      const ox = el.x * scaleX;
+      const oy = el.y * scaleY;
+      const ow = el.w * scaleX;
+      const oh = el.h * scaleY;
+      ctx.fillStyle = '#a87856';
+      ctx.fillRect(ox, oy, ow, oh);
+      ctx.strokeStyle = '#5a3417';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(ox, oy, ow, oh);
+      const emojiSize = Math.min(ow, oh) * 0.65;
+      if (emojiSize >= 8) {
+        ctx.font = emojiFont(emojiSize);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🪨', ox + ow / 2, oy + oh / 2);
+      }
     } else if (el.kind === 'line' && showLines) {
       ctx.strokeStyle = '#222';
       ctx.lineWidth = Math.max(1, el.thickness * scaleY);
@@ -61,30 +76,36 @@ export function drawBoard(
       ctx.lineTo(el.x2 * scaleX, el.y2 * scaleY);
       ctx.stroke();
     } else if (el.kind === 'light' && showLights) {
+      const lx = el.x * scaleX;
+      const ly = el.y * scaleY;
+      const r = Math.max(4, markerRadiusPx * 0.6);
+      const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, r * 2);
+      grad.addColorStop(0, '#fff7c2');
+      grad.addColorStop(1, 'rgba(255, 224, 102, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(lx, ly, r * 2, 0, 2 * Math.PI);
+      ctx.fill();
       ctx.fillStyle = '#f1c40f';
       ctx.beginPath();
-      ctx.arc(el.x * scaleX, el.y * scaleY, Math.max(2, markerRadiusPx * 0.5), 0, 2 * Math.PI);
+      ctx.arc(lx, ly, r, 0, 2 * Math.PI);
       ctx.fill();
     } else if (el.kind === 'start') {
-      ctx.fillStyle = '#3a8b3a';
-      ctx.beginPath();
-      ctx.arc(el.x * scaleX, el.y * scaleY, markerRadiusPx, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${markerFontPx}px system-ui`;
+      const sx = el.x * scaleX;
+      const sy = el.y * scaleY;
+      const flagSize = markerRadiusPx * 2.2;
+      ctx.font = emojiFont(flagSize);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('A', el.x * scaleX, el.y * scaleY);
+      ctx.fillText('🚩', sx, sy);
     } else if (el.kind === 'goal') {
-      ctx.fillStyle = '#c0392b';
-      ctx.beginPath();
-      ctx.arc(el.x * scaleX, el.y * scaleY, markerRadiusPx + 2, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${markerFontPx}px system-ui`;
+      const gx = el.x * scaleX;
+      const gy = el.y * scaleY;
+      const flagSize = markerRadiusPx * 2.4;
+      ctx.font = emojiFont(flagSize);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('B', el.x * scaleX, el.y * scaleY);
+      ctx.fillText('🏁', gx, gy);
     }
   }
 
@@ -93,14 +114,39 @@ export function drawBoard(
     const cy = robot.y * scaleY;
     const lengthPx = ROBOT_LENGTH_M * scaleX;
     const widthPx = ROBOT_WIDTH_M * scaleY;
+    const noseInset = lengthPx * 0.28;
+
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(robot.heading);
+
+    // Body: pentagon shape pointing forward (heading +x in robot-local frame)
     ctx.fillStyle = robot.isStalled ? '#cc0000' : '#2c5cff';
-    ctx.fillRect(-lengthPx / 2, -widthPx / 2, lengthPx, widthPx);
-    ctx.fillStyle = '#fff';
-    const stripe = Math.max(2, lengthPx / 6);
-    ctx.fillRect(lengthPx / 2 - stripe, -widthPx / 2, stripe, widthPx);
+    ctx.beginPath();
+    ctx.moveTo(-lengthPx / 2, -widthPx / 2);
+    ctx.lineTo(-lengthPx / 2, widthPx / 2);
+    ctx.lineTo(lengthPx / 2 - noseInset, widthPx / 2);
+    ctx.lineTo(lengthPx / 2, 0);
+    ctx.lineTo(lengthPx / 2 - noseInset, -widthPx / 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Outline for definition
+    ctx.strokeStyle = '#1a3380';
+    ctx.lineWidth = Math.max(1, lengthPx / 60);
+    ctx.stroke();
+
+    // Yellow accent triangle at the very front so the nose pops visually
+    if (lengthPx > 14) {
+      ctx.fillStyle = '#ffe066';
+      ctx.beginPath();
+      ctx.moveTo(lengthPx / 2 - noseInset * 0.3, -widthPx / 4);
+      ctx.lineTo(lengthPx / 2 - 1, 0);
+      ctx.lineTo(lengthPx / 2 - noseInset * 0.3, widthPx / 4);
+      ctx.closePath();
+      ctx.fill();
+    }
+
     ctx.restore();
   }
 }

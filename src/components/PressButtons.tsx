@@ -53,6 +53,8 @@ export function PressButtons(): ReactElement {
         const userSteps = programs[n];
         const label = labelFor(n, userSteps);
         const isUser = !!(userSteps && userSteps.length > 0);
+        const hasHardcoded = HARDCODED_LABEL_KEY[n] !== undefined;
+        const isEmpty = !isUser && !hasHardcoded;
         return (
           <button
             key={n}
@@ -64,12 +66,18 @@ export function PressButtons(): ReactElement {
               fontSize: '0.95rem',
               cursor: 'pointer',
               borderRadius: 4,
-              border: '1px solid #555',
-              background: isUser ? '#e8f4ff' : '#fff',
+              border: isEmpty ? '1px dashed #999' : '1px solid #555',
+              background: isUser ? '#e8f4ff' : isEmpty ? '#f5f5f5' : '#fff',
+              color: isEmpty ? '#888' : '#000',
               textAlign: 'start',
             }}
           >
             <strong>{t('simulator.press_label', { count: n })}</strong> — {label}
+            {isEmpty && (
+              <span style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginTop: 2 }}>
+                {t('simulator.no_behavior_hint')}
+              </span>
+            )}
           </button>
         );
       })}

@@ -22,6 +22,7 @@
     "press_aria": "לחיצה על Reset ‎{{count}}‎ פעמים — {{description}}",
     "press_label": "לחיצה ‎{{count}}‎×",
     "no_behavior": "— לא מוגדר —",
+    "no_behavior_hint": "גרור בלוקים בעורך כדי למלא את החריץ",
     "block_count_one": "בלוק אחד",
     "block_count_other": "‎{{count}}‎ בלוקים",
     "empty_program": "לא הוגדרו בלוקים עבור ‎{{count}}‎× — גרור בלוקים בעורך",

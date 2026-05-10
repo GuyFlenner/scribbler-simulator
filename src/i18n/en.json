@@ -22,6 +22,7 @@
     "press_aria": "Press reset {{count}} times — {{description}}",
     "press_label": "Press {{count}}×",
     "no_behavior": "— not defined —",
+    "no_behavior_hint": "Drag blocks in the editor to fill this slot",
     "block_count_one": "{{count}} block",
     "block_count_other": "{{count}} blocks",
     "empty_program": "Press {{count}}× has no blocks yet — drag some in the editor",

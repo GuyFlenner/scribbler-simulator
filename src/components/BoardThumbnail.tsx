@@ -19,7 +19,6 @@ export function BoardThumbnail({ board, size = 56, ariaLabel }: Props): ReactEle
     drawBoard(ctx, board, size, size, undefined, {
       showGrid: false,
       markerRadiusPx: Math.max(4, size / 8),
-      markerFontPx: Math.max(6, size / 9),
     });
   }, [board, size]);
 
