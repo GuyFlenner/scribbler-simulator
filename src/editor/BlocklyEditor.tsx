@@ -22,13 +22,18 @@ interface BlocklyEditorProps {
   pressCount: number;
 }
 
+const BLOCK_MUTATION_TYPES: ReadonlySet<string> = new Set([
+  Blockly.Events.BLOCK_CREATE,
+  Blockly.Events.BLOCK_DELETE,
+  Blockly.Events.BLOCK_CHANGE,
+  Blockly.Events.BLOCK_MOVE,
+]);
+
 export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement {
   const { t, i18n } = useTranslation();
   const isHebrew = i18n.language.startsWith('he');
   const containerRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
-  const setBehavior = useEditorStore((s) => s.setBehavior);
-  const initialJson = useEditorStore((s) => s.workspaceJsonByPressCount[pressCount]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -46,6 +51,11 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
     });
     workspaceRef.current = ws;
 
+    // Read initialJson once at mount (NOT via useEditorStore subscription) — otherwise
+    // the change handler below writes back into the store, the subscription fires, and
+    // the effect re-runs, disposing the freshly-injected workspace. This was the cause
+    // of the editor-mode freeze reported in the browser.
+    const initialJson = useEditorStore.getState().workspaceJsonByPressCount[pressCount];
     if (initialJson && typeof initialJson === 'object') {
       try {
         Blockly.serialization.workspaces.load(initialJson as object, ws);
@@ -54,10 +64,17 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
       }
     }
 
-    const handleChange = (): void => {
+    const handleChange = (event: Blockly.Events.Abstract): void => {
+      // Ignore UI events (clicks, viewport changes, theme apply) and lifecycle events
+      // (FINISHED_LOADING). Only persist when blocks are actually created/deleted/moved/
+      // changed. Without this filter, Blockly emits ~5 events during inject() alone,
+      // each of which would trigger a store write.
+      if (event.isUiEvent) return;
+      if (!BLOCK_MUTATION_TYPES.has(event.type)) return;
+
       const json = Blockly.serialization.workspaces.save(ws);
       const steps = compileBlocklyJson(json);
-      setBehavior(pressCount, steps, json);
+      useEditorStore.getState().setBehavior(pressCount, steps, json);
     };
 
     ws.addChangeListener(handleChange);
@@ -66,7 +83,7 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
       ws.dispose();
       workspaceRef.current = null;
     };
-  }, [pressCount, initialJson, setBehavior, isHebrew, t]);
+  }, [pressCount, isHebrew, t]);
 
   return <div ref={containerRef} style={{ width: '100%', height: 480, border: '1px solid #ccc' }} />;
 }
