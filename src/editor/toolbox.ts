@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+
 export interface BlockDefinition {
   type: string;
   message0: string;
@@ -13,149 +15,123 @@ export interface BlockDefinition {
   helpUrl?: string;
 }
 
-export const blockDefinitions: BlockDefinition[] = [
+const sensorOptions = (t: TFunction): Array<[string, string]> => [
+  [t('blocks.sensor_line_left'), 'line_left'],
+  [t('blocks.sensor_line_right'), 'line_right'],
+  [t('blocks.sensor_obstacle_left'), 'obstacle_left'],
+  [t('blocks.sensor_obstacle_right'), 'obstacle_right'],
+];
+
+export const buildBlockDefinitions = (t: TFunction): BlockDefinition[] => [
   {
     type: 'drive_distance',
-    message0: 'drive %1 cm',
+    message0: t('blocks.drive_distance'),
     args0: [{ type: 'field_number', name: 'CM', value: 30 }],
     previousStatement: null,
     nextStatement: null,
     colour: 230,
-    tooltip: 'Drive forward (positive) or backward (negative) by N centimetres',
+    tooltip: t('blocks.drive_distance_tooltip'),
   },
   {
     type: 'rotate_degrees',
-    message0: 'rotate %1 °',
+    message0: t('blocks.rotate_degrees'),
     args0: [{ type: 'field_number', name: 'DEGREES', value: 90 }],
     previousStatement: null,
     nextStatement: null,
     colour: 200,
-    tooltip: 'Rotate left (positive) or right (negative) by N degrees',
+    tooltip: t('blocks.rotate_degrees_tooltip'),
   },
   {
     type: 'stop',
-    message0: 'stop',
+    message0: t('blocks.stop'),
     previousStatement: null,
     nextStatement: null,
     colour: 0,
-    tooltip: 'Stop motion immediately',
+    tooltip: t('blocks.stop_tooltip'),
   },
   {
     type: 'beep',
-    message0: 'beep for %1 ms',
+    message0: t('blocks.beep'),
     args0: [{ type: 'field_number', name: 'DURATION_MS', value: 200 }],
     previousStatement: null,
     nextStatement: null,
     colour: 60,
-    tooltip: 'Play a beep for N milliseconds',
+    tooltip: t('blocks.beep_tooltip'),
   },
   {
     type: 'wait',
-    message0: 'wait %1 seconds',
+    message0: t('blocks.wait'),
     args0: [{ type: 'field_number', name: 'SECONDS', value: 1 }],
     previousStatement: null,
     nextStatement: null,
     colour: 120,
-    tooltip: 'Pause for N seconds',
+    tooltip: t('blocks.wait_tooltip'),
   },
   {
     type: 'repeat',
-    message0: 'repeat %1 times',
+    message0: t('blocks.repeat'),
     args0: [{ type: 'field_number', name: 'TIMES', value: 4 }],
-    message1: 'do %1',
+    message1: t('blocks.repeat_do'),
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: null,
     nextStatement: null,
     colour: 290,
-    tooltip: 'Repeat the inner blocks N times',
+    tooltip: t('blocks.repeat_tooltip'),
   },
   {
     type: 'if_sensor',
-    message0: 'if %1',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'SENSOR',
-        options: [
-          ['line on left', 'line_left'],
-          ['line on right', 'line_right'],
-          ['obstacle on left', 'obstacle_left'],
-          ['obstacle on right', 'obstacle_right'],
-        ],
-      },
-    ],
-    message1: 'then %1',
+    message0: t('blocks.if_sensor'),
+    args0: [{ type: 'field_dropdown', name: 'SENSOR', options: sensorOptions(t) }],
+    message1: t('blocks.if_then'),
     args1: [{ type: 'input_statement', name: 'DO' }],
-    message2: 'else %1',
+    message2: t('blocks.if_else'),
     args2: [{ type: 'input_statement', name: 'ELSE' }],
     previousStatement: null,
     nextStatement: null,
     colour: 210,
-    tooltip: 'Run different blocks depending on a sensor reading',
+    tooltip: t('blocks.if_tooltip'),
   },
   {
     type: 'while_sensor',
-    message0: 'while %1',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'SENSOR',
-        options: [
-          ['line on left', 'line_left'],
-          ['line on right', 'line_right'],
-          ['obstacle on left', 'obstacle_left'],
-          ['obstacle on right', 'obstacle_right'],
-        ],
-      },
-    ],
-    message1: 'do %1',
+    message0: t('blocks.while_sensor'),
+    args0: [{ type: 'field_dropdown', name: 'SENSOR', options: sensorOptions(t) }],
+    message1: t('blocks.while_do'),
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: null,
     nextStatement: null,
     colour: 290,
-    tooltip: 'Repeat blocks while a sensor is reading TRUE',
+    tooltip: t('blocks.while_tooltip'),
   },
   {
     type: 'while_not_sensor',
-    message0: 'while NOT %1',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'SENSOR',
-        options: [
-          ['line on left', 'line_left'],
-          ['line on right', 'line_right'],
-          ['obstacle on left', 'obstacle_left'],
-          ['obstacle on right', 'obstacle_right'],
-        ],
-      },
-    ],
-    message1: 'do %1',
+    message0: t('blocks.while_not_sensor'),
+    args0: [{ type: 'field_dropdown', name: 'SENSOR', options: sensorOptions(t) }],
+    message1: t('blocks.while_do'),
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: null,
     nextStatement: null,
     colour: 290,
-    tooltip: 'Repeat blocks until a sensor reads TRUE (e.g. follow a line)',
+    tooltip: t('blocks.while_not_tooltip'),
   },
 ];
 
-export const toolboxXml = `
+export const buildToolboxXml = (t: TFunction): string => `
 <xml id="scribbler-toolbox">
-  <category name="Motion" colour="220">
+  <category name="${t('blocks.category_motion')}" colour="220">
     <block type="drive_distance"></block>
     <block type="rotate_degrees"></block>
     <block type="stop"></block>
   </category>
-  <category name="Sound &amp; Time" colour="60">
+  <category name="${t('blocks.category_sound')}" colour="60">
     <block type="beep"></block>
     <block type="wait"></block>
   </category>
-  <category name="Loops" colour="290">
+  <category name="${t('blocks.category_loops')}" colour="290">
     <block type="repeat"></block>
     <block type="while_sensor"></block>
     <block type="while_not_sensor"></block>
   </category>
-  <category name="Sensors" colour="210">
+  <category name="${t('blocks.category_sensors')}" colour="210">
     <block type="if_sensor"></block>
   </category>
 </xml>

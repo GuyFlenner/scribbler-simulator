@@ -5,7 +5,7 @@ import { useEditorStore } from '../store/editor-store';
 import { PressCountTabs } from './PressCountTabs';
 
 export function EditorView(): ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const selected = useEditorStore((s) => s.selectedPressCount);
   const resetAll = useEditorStore((s) => s.resetAll);
   const programs = useEditorStore((s) => s.programs);
@@ -59,7 +59,7 @@ export function EditorView(): ReactElement {
         }}
       >
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#555' }}>{instructions}</p>
-        <BlocklyEditor key={selected} pressCount={selected} />
+        <BlocklyEditor key={`${selected}-${i18n.language}`} pressCount={selected} />
       </div>
     </div>
   );

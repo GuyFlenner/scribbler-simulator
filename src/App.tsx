@@ -1,9 +1,14 @@
-import { useState, type ReactElement } from 'react';
+import { lazy, Suspense, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SimulatorView } from './components/SimulatorView';
-import { EditorView } from './components/EditorView';
-import { BoardsPanel } from './components/BoardsPanel';
 import { LanguageToggle } from './components/LanguageToggle';
+
+const EditorView = lazy(() =>
+  import('./components/EditorView').then((m) => ({ default: m.EditorView })),
+);
+const BoardsPanel = lazy(() =>
+  import('./components/BoardsPanel').then((m) => ({ default: m.BoardsPanel })),
+);
 
 type Mode = 'simulator' | 'editor' | 'boards';
 
@@ -67,8 +72,10 @@ export default function App(): ReactElement {
         </div>
       </header>
       {mode === 'simulator' && <SimulatorView />}
-      {mode === 'editor' && <EditorView />}
-      {mode === 'boards' && <BoardsPanel />}
+      <Suspense fallback={<div role="status" aria-live="polite" style={{ padding: 16 }}>…</div>}>
+        {mode === 'editor' && <EditorView />}
+        {mode === 'boards' && <BoardsPanel />}
+      </Suspense>
     </main>
   );
 }

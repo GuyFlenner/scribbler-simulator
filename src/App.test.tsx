@@ -109,22 +109,22 @@ describe('App — empty user program shows friendly message', () => {
 });
 
 describe('App — editor mode toggle', () => {
-  it('switches to the editor view when the Edit behaviors tab is clicked', () => {
+  it('switches to the editor view when the Edit behaviors tab is clicked', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
-    expect(screen.getByRole('tab', { name: /edit press 2 times/i })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: /edit press 2 times/i })).toBeInTheDocument();
   });
 });
 
 describe('App — boards mode', () => {
-  it('switches to the boards panel and lists at least the default board', () => {
+  it('switches to the boards panel and lists at least the default board', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /boards/i }));
-    expect(screen.getByRole('heading', { name: /boards/i, level: 2 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /boards/i, level: 2 })).toBeInTheDocument();
     expect(screen.getByText(/default 1m/i)).toBeInTheDocument();
   });
 
-  it('records a successful run and shows it in the run history', () => {
+  it('records a successful run and shows it in the run history', async () => {
     render(<App />);
     act(() => {
       useSimStore.getState().pressButton(2, [{ kind: 'drive', cm: 1 }]);
@@ -141,7 +141,7 @@ describe('App — boards mode', () => {
     });
     fireEvent.click(screen.getByRole('tab', { name: /boards/i }));
     expect(useBoardsStore.getState().getRunsForBoard(defaultBoard.id)).toHaveLength(1);
-    expect(screen.getByRole('button', { name: /replay/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /replay/i })).toBeInTheDocument();
   });
 });
 

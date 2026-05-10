@@ -2,22 +2,20 @@ import { useEffect, useRef, type ReactElement } from 'react';
 import * as Blockly from 'blockly';
 import * as BlocklyHeMsg from 'blockly/msg/he';
 import * as BlocklyEnMsg from 'blockly/msg/en';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useEditorStore } from '../store/editor-store';
-import { blockDefinitions, toolboxXml } from './toolbox';
+import { buildBlockDefinitions, buildToolboxXml } from './toolbox';
 import { compileBlocklyJson } from './codegen';
 
-let blocksRegistered = false;
-const registerBlocks = (): void => {
-  if (blocksRegistered) return;
-  for (const def of blockDefinitions) {
+const registerBlocks = (t: TFunction): void => {
+  for (const def of buildBlockDefinitions(t)) {
     Blockly.Blocks[def.type] = {
       init(this: Blockly.Block) {
         this.jsonInit(def as unknown as Record<string, unknown>);
       },
     };
   }
-  blocksRegistered = true;
 };
 
 interface BlocklyEditorProps {
@@ -25,7 +23,7 @@ interface BlocklyEditorProps {
 }
 
 export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isHebrew = i18n.language.startsWith('he');
   const containerRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
@@ -37,10 +35,10 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
     if (!container) return;
 
     Blockly.setLocale((isHebrew ? BlocklyHeMsg : BlocklyEnMsg) as unknown as Record<string, string>);
-    registerBlocks();
+    registerBlocks(t);
 
     const ws = Blockly.inject(container, {
-      toolbox: toolboxXml,
+      toolbox: buildToolboxXml(t),
       rtl: isHebrew,
       trashcan: true,
       grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
@@ -68,7 +66,7 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
       ws.dispose();
       workspaceRef.current = null;
     };
-  }, [pressCount, initialJson, setBehavior, isHebrew]);
+  }, [pressCount, initialJson, setBehavior, isHebrew, t]);
 
   return <div ref={containerRef} style={{ width: '100%', height: 480, border: '1px solid #ccc' }} />;
 }

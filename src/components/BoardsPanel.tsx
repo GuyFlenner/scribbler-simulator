@@ -5,6 +5,7 @@ import { useSimStore } from '../store/sim-store';
 import { defaultBoard } from '../sim/boards/default';
 import type { BoardState } from '../sim/boards/schema';
 import { BoardEditor } from './BoardEditor';
+import { BoardThumbnail } from './BoardThumbnail';
 import { RunHistoryPanel } from './RunHistoryPanel';
 
 export function BoardsPanel(): ReactElement {
@@ -90,13 +91,16 @@ export function BoardsPanel(): ReactElement {
                   gap: 8,
                 }}
               >
-                <span style={{ fontSize: '0.9rem' }}>
-                  {board.id === defaultBoard.id ? t('boards.default_name') : board.name}
-                  {isActive && (
-                    <span style={{ marginInlineStart: 8, fontSize: '0.75rem', color: '#2c5cff' }}>
-                      ({t('boards.active_badge')})
-                    </span>
-                  )}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
+                  <BoardThumbnail board={board} size={56} ariaLabel={board.name} />
+                  <span>
+                    {board.id === defaultBoard.id ? t('boards.default_name') : board.name}
+                    {isActive && (
+                      <span style={{ marginInlineStart: 8, fontSize: '0.75rem', color: '#2c5cff' }}>
+                        ({t('boards.active_badge')})
+                      </span>
+                    )}
+                  </span>
                 </span>
                 <span style={{ display: 'flex', gap: 4 }}>
                   <button
