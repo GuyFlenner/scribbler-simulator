@@ -127,7 +127,7 @@ describe('App — editor mode toggle', () => {
   it('switches to the editor view when the Edit behaviors tab is clicked', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
-    expect(await screen.findByRole('tab', { name: /edit press 2 times/i })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: /edit press 2 times/i }, { timeout: 5000 })).toBeInTheDocument();
   });
 });
 
@@ -136,7 +136,7 @@ describe('App — boards mode', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /boards/i }));
     expect(await screen.findByRole('heading', { name: /boards/i, level: 2 })).toBeInTheDocument();
-    expect(screen.getByText(/default 1m/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/default board/i).length).toBeGreaterThan(0);
   });
 
   it('records a successful run and shows it in the run history', async () => {

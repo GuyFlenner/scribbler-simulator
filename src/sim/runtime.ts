@@ -98,7 +98,16 @@ function* executeRotate(step: { kind: 'rotate'; degrees: number; speed?: number 
   const startHeading = ctx.robot.heading;
   while (true) {
     if (ctx.robot.isStalled) return;
-    if (Math.abs(ctx.robot.heading - startHeading) >= radians) return;
+    const delta = Math.abs(ctx.robot.heading - startHeading);
+    if (delta >= radians) return;
+    const remaining = radians - delta;
+    // On the final tick, yield a proportional angular speed so the robot lands
+    // exactly on the target heading instead of overshooting by a full tick-step.
+    // The sim-store's degree snap removes any residual sub-degree error afterwards.
+    if (remaining < Math.abs(speed) * ctx.dtSeconds) {
+      yield { vLinear: 0, vAngular: (remaining / ctx.dtSeconds) * direction };
+      return;
+    }
     yield { vLinear: 0, vAngular: speed };
   }
 }

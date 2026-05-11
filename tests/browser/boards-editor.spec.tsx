@@ -13,7 +13,7 @@ describe('boards-editor: full lifecycle', () => {
 
   it('opens the boards panel and shows the default board', async () => {
     await page.getByRole('tab', { name: /boards/i }).click();
-    await expect.element(page.getByText(/default 1m/i)).toBeVisible();
+    await expect.element(page.getByText(/default board \(1\.2m/i)).toBeVisible();
   });
 
   it('clicking + new-board opens the editor with a blank custom board', async () => {
@@ -75,7 +75,7 @@ describe('boards-editor: full lifecycle', () => {
     // Drive the replay forward — the queued press event should fire and move the robot.
     time.runSimSeconds(2.5);
     const finalX = storeBridge.simStore().robot.x;
-    // Robot starts at (0.05, 0.05) after replay reset; press 2 drives ~30cm east.
+    // Robot starts at (0.06, 0.06) after replay reset; press 2 drives ~30cm east.
     expect(finalX).toBeGreaterThan(0.25);
   });
 });
