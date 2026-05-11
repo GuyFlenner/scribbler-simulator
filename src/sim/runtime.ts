@@ -39,7 +39,16 @@ function* executeDrive(step: { kind: 'drive'; cm: number; speed?: number }, ctx:
     if (ctx.robot.isStalled) return;
     const leftDelta = Math.abs(ctx.robot.encoderTicksLeft - startLeft);
     const rightDelta = Math.abs(ctx.robot.encoderTicksRight - startRight);
-    if ((leftDelta + rightDelta) / 2 >= targetTicks) return;
+    const avgDelta = (leftDelta + rightDelta) / 2;
+    if (avgDelta >= targetTicks) return;
+    const remainingM = (targetTicks - avgDelta) / TICKS_PER_M;
+    // On the final tick, yield a proportional linear speed so the robot lands
+    // exactly on the target distance instead of overshooting by a full tick-step.
+    // Mirrors the corrective-velocity pattern in executeRotate.
+    if (remainingM < Math.abs(speed) * ctx.dtSeconds) {
+      yield { vLinear: (remainingM / ctx.dtSeconds) * direction, vAngular: 0 };
+      return;
+    }
     yield { vLinear: speed, vAngular: 0 };
   }
 }
