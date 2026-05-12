@@ -51,6 +51,13 @@ export function detectCollision(robot: RobotState, board: BoardState): Collision
   return { hit: false };
 }
 
+function isOutOfBounds(robot: RobotState, board: BoardState): boolean {
+  // Check robot centre — not the full bbox — so a robot placed near the edge
+  // by the start marker doesn't immediately stall. Only the robot's travel
+  // past the board boundary triggers a stall.
+  return robot.x < 0 || robot.x > board.width || robot.y < 0 || robot.y > board.height;
+}
+
 export function tick(state: SimState, dtSeconds: number): SimState {
   if (state.status === 'reached-goal' || state.status === 'stalled') {
     return { ...state, tickIndex: state.tickIndex + 1 };
@@ -67,7 +74,8 @@ export function tick(state: SimState, dtSeconds: number): SimState {
   };
 
   const collision = detectCollision(candidate, state.board);
-  if (collision.hit) {
+  const oob = isOutOfBounds(candidate, state.board);
+  if (collision.hit || oob) {
     return {
       ...state,
       robot: {

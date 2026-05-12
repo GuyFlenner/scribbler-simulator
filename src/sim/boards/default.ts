@@ -5,21 +5,21 @@ import type { BoardState } from './schema';
  * for backwards-compat (id stays `default` so existing localStorage keeps
  * working). Use this for practice runs that focus purely on routing.
  *
- * Board is 1.2m × 1.2m with a 10-cell grid → each cell = 12cm, matching the
- * competition button distances (btn1=12cm=1 cell, btn2=24cm=2 cells, btn3=48cm=4 cells).
- * Obstacles are full grid squares (12cm × 12cm) so they read as whole-cell blockers.
+ * Board is 1.0m × 1.0m with a 10-cell grid → each cell = 10cm.
+ * btn1=10cm=1 cell, btn2=20cm=2 cells, btn3=40cm=4 cells.
+ * Obstacles are full grid squares (10cm × 10cm) so they read as whole-cell blockers.
  */
 export const defaultBoard: BoardState = {
   version: 1,
   id: 'default',
-  name: 'Default board (1.2m × 1.2m)',
-  width: 1.2,
-  height: 1.2,
+  name: 'Default board (1.0m × 1.0m)',
+  width: 1.0,
+  height: 1.0,
   elements: [
-    { kind: 'start', x: 0.06, y: 0.06, heading: 0 },
-    { kind: 'goal', x: 1.14, y: 1.14, toleranceCm: 5 },
-    { kind: 'obstacle', x: 0.36, y: 0.24, w: 0.12, h: 0.12 },
-    { kind: 'obstacle', x: 0.72, y: 0.72, w: 0.12, h: 0.12 },
+    { kind: 'start', x: 0.05, y: 0.05, heading: 0 },
+    { kind: 'goal', x: 0.95, y: 0.95, toleranceCm: 5 },
+    { kind: 'obstacle', x: 0.30, y: 0.20, w: 0.10, h: 0.10 },
+    { kind: 'obstacle', x: 0.60, y: 0.60, w: 0.10, h: 0.10 },
   ],
 };
 
@@ -31,15 +31,15 @@ export const defaultBoard: BoardState = {
 export const bonusBoard: BoardState = {
   version: 1,
   id: 'default-bonus',
-  name: 'Default board + bonus ⭐ (1.2m × 1.2m)',
-  width: 1.2,
-  height: 1.2,
+  name: 'Default board + bonus ⭐ (1.0m × 1.0m)',
+  width: 1.0,
+  height: 1.0,
   elements: [
-    { kind: 'start', x: 0.06, y: 0.06, heading: 0 },
-    { kind: 'goal', x: 1.14, y: 1.14, toleranceCm: 5 },
-    { kind: 'obstacle', x: 0.36, y: 0.24, w: 0.12, h: 0.12 },
-    { kind: 'obstacle', x: 0.72, y: 0.72, w: 0.12, h: 0.12 },
-    { kind: 'bonus', x: 0.54, y: 0.60, toleranceCm: 8 },
+    { kind: 'start', x: 0.05, y: 0.05, heading: 0 },
+    { kind: 'goal', x: 0.95, y: 0.95, toleranceCm: 5 },
+    { kind: 'obstacle', x: 0.30, y: 0.20, w: 0.10, h: 0.10 },
+    { kind: 'obstacle', x: 0.60, y: 0.60, w: 0.10, h: 0.10 },
+    { kind: 'bonus', x: 0.45, y: 0.55, toleranceCm: 8 },
   ],
 };
 

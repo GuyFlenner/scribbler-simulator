@@ -209,9 +209,9 @@ describe('App — load sample program', () => {
     expect(buttons.length).toBeGreaterThanOrEqual(1);
     fireEvent.click(buttons[0]);
     const programs = useEditorStore.getState().programs;
-    expect(programs[1]?.[0]).toMatchObject({ kind: 'drive', cm: 12 });
-    expect(programs[2]?.[0]).toMatchObject({ kind: 'drive', cm: 24 });
-    expect(programs[3]?.[0]).toMatchObject({ kind: 'drive', cm: 48 });
+    expect(programs[1]?.[0]).toMatchObject({ kind: 'drive', cm: 10 });
+    expect(programs[2]?.[0]).toMatchObject({ kind: 'drive', cm: 20 });
+    expect(programs[3]?.[0]).toMatchObject({ kind: 'drive', cm: 40 });
     expect(programs[4]?.[0]).toMatchObject({ kind: 'rotate', degrees: 90 });
     expect(programs[5]?.[0]).toMatchObject({ kind: 'rotate', degrees: -90 });
     expect(programs[6]?.[0]).toMatchObject({ kind: 'rotate', degrees: 180 });

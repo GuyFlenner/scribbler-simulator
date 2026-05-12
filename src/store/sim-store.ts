@@ -115,13 +115,15 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       nextRobot = { ...state.robot, vLinear, vAngular };
       if (done) {
         activeProgram = null;
-        // Snap to nearest whole degree to absorb the sub-degree overshoot that
-        // accumulates from variable requestAnimationFrame dt. The runtime's
-        // executeRotate already emits a corrective velocity on the final tick;
-        // this snap cleans up any residual (<0.5°) so cardinal-angle turns land
-        // on exact multiples of π/180.
-        const snappedHeading =
-          Math.round((nextRobot.heading * 180) / Math.PI) * (Math.PI / 180);
+        // Snap to exact 90° multiples when within ±10°, otherwise nearest degree.
+        // The executeRotate corrective velocity already lands within ~1° of the
+        // target; this snap locks the heading to an exact cardinal angle so
+        // subsequent forward drives travel in a perfectly straight line.
+        const degreesRaw = (nextRobot.heading * 180) / Math.PI;
+        const nearestMul90 = Math.round(degreesRaw / 90) * 90;
+        const snappedDegrees =
+          Math.abs(degreesRaw - nearestMul90) <= 10 ? nearestMul90 : Math.round(degreesRaw);
+        const snappedHeading = snappedDegrees * (Math.PI / 180);
         nextRobot = { ...nextRobot, vLinear: 0, vAngular: 0, heading: snappedHeading };
       }
     }

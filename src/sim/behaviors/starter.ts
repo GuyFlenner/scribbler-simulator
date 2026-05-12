@@ -10,9 +10,9 @@ export interface StarterEntry {
 }
 
 export const classProgramSample: StarterEntry[] = [
-  { pressCount: 1, steps: [{ kind: 'drive', cm: 12 }] },
-  { pressCount: 2, steps: [{ kind: 'drive', cm: 24 }] },
-  { pressCount: 3, steps: [{ kind: 'drive', cm: 48 }] },
+  { pressCount: 1, steps: [{ kind: 'drive', cm: 10 }] },
+  { pressCount: 2, steps: [{ kind: 'drive', cm: 20 }] },
+  { pressCount: 3, steps: [{ kind: 'drive', cm: 40 }] },
   { pressCount: 4, steps: [{ kind: 'rotate', degrees: 90 }] },
   { pressCount: 5, steps: [{ kind: 'rotate', degrees: -90 }] },
   { pressCount: 6, steps: [{ kind: 'rotate', degrees: 180 }] },

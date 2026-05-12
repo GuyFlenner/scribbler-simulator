@@ -3,6 +3,7 @@ import { useSimStore } from '../store/sim-store';
 import { defaultBoard } from './boards/default';
 import { classProgramSample } from './behaviors/starter';
 import type { Step } from './behaviors/schema';
+import type { BoardState } from './boards/schema';
 
 /**
  * Automation QA: each competition button must end at its exact expected
@@ -24,15 +25,10 @@ const stepsFor = (pressCount: number): Step[] => {
 
 const advance = (totalSeconds: number, dtSeconds: number): void => {
   const ticksNeeded = Math.ceil(totalSeconds / dtSeconds);
-  // Cap at a high number so tests can't hang if the program never terminates.
   const maxTicks = Math.max(ticksNeeded, 2000);
   for (let i = 0; i < maxTicks; i++) {
     useSimStore.getState().tick(dtSeconds);
     if (useSimStore.getState().status !== 'running') {
-      // Status transitions out of 'running' when program ends + collisions
-      // resolve. But the press handler keeps status='running' until the
-      // generator returns done — once it does, vLinear/vAngular are zero
-      // and a few extra ticks won't move the robot. Run a few more for safety.
       for (let j = 0; j < 5; j++) useSimStore.getState().tick(dtSeconds);
       return;
     }
@@ -40,14 +36,10 @@ const advance = (totalSeconds: number, dtSeconds: number): void => {
 };
 
 const resetToBlankStart = (): void => {
-  // Use a board with NO obstacles so collision detection never interferes
-  // with the physics under test. Start at origin so absolute positions are
-  // trivial to assert (start.x = 0, after 12cm forward → x = 0.12 exactly).
   const blankBoard = {
     ...defaultBoard,
     elements: [
       { kind: 'start' as const, x: 0, y: 0, heading: 0 },
-      // Goal placed far away so we don't trigger reached-goal mid-test.
       { kind: 'goal' as const, x: 5, y: 5, toleranceCm: 1 },
     ],
   };
@@ -59,36 +51,35 @@ beforeEach(() => {
 });
 
 describe('competition button validation — drive (btn1/2/3)', () => {
-  it('btn1 (drive 12cm) lands at x=0.12 exactly with fixed dt=1/60', () => {
+  it('btn1 (drive 10cm) lands at x=0.10 exactly with fixed dt=1/60', () => {
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.12, 4);
+    expect(robot.x).toBeCloseTo(0.10, 4);
     expect(robot.y).toBeCloseTo(0, 4);
     expect(robot.heading).toBeCloseTo(0, 8);
   });
 
-  it('btn2 (drive 24cm) lands at x=0.24 exactly with fixed dt=1/60', () => {
+  it('btn2 (drive 20cm) lands at x=0.20 exactly with fixed dt=1/60', () => {
     useSimStore.getState().pressButton(2, stepsFor(2));
     advance(4, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.24, 4);
+    expect(robot.x).toBeCloseTo(0.20, 4);
     expect(robot.y).toBeCloseTo(0, 4);
     expect(robot.heading).toBeCloseTo(0, 8);
   });
 
-  it('btn3 (drive 48cm) lands at x=0.48 exactly with fixed dt=1/60', () => {
+  it('btn3 (drive 40cm) lands at x=0.40 exactly with fixed dt=1/60', () => {
     useSimStore.getState().pressButton(3, stepsFor(3));
     advance(6, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.48, 4);
+    expect(robot.x).toBeCloseTo(0.40, 4);
     expect(robot.y).toBeCloseTo(0, 4);
     expect(robot.heading).toBeCloseTo(0, 8);
   });
 
   it('btn1 lands exactly even with worst-case variable dt (caps at 50ms)', () => {
     useSimStore.getState().pressButton(1, stepsFor(1));
-    // Mix small + large dt values to exercise the corrective-velocity path
     const dts = [1 / 60, 0.02, 1 / 60, 0.03, 1 / 60, 0.05, 1 / 60];
     let dtIdx = 0;
     for (let i = 0; i < 200; i++) {
@@ -98,7 +89,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
       if (useSimStore.getState().status !== 'running') break;
     }
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.12, 4);
+    expect(robot.x).toBeCloseTo(0.10, 4);
     expect(robot.y).toBeCloseTo(0, 4);
   });
 
@@ -112,7 +103,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
       useSimStore.getState().tick(dt);
       if (useSimStore.getState().status !== 'running') break;
     }
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.24, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.20, 4);
   });
 });
 
@@ -190,13 +181,13 @@ describe('competition button validation — sequences (kid-realistic combos)', (
     expect(useSimStore.getState().robot.heading).toBeCloseTo(0, 8);
   });
 
-  it('btn1 then btn4 then btn1 → robot at (0.12, 0.12) after right turn then forward', () => {
+  it('btn1 then btn4 then btn1 → robot at (0.10, 0.10) after right turn then forward', () => {
     // The Y axis is +DOWN on screen (see types.ts heading comment). Positive
     // heading π/2 means facing +y (south). So after btn4 + btn1, the robot
-    // should move 12cm in +y direction.
+    // should move 10cm in +y direction.
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.12, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.10, 4);
     expect(useSimStore.getState().robot.y).toBeCloseTo(0, 4);
 
     useSimStore.getState().pressButton(4, stepsFor(4));
@@ -206,14 +197,14 @@ describe('competition button validation — sequences (kid-realistic combos)', (
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.12, 4);
-    expect(robot.y).toBeCloseTo(0.12, 4);
+    expect(robot.x).toBeCloseTo(0.10, 4);
+    expect(robot.y).toBeCloseTo(0.10, 4);
   });
 
-  it('btn3 (48cm) then btn6 (180°) then btn3 → back at origin (full path round-trip)', () => {
+  it('btn3 (40cm) then btn6 (180°) then btn3 → back at origin (full path round-trip)', () => {
     useSimStore.getState().pressButton(3, stepsFor(3));
     advance(6, 1 / 60);
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.48, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.40, 4);
 
     useSimStore.getState().pressButton(6, stepsFor(6));
     advance(4, 1 / 60);
@@ -229,30 +220,135 @@ describe('competition button validation — sequences (kid-realistic combos)', (
 });
 
 describe('competition button validation — default board start position', () => {
-  it('with defaultBoard start (0.06, 0.06), btn1 lands at (0.18, 0.06) — cell 1 center', () => {
+  it('with defaultBoard start (0.05, 0.05), btn1 lands at (0.15, 0.05) — cell 1 center', () => {
     useSimStore.getState().setBoard(defaultBoard);
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.18, 4);
-    expect(robot.y).toBeCloseTo(0.06, 4);
+    expect(robot.x).toBeCloseTo(0.15, 4);
+    expect(robot.y).toBeCloseTo(0.05, 4);
   });
 
-  it('with defaultBoard start (0.06, 0.06), btn2 lands at (0.30, 0.06) — cell 2 center', () => {
+  it('with defaultBoard start (0.05, 0.05), btn2 lands at (0.25, 0.05) — cell 2 center', () => {
     useSimStore.getState().setBoard(defaultBoard);
     useSimStore.getState().pressButton(2, stepsFor(2));
     advance(4, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.30, 4);
-    expect(robot.y).toBeCloseTo(0.06, 4);
+    expect(robot.x).toBeCloseTo(0.25, 4);
+    expect(robot.y).toBeCloseTo(0.05, 4);
   });
 
-  it('with defaultBoard start (0.06, 0.06), btn3 lands at (0.54, 0.06) — cell 4 center', () => {
+  it('with defaultBoard start (0.05, 0.05), btn3 lands at (0.45, 0.05) — cell 4 center', () => {
     useSimStore.getState().setBoard(defaultBoard);
     useSimStore.getState().pressButton(3, stepsFor(3));
     advance(6, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.54, 4);
-    expect(robot.y).toBeCloseTo(0.06, 4);
+    expect(robot.x).toBeCloseTo(0.45, 4);
+    expect(robot.y).toBeCloseTo(0.05, 4);
+  });
+});
+
+describe('guardrail — no diagonal movement after a cardinal turn', () => {
+  // After a 90° turn the perpendicular axis must stay frozen during the next drive.
+  // Any diagonal drift means the heading snap is broken.
+
+  it('btn4 (right 90°) then btn1: x stays at 0, y moves exactly 10cm', () => {
+    useSimStore.getState().pressButton(4, stepsFor(4));
+    advance(3, 1 / 60);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo(Math.PI / 2, 8);
+
+    useSimStore.getState().pressButton(1, stepsFor(1));
+    advance(3, 1 / 60);
+    const robot = useSimStore.getState().robot;
+    // Heading is π/2 → cos=0, sin=1 → only y should change
+    expect(robot.x).toBeCloseTo(0, 3);
+    expect(robot.y).toBeCloseTo(0.10, 4);
+  });
+
+  it('btn5 (left 90°) then btn1: x stays at 0, y moves exactly -10cm', () => {
+    // Start off-origin so -y move stays on-board
+    const boardWithRoom: BoardState = {
+      ...defaultBoard,
+      elements: [
+        { kind: 'start' as const, x: 0.5, y: 0.5, heading: 0 },
+        { kind: 'goal' as const, x: 5, y: 5, toleranceCm: 1 },
+      ],
+    };
+    useSimStore.getState().setBoard(boardWithRoom);
+
+    useSimStore.getState().pressButton(5, stepsFor(5));
+    advance(3, 1 / 60);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo(-Math.PI / 2, 8);
+
+    useSimStore.getState().pressButton(1, stepsFor(1));
+    advance(3, 1 / 60);
+    const robot = useSimStore.getState().robot;
+    // Heading is -π/2 → cos=0, sin=-1 → only y should change (negative)
+    expect(robot.x).toBeCloseTo(0.5, 3);
+    expect(robot.y).toBeCloseTo(0.40, 4);
+  });
+
+  it('btn6 (180°) then btn1: y stays at 0, x moves exactly -10cm', () => {
+    // Start with x room to go backward
+    const boardWithRoom: BoardState = {
+      ...defaultBoard,
+      elements: [
+        { kind: 'start' as const, x: 0.5, y: 0.5, heading: 0 },
+        { kind: 'goal' as const, x: 5, y: 5, toleranceCm: 1 },
+      ],
+    };
+    useSimStore.getState().setBoard(boardWithRoom);
+
+    useSimStore.getState().pressButton(6, stepsFor(6));
+    advance(4, 1 / 60);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo(Math.PI, 8);
+
+    useSimStore.getState().pressButton(1, stepsFor(1));
+    advance(3, 1 / 60);
+    const robot = useSimStore.getState().robot;
+    // Heading π → cos=-1, sin≈0 → only x should change (negative)
+    expect(robot.y).toBeCloseTo(0.5, 3);
+    expect(robot.x).toBeCloseTo(0.40, 4);
+  });
+});
+
+describe('guardrail — boundary: robot stalls at board edge', () => {
+  it('robot stalls when driven past the right edge of the board', () => {
+    // Place robot near the right wall then drive forward
+    const nearEdge: BoardState = {
+      ...defaultBoard,
+      elements: [
+        { kind: 'start' as const, x: 0.97, y: 0.5, heading: 0 },
+        { kind: 'goal' as const, x: 5, y: 5, toleranceCm: 1 },
+      ],
+    };
+    useSimStore.getState().setBoard(nearEdge);
+    useSimStore.getState().pressButton(1, stepsFor(1));
+    advance(3, 1 / 60);
+    expect(useSimStore.getState().status).toBe('stalled');
+    expect(useSimStore.getState().robot.x).toBeLessThanOrEqual(1.0);
+  });
+
+  it('robot stalls when driven past the bottom edge of the board', () => {
+    const nearBottom: BoardState = {
+      ...defaultBoard,
+      elements: [
+        { kind: 'start' as const, x: 0.5, y: 0.97, heading: Math.PI / 2 },
+        { kind: 'goal' as const, x: 5, y: 5, toleranceCm: 1 },
+      ],
+    };
+    useSimStore.getState().setBoard(nearBottom);
+    useSimStore.getState().pressButton(1, stepsFor(1));
+    advance(3, 1 / 60);
+    expect(useSimStore.getState().status).toBe('stalled');
+    expect(useSimStore.getState().robot.y).toBeLessThanOrEqual(1.0);
+  });
+
+  it('robot does NOT stall when there is room to complete the move', () => {
+    // Plenty of room — should complete normally
+    useSimStore.getState().pressButton(1, stepsFor(1));
+    advance(3, 1 / 60);
+    expect(useSimStore.getState().status).not.toBe('stalled');
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.10, 4);
   });
 });
