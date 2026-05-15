@@ -5,7 +5,6 @@ import type { BoardState } from '../sim/boards/schema';
 import type { Step } from '../sim/behaviors/schema';
 
 const ROTATE_RIGHT_90: Step[] = [{ kind: 'rotate', degrees: 90 }];
-const ROTATE_LEFT_90: Step[] = [{ kind: 'rotate', degrees: -90 }];
 const DRIVE_10: Step[] = [{ kind: 'drive', cm: 10 }];
 
 const blankBoard: BoardState = {
@@ -47,7 +46,9 @@ describe('sim-store — heading snap on natural completion (regression)', () => 
 
   it('rotate 180° then drive 10cm in separate presses: drive is along -x axis, zero y-drift', () => {
     useSimStore.getState().pressButton(6, [{ kind: 'rotate', degrees: 180 }]);
-    advance(120);
+    // 180° at 90°/s = 2 s = 120 ticks; advance 130 to absorb the corrective-velocity
+    // final tick that fires at tick 120 (done=false) and completes at tick 121.
+    advance(130);
 
     const afterRotate = useSimStore.getState().robot;
     expect(afterRotate.heading).toBeCloseTo(Math.PI, 9);
@@ -61,8 +62,8 @@ describe('sim-store — heading snap on natural completion (regression)', () => 
   });
 });
 
-describe('sim-store — heading snap on interrupt (the 8yo-QA bug)', () => {
-  it('interrupting a rotate mid-flight: heading is snapped to an integer degree before drive', () => {
+describe('sim-store — fast-click guard (no diagonal from mid-rotation interrupt)', () => {
+  it('pressButton mid-rotation is ignored: status stays running, robot state unchanged', () => {
     useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
     advance(10);
 
@@ -70,51 +71,40 @@ describe('sim-store — heading snap on interrupt (the 8yo-QA bug)', () => {
     expect(mid.heading).toBeGreaterThan(0);
     expect(mid.heading).toBeLessThan(Math.PI / 2);
 
+    // rapid second press while rotating — must be a no-op
     useSimStore.getState().pressButton(1, DRIVE_10);
 
-    const snapped = useSimStore.getState().robot;
-    const degrees = (snapped.heading * 180) / Math.PI;
-    expect(degrees).toBeCloseTo(Math.round(degrees), 9);
-    expect(snapped.vLinear).toBe(0);
-    expect(snapped.vAngular).toBe(0);
+    const after = useSimStore.getState().robot;
+    expect(after.heading).toBe(mid.heading);
+    expect(after.vLinear).toBe(mid.vLinear);
+    expect(after.vAngular).toBe(mid.vAngular);
+    expect(useSimStore.getState().status).toBe('running');
   });
 
-  it('interrupting a rotate then driving: trajectory aligned with snapped heading (no diagonal-drift)', () => {
+  it('pressButton mid-rotation does not add a new run event', () => {
     useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
     advance(10);
+    const eventsBefore = useSimStore.getState().currentRunEvents.length;
 
     useSimStore.getState().pressButton(1, DRIVE_10);
-    const heading = useSimStore.getState().robot.heading;
-    const startPos = useSimStore.getState().robot;
-    advance(120);
 
-    const endPos = useSimStore.getState().robot;
-    const dx = endPos.x - startPos.x;
-    const dy = endPos.y - startPos.y;
-    const expectedDx = Math.cos(heading) * 0.10;
-    const expectedDy = Math.sin(heading) * 0.10;
-    expect(dx).toBeCloseTo(expectedDx, 3);
-    expect(dy).toBeCloseTo(expectedDy, 3);
+    expect(useSimStore.getState().currentRunEvents.length).toBe(eventsBefore);
   });
 
-  it.each([5, 15, 30, 45])(
-    'interrupting rotate after %i ticks: subsequent drive is exactly along the snapped heading',
-    (interruptAfter) => {
-      useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
-      advance(interruptAfter);
+  it('rotation completes, then drive is accepted and travels along cardinal axis', () => {
+    useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
+    advance(120); // let rotation finish
 
-      useSimStore.getState().pressButton(1, DRIVE_10);
-      const heading = useSimStore.getState().robot.heading;
-      const startPos = useSimStore.getState().robot;
-      advance(120);
+    const afterRotate = useSimStore.getState().robot;
+    expect(afterRotate.heading).toBeCloseTo(Math.PI / 2, 9);
 
-      const endPos = useSimStore.getState().robot;
-      const dx = endPos.x - startPos.x;
-      const dy = endPos.y - startPos.y;
-      expect(dx).toBeCloseTo(Math.cos(heading) * 0.10, 3);
-      expect(dy).toBeCloseTo(Math.sin(heading) * 0.10, 3);
-    },
-  );
+    useSimStore.getState().pressButton(1, DRIVE_10);
+    advance(120);
+
+    const afterDrive = useSimStore.getState().robot;
+    expect(afterDrive.x - afterRotate.x).toBeCloseTo(0, 9);
+    expect(afterDrive.y - afterRotate.y).toBeCloseTo(0.10, 3);
+  });
 
   it('cumulative drift: four +90° turns end at exactly 360° heading', () => {
     const startHeading = useSimStore.getState().robot.heading;
@@ -140,17 +130,5 @@ describe('sim-store — heading snap on interrupt (the 8yo-QA bug)', () => {
     expect(end.y).toBeCloseTo(start.y, 3);
     const finalDegrees = ((end.heading * 180) / Math.PI) % 360;
     expect(Math.abs(finalDegrees) % 360).toBeCloseTo(0, 6);
-  });
-
-  it('interrupt with negative-degree rotate: snap still produces a clean integer degree', () => {
-    useSimStore.getState().pressButton(5, ROTATE_LEFT_90);
-    advance(10);
-    useSimStore.getState().pressButton(1, DRIVE_10);
-
-    const snapped = useSimStore.getState().robot;
-    const degrees = (snapped.heading * 180) / Math.PI;
-    expect(degrees).toBeCloseTo(Math.round(degrees), 9);
-    expect(snapped.vLinear).toBe(0);
-    expect(snapped.vAngular).toBe(0);
   });
 });
