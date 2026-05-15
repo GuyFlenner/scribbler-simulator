@@ -134,11 +134,13 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
     }
 
     let nextRobot = state.robot;
+    let programJustCompleted = false;
     if (activeProgram) {
       const { vLinear, vAngular, done } = activeProgram.step(state.robot, dtSeconds, state.board);
       nextRobot = { ...state.robot, vLinear, vAngular };
       if (done) {
         activeProgram = null;
+        programJustCompleted = true;
         nextRobot = {
           ...nextRobot,
           vLinear: 0,
@@ -150,6 +152,10 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
 
     const physicsResult = tick({ ...state, robot: nextRobot }, dtSeconds);
     const prevStatus = state.status;
+    // When a program finishes naturally (no stall, no goal), return to idle so
+    // buttons re-enable. physics.tick() never transitions running → idle by itself.
+    const nextStatus: SimStatus =
+      programJustCompleted && physicsResult.status === 'running' ? 'idle' : physicsResult.status;
     const bonusHit =
       state.bonusHit ||
       (physicsResult.status === 'running' &&
@@ -158,10 +164,10 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       robot: physicsResult.robot,
       board: physicsResult.board,
       tickIndex: physicsResult.tickIndex,
-      status: physicsResult.status,
+      status: nextStatus,
       bonusHit,
     });
-    recordRunIfDone(prevStatus, physicsResult.status, get());
+    recordRunIfDone(prevStatus, nextStatus, get());
   },
 
   resetBoard: () => {

@@ -62,6 +62,37 @@ describe('sim-store — heading snap on natural completion (regression)', () => 
   });
 });
 
+describe('sim-store — status reset after natural completion (buttons re-enable)', () => {
+  it('status returns to idle after rotation completes naturally', () => {
+    useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
+    expect(useSimStore.getState().status).toBe('running');
+
+    advance(120);
+
+    expect(useSimStore.getState().status).toBe('idle');
+  });
+
+  it('pressButton is accepted again after rotation completes', () => {
+    useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
+    advance(120);
+
+    expect(useSimStore.getState().status).toBe('idle');
+
+    // Second press must not be blocked — robot should start moving again
+    useSimStore.getState().pressButton(1, DRIVE_10);
+    expect(useSimStore.getState().status).toBe('running');
+  });
+
+  it('status returns to idle after drive completes naturally', () => {
+    useSimStore.getState().pressButton(1, DRIVE_10);
+    expect(useSimStore.getState().status).toBe('running');
+
+    advance(120);
+
+    expect(useSimStore.getState().status).toBe('idle');
+  });
+});
+
 describe('sim-store — fast-click guard (no diagonal from mid-rotation interrupt)', () => {
   it('pressButton mid-rotation is ignored: status stays running, robot state unchanged', () => {
     useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
