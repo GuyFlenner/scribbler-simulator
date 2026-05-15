@@ -11,9 +11,13 @@ import { makeRobotState } from './sim/physics';
 beforeEach(async () => {
   localStorage.clear();
   await i18n.changeLanguage('en');
-  useSimStore.getState().resetBoard();
-  useEditorStore.getState().resetAll();
+  // Tests in this file pre-date the maze-board default; pin to the open
+  // defaultBoard so drive-east assertions don't collide with maze walls.
+  // Tests that need a different board call setBoard explicitly.
+  useSimStore.getState().setBoard(defaultBoard);
   useBoardsStore.getState().resetAll();
+  useBoardsStore.getState().setActiveBoard(defaultBoard.id);
+  useEditorStore.getState().resetAll();
 });
 
 afterEach(() => {

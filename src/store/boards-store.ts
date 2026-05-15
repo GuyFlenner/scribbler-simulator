@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { BoardState } from '../sim/boards/schema';
 import { parseBoard } from '../sim/boards/schema';
-import { bundledBoards, defaultBoard, findBundledBoard, isBundledBoardId } from '../sim/boards/default';
+import { bundledBoards, mazeBoard, findBundledBoard, isBundledBoardId } from '../sim/boards/default';
 import type { RunRecord } from '../sim/replay';
 
 const BOARDS_KEY = 'scribbler-sim:boards:v1';
@@ -22,9 +22,9 @@ interface PersistedRuns {
 const loadBoards = (): { customBoards: Record<string, BoardState>; activeBoardId: string } => {
   try {
     const raw = localStorage.getItem(BOARDS_KEY);
-    if (!raw) return { customBoards: {}, activeBoardId: defaultBoard.id };
+    if (!raw) return { customBoards: {}, activeBoardId: mazeBoard.id };
     const parsed = JSON.parse(raw) as PersistedBoards;
-    if (parsed.version !== 1) return { customBoards: {}, activeBoardId: defaultBoard.id };
+    if (parsed.version !== 1) return { customBoards: {}, activeBoardId: mazeBoard.id };
     const validated: Record<string, BoardState> = {};
     for (const [id, b] of Object.entries(parsed.customBoards ?? {})) {
       try {
@@ -35,10 +35,10 @@ const loadBoards = (): { customBoards: Record<string, BoardState>; activeBoardId
     }
     return {
       customBoards: validated,
-      activeBoardId: typeof parsed.activeBoardId === 'string' ? parsed.activeBoardId : defaultBoard.id,
+      activeBoardId: typeof parsed.activeBoardId === 'string' ? parsed.activeBoardId : mazeBoard.id,
     };
   } catch {
-    return { customBoards: {}, activeBoardId: defaultBoard.id };
+    return { customBoards: {}, activeBoardId: mazeBoard.id };
   }
 };
 
@@ -113,7 +113,7 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
     const { activeBoardId, customBoards } = get();
     const bundled = findBundledBoard(activeBoardId);
     if (bundled) return bundled;
-    return customBoards[activeBoardId] ?? defaultBoard;
+    return customBoards[activeBoardId] ?? mazeBoard;
   },
 
   listBoards: () => {
@@ -139,7 +139,7 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
     delete customBoards[id];
     const runsByBoard = { ...get().runsByBoard };
     delete runsByBoard[id];
-    const activeBoardId = get().activeBoardId === id ? defaultBoard.id : get().activeBoardId;
+    const activeBoardId = get().activeBoardId === id ? mazeBoard.id : get().activeBoardId;
     set({ customBoards, runsByBoard, activeBoardId });
     persistBoards(customBoards, activeBoardId);
     persistRuns(runsByBoard);
@@ -156,7 +156,7 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
   getRunsForBoard: (id) => get().runsByBoard[id] ?? [],
 
   resetAll: () => {
-    set({ customBoards: {}, activeBoardId: defaultBoard.id, runsByBoard: {} });
+    set({ customBoards: {}, activeBoardId: mazeBoard.id, runsByBoard: {} });
     localStorage.removeItem(BOARDS_KEY);
     localStorage.removeItem(RUNS_KEY);
   },

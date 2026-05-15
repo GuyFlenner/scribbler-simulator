@@ -94,7 +94,7 @@ export function BoardsPanel(): ReactElement {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
                   <BoardThumbnail board={board} size={56} ariaLabel={board.name} />
                   <span>
-                    {board.name}
+                    {board.id === 'maze' ? `${t('boards.maze_name')} 🌀` : board.name}
                     {isActive && (
                       <span style={{ marginInlineStart: 8, fontSize: '0.75rem', color: '#2c5cff' }}>
                         ({t('boards.active_badge')})

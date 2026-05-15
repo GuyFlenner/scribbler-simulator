@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { Behavior, Program, Step } from '../sim/behaviors/schema';
 import { loadProgram, saveProgram, clearProgram } from '../editor/persistence';
+import { classProgramSample } from '../sim/behaviors/starter';
+import { stepsToWorkspaceJson } from '../editor/codegen';
 
 export const PRESS_COUNT_MIN = 1;
 export const PRESS_COUNT_MAX = 8;
@@ -47,12 +49,27 @@ const hydrate = (): {
 } => {
   const loaded = loadProgram();
   const programs: Record<number, Step[]> = {};
+  const workspaceJsonByPressCount: Record<number, unknown> = {};
   if (loaded) {
     for (const b of loaded.behaviors) {
       programs[b.pressCount] = b.steps;
     }
+    return { programs, workspaceJsonByPressCount };
   }
-  return { programs, workspaceJsonByPressCount: {} };
+  // First load (no localStorage) — seed the kid's competition button layout
+  // so `npm run dev` boots with a working program. Returning users keep
+  // whatever they had; "Reset all" still clears (resetAll() bypasses this).
+  for (const entry of classProgramSample) {
+    programs[entry.pressCount] = entry.steps;
+    workspaceJsonByPressCount[entry.pressCount] = stepsToWorkspaceJson(entry.steps);
+  }
+  const behaviors: Behavior[] = classProgramSample.map((e) => ({
+    pressCount: e.pressCount,
+    label: `Press ${e.pressCount}× behavior`,
+    steps: e.steps,
+  }));
+  saveProgram({ version: 1, behaviors });
+  return { programs, workspaceJsonByPressCount };
 };
 
 export const useEditorStore = create<EditorStoreState>((set, get) => ({

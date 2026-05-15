@@ -114,6 +114,8 @@
     "tab_label": "לוחות",
     "list_heading": "לוחות",
     "default_name": "לוח ברירת מחדל 1×1 מ׳",
+    "maze_name": "מבוך",
+    "maze_description": "נווט במסדרונות מהתחלה ליעד — היזהר מקצוות מתים",
     "new_board": "לוח חדש",
     "new_board_default_name": "לוח אימון",
     "select": "בחר",

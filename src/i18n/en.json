@@ -114,6 +114,8 @@
     "tab_label": "Boards",
     "list_heading": "Boards",
     "default_name": "Default 1m × 1m board",
+    "maze_name": "Maze",
+    "maze_description": "Navigate corridors from start to goal — watch for dead ends",
     "new_board": "New board",
     "new_board_default_name": "Practice board",
     "select": "Select",

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { BoardState } from '../sim/boards/schema';
-import { defaultBoard } from '../sim/boards/default';
+import { mazeBoard, findBundledBoard } from '../sim/boards/default';
 import { findBehavior } from '../sim/behaviors/hardcoded';
 import { makeRobotState, tick } from '../sim/physics';
 import { startProgram, type ProgramHandle } from '../sim/runtime';
@@ -80,9 +80,18 @@ const recordRunIfDone = (
   useBoardsStore.getState().recordRun(record);
 };
 
+const resolveInitialBoard = (): BoardState => {
+  const { activeBoardId, customBoards } = useBoardsStore.getState();
+  const bundled = findBundledBoard(activeBoardId);
+  if (bundled) return bundled;
+  return customBoards[activeBoardId] ?? mazeBoard;
+};
+
+const initialBoard = resolveInitialBoard();
+
 export const useSimStore = create<SimStoreState>((set, get) => ({
-  robot: initialRobot(defaultBoard),
-  board: defaultBoard,
+  robot: initialRobot(initialBoard),
+  board: initialBoard,
   tickIndex: 0,
   status: 'idle' as SimStatus,
   runStartedAt: null,
