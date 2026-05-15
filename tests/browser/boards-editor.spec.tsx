@@ -4,10 +4,14 @@ import { render } from 'vitest-browser-react';
 import App from '../../src/App';
 import { storeBridge } from './helpers/store-bridge';
 import { time } from './helpers/time';
+import { defaultBoard } from '../../src/sim/boards/default';
 
 describe('boards-editor: full lifecycle', () => {
   beforeEach(async () => {
     await storeBridge.resetAll();
+    // Pin to open default board so drive-east tests don't hit maze walls.
+    storeBridge.simStore().setBoard(defaultBoard);
+    storeBridge.boardsStore().setActiveBoard(defaultBoard.id);
     render(<App />);
   });
 

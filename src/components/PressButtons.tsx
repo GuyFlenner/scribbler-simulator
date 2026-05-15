@@ -12,6 +12,7 @@ export function PressButtons(): ReactElement {
   const { t } = useTranslation();
   const pressButton = useSimStore((s) => s.pressButton);
   const resetBoard = useSimStore((s) => s.resetBoard);
+  const isRunning = useSimStore((s) => s.status === 'running');
   const programs = useEditorStore((s) => s.programs);
   const [emptyMessage, setEmptyMessage] = useState<string | null>(null);
 
@@ -51,15 +52,17 @@ export function PressButtons(): ReactElement {
             type="button"
             aria-label={t('simulator.press_aria', { count: n, description: label })}
             onClick={() => handleClick(n)}
+            disabled={isRunning}
             style={{
               padding: '0.5rem 1rem',
               fontSize: '0.95rem',
-              cursor: 'pointer',
+              cursor: isRunning ? 'not-allowed' : 'pointer',
               borderRadius: 4,
               border: isEmpty ? '1px dashed #999' : '1px solid #555',
               background: isUser ? '#e8f4ff' : isEmpty ? '#f5f5f5' : '#fff',
               color: isEmpty ? '#888' : '#000',
               textAlign: 'start',
+              opacity: isRunning ? 0.55 : 1,
             }}
           >
             <strong>{t('simulator.press_label', { count: n })}</strong> — {label}

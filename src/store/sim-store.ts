@@ -17,9 +17,8 @@ const startMarker = (board: BoardState): { x: number; y: number; heading: number
 
 // Snap a heading (radians) to an exact multiple of 90° when within ±10°,
 // otherwise to the nearest integer degree. Guarantees subsequent drives
-// travel along a clean axis after a turn. Used both when a program completes
-// naturally AND when a fresh button press interrupts an in-progress program —
-// the interrupt path is the diagonal-drive bug an 8yo hit during QA.
+// travel along a clean axis after a turn. Called when a program completes
+// naturally in tick().
 const snapHeading = (heading: number): number => {
   const degreesRaw = (heading * 180) / Math.PI;
   const nearestMul90 = Math.round(degreesRaw / 90) * 90;
@@ -101,9 +100,11 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
   bonusHit: false,
 
   pressButton: (presses, steps) => {
+    // Block new presses while a program is running — prevents diagonal movement
+    // from an interrupt landing mid-rotation at a non-cardinal heading.
+    if (activeProgram !== null) return;
     const resolvedSteps = steps ?? findBehavior(presses)?.steps;
     if (!resolvedSteps || resolvedSteps.length === 0) return;
-    const wasInterrupt = activeProgram !== null;
     activeProgram = startProgram(resolvedSteps);
     const state = get();
     const startedAt = state.runStartedAt ?? Date.now();
@@ -112,23 +113,11 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       pressCount: presses,
       steps: resolvedSteps,
     };
-    // On interrupt, finalise the heading so the new program starts from a
-    // clean axis. The natural-completion snap inside tick() can't fire because
-    // the previous program never reaches done.
-    const robot: RobotState = wasInterrupt
-      ? {
-          ...state.robot,
-          heading: snapHeading(state.robot.heading),
-          vLinear: 0,
-          vAngular: 0,
-          isStalled: false,
-        }
-      : { ...state.robot, isStalled: false };
     set({
       pressCount: presses,
       status: 'running',
       runStartedAt: startedAt,
-      robot,
+      robot: { ...state.robot, isStalled: false },
       currentRunEvents: [...state.currentRunEvents, event],
     });
   },
