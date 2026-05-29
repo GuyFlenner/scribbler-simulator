@@ -118,6 +118,8 @@
     "maze_description": "נווט במסדרונות מהתחלה ליעד — היזהר מקצוות מתים",
     "new_board": "לוח חדש",
     "new_board_default_name": "לוח אימון",
+    "generate_random": "לוח אקראי",
+    "random_name": "לוח אקראי",
     "select": "בחר",
     "edit": "ערוך",
     "delete": "מחק",

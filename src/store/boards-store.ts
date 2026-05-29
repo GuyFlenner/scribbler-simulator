@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { BoardState } from '../sim/boards/schema';
 import { parseBoard } from '../sim/boards/schema';
 import { bundledBoards, mazeBoard, findBundledBoard, isBundledBoardId } from '../sim/boards/default';
+import { RANDOM_BOARD_ID, generateRandomBoard } from '../sim/boards/random';
 import type { RunRecord } from '../sim/replay';
 
 const BOARDS_KEY = 'scribbler-sim:boards:v1';
@@ -91,11 +92,15 @@ interface BoardsStoreState {
   customBoards: Record<string, BoardState>;
   activeBoardId: string;
   runsByBoard: Record<string, RunRecord[]>;
+  /** Transient, regenerated-in-place random board — never persisted, never in the saved list. */
+  randomBoard: BoardState | null;
   getActiveBoard: () => BoardState;
   listBoards: () => BoardState[];
   setActiveBoard: (id: string) => void;
   saveBoard: (board: BoardState) => void;
   deleteBoard: (id: string) => void;
+  /** Generate a fresh, guaranteed-solvable random board and make it the active board. */
+  loadRandomBoard: () => BoardState;
   recordRun: (run: RunRecord) => void;
   getRunsForBoard: (id: string) => RunRecord[];
   resetAll: () => void;
@@ -108,9 +113,11 @@ const initial = (): { customBoards: Record<string, BoardState>; activeBoardId: s
 
 export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
   ...initial(),
+  randomBoard: null,
 
   getActiveBoard: () => {
-    const { activeBoardId, customBoards } = get();
+    const { activeBoardId, customBoards, randomBoard } = get();
+    if (activeBoardId === RANDOM_BOARD_ID && randomBoard) return randomBoard;
     const bundled = findBundledBoard(activeBoardId);
     if (bundled) return bundled;
     return customBoards[activeBoardId] ?? mazeBoard;
@@ -131,6 +138,14 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
     const customBoards = { ...get().customBoards, [board.id]: board };
     set({ customBoards });
     persistBoards(customBoards, get().activeBoardId);
+  },
+
+  loadRandomBoard: () => {
+    const board = generateRandomBoard();
+    // Random boards are transient: held in memory, never written to the custom
+    // list or localStorage, so repeated clicks don't accumulate clutter.
+    set({ randomBoard: board, activeBoardId: RANDOM_BOARD_ID });
+    return board;
   },
 
   deleteBoard: (id) => {
@@ -156,7 +171,7 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
   getRunsForBoard: (id) => get().runsByBoard[id] ?? [],
 
   resetAll: () => {
-    set({ customBoards: {}, activeBoardId: mazeBoard.id, runsByBoard: {} });
+    set({ customBoards: {}, activeBoardId: mazeBoard.id, runsByBoard: {}, randomBoard: null });
     localStorage.removeItem(BOARDS_KEY);
     localStorage.removeItem(RUNS_KEY);
   },

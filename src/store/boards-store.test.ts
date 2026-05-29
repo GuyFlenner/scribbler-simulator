@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useBoardsStore, createBlankBoard } from './boards-store';
 import { defaultBoard, mazeBoard } from '../sim/boards/default';
+import { RANDOM_BOARD_ID, isBoardSolvable } from '../sim/boards/random';
 import type { RunRecord } from '../sim/replay';
 
 beforeEach(() => {
@@ -51,6 +52,41 @@ describe('boards-store — list + select', () => {
     useBoardsStore.getState().setActiveBoard(board.id);
     useBoardsStore.getState().deleteBoard(board.id);
     expect(useBoardsStore.getState().getActiveBoard().id).toBe(mazeBoard.id);
+  });
+});
+
+describe('boards-store — random board', () => {
+  it('loadRandomBoard returns a solvable board with the random id and makes it active', () => {
+    const board = useBoardsStore.getState().loadRandomBoard();
+    expect(board.id).toBe(RANDOM_BOARD_ID);
+    expect(isBoardSolvable(board)).toBe(true);
+    expect(useBoardsStore.getState().activeBoardId).toBe(RANDOM_BOARD_ID);
+    expect(useBoardsStore.getState().getActiveBoard().id).toBe(RANDOM_BOARD_ID);
+  });
+
+  it('getActiveBoard resolves the transient random board (not a fallback to maze)', () => {
+    const board = useBoardsStore.getState().loadRandomBoard();
+    const active = useBoardsStore.getState().getActiveBoard();
+    expect(active).toBe(board);
+    expect(active.elements.some((e) => e.kind === 'obstacle')).toBe(true);
+  });
+
+  it('regenerating replaces the random board in place (still id random, still solvable)', () => {
+    const first = useBoardsStore.getState().loadRandomBoard();
+    const second = useBoardsStore.getState().loadRandomBoard();
+    expect(second.id).toBe(RANDOM_BOARD_ID);
+    expect(isBoardSolvable(second)).toBe(true);
+    // the store now holds the second board
+    expect(useBoardsStore.getState().getActiveBoard()).toBe(second);
+    // sanity: two generations are independent objects
+    expect(second).not.toBe(first);
+  });
+
+  it('does not pollute the saved board list or persist to localStorage', () => {
+    useBoardsStore.getState().loadRandomBoard();
+    expect(useBoardsStore.getState().listBoards()).toHaveLength(3);
+    const stored = localStorage.getItem('scribbler-sim:boards:v1');
+    expect(stored ?? '').not.toContain(RANDOM_BOARD_ID);
   });
 });
 

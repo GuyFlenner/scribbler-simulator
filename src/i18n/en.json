@@ -118,6 +118,8 @@
     "maze_description": "Navigate corridors from start to goal — watch for dead ends",
     "new_board": "New board",
     "new_board_default_name": "Practice board",
+    "generate_random": "Random board",
+    "random_name": "Random board",
     "select": "Select",
     "edit": "Edit",
     "delete": "Delete",

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useBoardsStore, createBlankBoard } from '../store/boards-store';
 import { useSimStore } from '../store/sim-store';
 import { bundledBoards, defaultBoard, isBundledBoardId } from '../sim/boards/default';
+import { RANDOM_BOARD_ID } from '../sim/boards/random';
 import type { BoardState } from '../sim/boards/schema';
 import { BoardEditor } from './BoardEditor';
 import { BoardThumbnail } from './BoardThumbnail';
@@ -11,14 +12,20 @@ import { RunHistoryPanel } from './RunHistoryPanel';
 export function BoardsPanel(): ReactElement {
   const { t } = useTranslation();
   const customBoards = useBoardsStore((s) => s.customBoards);
+  const randomBoard = useBoardsStore((s) => s.randomBoard);
   const boards = useMemo<BoardState[]>(
-    () => [...bundledBoards, ...Object.values(customBoards)],
-    [customBoards],
+    () => [
+      ...bundledBoards,
+      ...Object.values(customBoards),
+      ...(randomBoard ? [randomBoard] : []),
+    ],
+    [customBoards, randomBoard],
   );
   const activeBoardId = useBoardsStore((s) => s.activeBoardId);
   const setActiveBoard = useBoardsStore((s) => s.setActiveBoard);
   const saveBoard = useBoardsStore((s) => s.saveBoard);
   const deleteBoard = useBoardsStore((s) => s.deleteBoard);
+  const loadRandomBoard = useBoardsStore((s) => s.loadRandomBoard);
   const setSimBoard = useSimStore((s) => s.setBoard);
   const [editing, setEditing] = useState<BoardState | null>(null);
 
@@ -29,6 +36,11 @@ export function BoardsPanel(): ReactElement {
 
   const handleNew = (): void => {
     setEditing(createBlankBoard(t('boards.new_board_default_name')));
+  };
+
+  const handleGenerateRandom = (): void => {
+    const board = loadRandomBoard();
+    setSimBoard(board);
   };
 
   const handleEdit = (board: BoardState): void => {
@@ -65,18 +77,33 @@ export function BoardsPanel(): ReactElement {
       <div style={{ flex: 1, minWidth: 280 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{t('boards.list_heading')}</h2>
-          <button
-            type="button"
-            onClick={handleNew}
-            style={{ padding: '0.3rem 0.7rem', cursor: 'pointer', borderRadius: 4, border: '1px solid #2c5cff', background: '#2c5cff', color: '#fff', fontSize: '0.85rem' }}
-          >
-            + {t('boards.new_board')}
-          </button>
+          <span style={{ display: 'flex', gap: 6 }}>
+            <button
+              type="button"
+              onClick={handleGenerateRandom}
+              style={{ padding: '0.3rem 0.7rem', cursor: 'pointer', borderRadius: 4, border: '1px solid #2c5cff', background: '#fff', color: '#2c5cff', fontSize: '0.85rem' }}
+            >
+              🎲 {t('boards.generate_random')}
+            </button>
+            <button
+              type="button"
+              onClick={handleNew}
+              style={{ padding: '0.3rem 0.7rem', cursor: 'pointer', borderRadius: 4, border: '1px solid #2c5cff', background: '#2c5cff', color: '#fff', fontSize: '0.85rem' }}
+            >
+              + {t('boards.new_board')}
+            </button>
+          </span>
         </div>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {boards.map((board) => {
             const isActive = board.id === activeBoardId;
             const isBundled = isBundledBoardId(board.id);
+            const isRandom = board.id === RANDOM_BOARD_ID;
+            const displayName = isRandom
+              ? `${t('boards.random_name')} 🎲`
+              : board.id === 'maze'
+                ? `${t('boards.maze_name')} 🌀`
+                : board.name;
             return (
               <li
                 key={board.id}
@@ -94,7 +121,7 @@ export function BoardsPanel(): ReactElement {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
                   <BoardThumbnail board={board} size={56} ariaLabel={board.name} />
                   <span>
-                    {board.id === 'maze' ? `${t('boards.maze_name')} 🌀` : board.name}
+                    {displayName}
                     {isActive && (
                       <span style={{ marginInlineStart: 8, fontSize: '0.75rem', color: '#2c5cff' }}>
                         ({t('boards.active_badge')})
@@ -110,7 +137,7 @@ export function BoardsPanel(): ReactElement {
                   >
                     {t('boards.select')}
                   </button>
-                  {!isBundled && (
+                  {!isBundled && !isRandom && (
                     <>
                       <button
                         type="button"
