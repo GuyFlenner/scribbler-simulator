@@ -7,6 +7,7 @@ import {
   boardOccupancy,
   isBoardSolvable,
   generateRandomBoard,
+  carveMaze,
   type Rng,
 } from './random';
 import { parseBoard } from './schema';
@@ -68,7 +69,7 @@ describe('isGridSolvable — 4-connected BFS', () => {
 
 describe('boardOccupancy + isBoardSolvable', () => {
   it('maps full-cell obstacles to the occupancy grid', () => {
-    const board = generateRandomBoard({ rng: seededRng(1), obstacleCount: 5 });
+    const board = generateRandomBoard({ rng: seededRng(1) });
     const occ = boardOccupancy(board, GRID_SIZE);
     let count = 0;
     for (const row of occ) for (const c of row) if (c) count++;
@@ -125,7 +126,7 @@ describe('generateRandomBoard — shape', () => {
   });
 
   it('produces no duplicate obstacle cells', () => {
-    const board = generateRandomBoard({ rng: seededRng(555), obstacleCount: 20 });
+    const board = generateRandomBoard({ rng: seededRng(555) });
     const obstacles = board.elements.filter((e) => e.kind === 'obstacle');
     const cells = obstacleCells(board);
     expect(cells.size).toBe(obstacles.length);
@@ -154,18 +155,75 @@ describe('generateRandomBoard — solvability guarantee (AC3)', () => {
     }
   });
 
-  it('still returns a solvable board even when asked for an impossibly dense layout', () => {
-    // 98 obstacles on a 100-cell grid (all but start/goal) cannot be solvable;
-    // the generator must fall back to a lower count and still return solvable.
-    const board = generateRandomBoard({ rng: seededRng(3), obstacleCount: 98 });
-    expect(isBoardSolvable(board)).toBe(true);
+  it('keeps the start and goal cells open across 200 seeded generations', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const occ = boardOccupancy(generateRandomBoard({ rng: seededRng(seed) }), GRID_SIZE);
+      expect(occ[0][0], `seed ${seed} walled the start cell`).toBe(false);
+      expect(occ[GRID_SIZE - 1][GRID_SIZE - 1], `seed ${seed} walled the goal cell`).toBe(false);
+    }
+  });
+});
+
+describe('carveMaze — connectivity by construction (no safety net)', () => {
+  // Regression: a naive recursive division disconnects ~⅔ of the time because a
+  // child wall seals its parent's single passage. That made the generator fall
+  // back to an L-shaped open border (top row + right column) — a "half
+  // rectangle" the robot could trivially skirt. The carve itself must be
+  // solvable, so the safety fallback never fires.
+  it('every carved 10×10 maze is solvable WITHOUT the L-path fallback (500 seeds)', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const grid = carveMaze(GRID_SIZE, seededRng(seed));
+      expect(isGridSolvable(grid, GRID_SIZE), `seed ${seed} carved a disconnected maze`).toBe(true);
+    }
+  });
+
+  it('never produces the degenerate L-shape (whole top row + whole right column open)', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const occ = boardOccupancy(generateRandomBoard({ rng: seededRng(seed) }), GRID_SIZE);
+      const topRowAllOpen = occ[0].every((c) => !c);
+      const rightColAllOpen = occ.every((row) => !row[GRID_SIZE - 1]);
+      expect(
+        topRowAllOpen && rightColAllOpen,
+        `seed ${seed} fell back to the L-shaped half-rectangle`,
+      ).toBe(false);
+    }
+  });
+
+  it('carves connected mazes across a range of sizes', () => {
+    for (const size of [4, 5, 6, 8, 9, 12]) {
+      for (let seed = 0; seed < 50; seed++) {
+        const grid = carveMaze(size, seededRng(seed));
+        expect(isGridSolvable(grid, size), `size ${size} seed ${seed} disconnected`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('generateRandomBoard — maze structure', () => {
+  it('carves a real maze: many corridor walls, not a sparse scatter', () => {
+    // Recursive division fills a 10×10 grid with substantial wall structure.
+    // A handful of disconnected blocks (the old behaviour) would never reach
+    // this many walls; a fully walled grid would be unsolvable. Assert a band.
+    for (let seed = 0; seed < 50; seed++) {
+      const board = generateRandomBoard({ rng: seededRng(seed) });
+      const walls = board.elements.filter((e) => e.kind === 'obstacle').length;
+      expect(walls, `seed ${seed} produced only ${walls} walls`).toBeGreaterThanOrEqual(15);
+      expect(walls, `seed ${seed} produced ${walls} walls`).toBeLessThanOrEqual(80);
+    }
+  });
+
+  it('produces interior walls along several distinct rows (corridor structure)', () => {
+    const occ = boardOccupancy(generateRandomBoard({ rng: seededRng(11) }), GRID_SIZE);
+    const rowsWithWalls = occ.filter((row) => row.some((c) => c)).length;
+    // A maze threads walls through most rows; a 2-block scatter touches ≤ 2.
+    expect(rowsWithWalls).toBeGreaterThanOrEqual(4);
   });
 });
 
 describe('generateRandomBoard — variety (AC2)', () => {
   it('different seeds produce different obstacle layouts', () => {
-    const a = obstacleCells(generateRandomBoard({ rng: seededRng(1), obstacleCount: 18 }));
-    const b = obstacleCells(generateRandomBoard({ rng: seededRng(2), obstacleCount: 18 }));
+    const a = obstacleCells(generateRandomBoard({ rng: seededRng(1) }));
+    const b = obstacleCells(generateRandomBoard({ rng: seededRng(2) }));
     // not identical sets
     const sameSize = a.size === b.size;
     const identical = sameSize && [...a].every((c) => b.has(c));
@@ -173,7 +231,7 @@ describe('generateRandomBoard — variety (AC2)', () => {
   });
 
   it('respects a custom grid size', () => {
-    const board = generateRandomBoard({ rng: seededRng(4), size: 6, obstacleCount: 5 });
+    const board = generateRandomBoard({ rng: seededRng(4), size: 6 });
     const obstacles = board.elements.filter((e) => e.kind === 'obstacle');
     for (const o of obstacles) {
       if (o.kind !== 'obstacle') continue;
