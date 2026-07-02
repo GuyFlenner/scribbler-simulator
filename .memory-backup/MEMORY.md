@@ -1,0 +1,6 @@
+- [SDLC phase + session checkpoint (2026-05-11)](project_sdlc_phase.md) — 121 tests green; board 1.2m, rotation fixed, awaiting teacher board diagram
+- [Board layout — 1.0m × 1.0m with 10cm grid](project_board_layout.md) — element positions, grid boundaries, why 10cm (re-tuned from 12cm)
+- [Random board generator (2026-05-29)](project_random_board.md) — 🎲 button, transient non-persisted solvable maze, 4-connected BFS guarantee
+- [Son's confirmed competition button layout](project_competition_buttons.md) — 6 press-count behaviors confirmed May 2026; now live in starter.ts
+- [Robot fits in 1 grid square (kid feedback)](feedback_robot_size.md) — robot must be small + elongated so heading is readable; physics decoupled from visual
+- [Cross-button-press flow test coverage gap (closed 2026-05-14)](project_test_coverage_gap.md) — sim-store.ts pressButton interrupt path was untested; diagonal-drive bug shipped because of it. New sim-store.test.ts at 11 tests.
