@@ -39,7 +39,9 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
     const container = containerRef.current;
     if (!container) return;
 
-    Blockly.setLocale((isHebrew ? BlocklyHeMsg : BlocklyEnMsg) as unknown as Record<string, string>);
+    Blockly.setLocale(
+      (isHebrew ? BlocklyHeMsg : BlocklyEnMsg) as unknown as Record<string, string>,
+    );
     registerBlocks(t);
 
     const ws = Blockly.inject(container, {
@@ -95,5 +97,7 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
     };
   }, [pressCount, isHebrew, t]);
 
-  return <div ref={containerRef} style={{ width: '100%', height: 480, border: '1px solid #ccc' }} />;
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: 480, border: '1px solid #ccc' }} />
+  );
 }

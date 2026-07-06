@@ -12,7 +12,8 @@ export type StartMarker = { kind: 'start'; x: number; y: number; heading: number
 export type GoalMarker = { kind: 'goal'; x: number; y: number; toleranceCm: number };
 export type BonusZone = { kind: 'bonus'; x: number; y: number; toleranceCm: number };
 
-export type BoardElement = Obstacle | LineSegment | LightSource | StartMarker | GoalMarker | BonusZone;
+export type BoardElement =
+  Obstacle | LineSegment | LightSource | StartMarker | GoalMarker | BonusZone;
 
 export interface BoardState {
   version: 1;

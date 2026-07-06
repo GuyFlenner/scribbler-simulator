@@ -8,7 +8,7 @@
 
 ## Decomposition rationale
 
-The competition format is *navigate A→B by sequencing pre-programmed behaviors via reset-button press counts*. The kid has already programmed his behaviors in class (BlocklyProp Solo). So the simulator decomposes into:
+The competition format is _navigate A→B by sequencing pre-programmed behaviors via reset-button press counts_. The kid has already programmed his behaviors in class (BlocklyProp Solo). So the simulator decomposes into:
 
 1. A **board + physics + UI shell** (Item 1) — the foundational layer; without it nothing is observable
 2. A **block editor** (Item 2) — Blockly workspace where the kid re-creates his class behaviors and binds them to press-counts
@@ -231,13 +231,13 @@ Once the kid can define behaviors and run them, daily practice value comes from 
 
 ## Prioritisation
 
-| # | Title | Priority | Estimate | Why Now |
-|---|-------|----------|----------|---------|
-| 1 | MVP simulator core | P0 | L | Foundational; nothing else delivers value without it. Must be first. |
-| 2 | Block editor | P1 | L | Mirrors the kid's actual class workflow. Without this, behaviors are demo-only. |
-| 3 | Sensor simulation | P1 | M | Required by the kid's mixed deterministic/reactive program style. Depends on block contracts from Item 2. |
-| 4 | Bilingual UI | P1 | M | Hebrew is the kid's primary language. Should run in parallel with Item 1 if capacity allows. |
-| 5 | Practice features | P2 | M | Daily-practice usefulness. Not blocking competition readiness if it slips. |
+| #   | Title              | Priority | Estimate | Why Now                                                                                                   |
+| --- | ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| 1   | MVP simulator core | P0       | L        | Foundational; nothing else delivers value without it. Must be first.                                      |
+| 2   | Block editor       | P1       | L        | Mirrors the kid's actual class workflow. Without this, behaviors are demo-only.                           |
+| 3   | Sensor simulation  | P1       | M        | Required by the kid's mixed deterministic/reactive program style. Depends on block contracts from Item 2. |
+| 4   | Bilingual UI       | P1       | M        | Hebrew is the kid's primary language. Should run in parallel with Item 1 if capacity allows.              |
+| 5   | Practice features  | P2       | M        | Daily-practice usefulness. Not blocking competition readiness if it slips.                                |
 
 ---
 

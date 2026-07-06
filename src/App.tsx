@@ -89,7 +89,13 @@ export default function App(): ReactElement {
       </header>
       {cheatSheetOpen && <CheatSheet onClose={() => setCheatSheetOpen(false)} />}
       {mode === 'simulator' && <SimulatorView />}
-      <Suspense fallback={<div role="status" aria-live="polite" style={{ padding: 16 }}>…</div>}>
+      <Suspense
+        fallback={
+          <div role="status" aria-live="polite" style={{ padding: 16 }}>
+            …
+          </div>
+        }
+      >
         {mode === 'editor' && <EditorView />}
         {mode === 'boards' && <BoardsPanel />}
       </Suspense>

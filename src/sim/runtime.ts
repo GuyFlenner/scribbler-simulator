@@ -28,7 +28,10 @@ interface Velocities {
 
 const ZERO: Velocities = { vLinear: 0, vAngular: 0 };
 
-function* executeDrive(step: { kind: 'drive'; cm: number; speed?: number }, ctx: Context): Generator<Velocities> {
+function* executeDrive(
+  step: { kind: 'drive'; cm: number; speed?: number },
+  ctx: Context,
+): Generator<Velocities> {
   const distanceM = Math.abs(step.cm) / 100;
   const direction = step.cm >= 0 ? 1 : -1;
   const speed = (step.speed ?? DEFAULT_LINEAR_SPEED) * direction;
@@ -100,7 +103,10 @@ function* executeDriveArc(
   }
 }
 
-function* executeRotate(step: { kind: 'rotate'; degrees: number; speed?: number }, ctx: Context): Generator<Velocities> {
+function* executeRotate(
+  step: { kind: 'rotate'; degrees: number; speed?: number },
+  ctx: Context,
+): Generator<Velocities> {
   const radians = (Math.abs(step.degrees) * Math.PI) / 180;
   const direction = step.degrees >= 0 ? 1 : -1;
   const speed = (step.speed ?? DEFAULT_ANGULAR_SPEED) * direction;
@@ -121,7 +127,10 @@ function* executeRotate(step: { kind: 'rotate'; degrees: number; speed?: number 
   }
 }
 
-function* executeWait(step: { kind: 'wait'; seconds: number }, ctx: Context): Generator<Velocities> {
+function* executeWait(
+  step: { kind: 'wait'; seconds: number },
+  ctx: Context,
+): Generator<Velocities> {
   let elapsed = 0;
   while (elapsed < step.seconds) {
     yield ZERO;
@@ -170,10 +179,7 @@ function* executeStep(step: Step, ctx: Context): Generator<Velocities> {
     }
     case 'while': {
       let iter = 0;
-      while (
-        iter < step.maxIterations &&
-        evalPredicate(step.condition, ctx.robot, ctx.board)
-      ) {
+      while (iter < step.maxIterations && evalPredicate(step.condition, ctx.robot, ctx.board)) {
         yield* executeSequence(step.body, ctx);
         if (ctx.robot.isStalled) return;
         iter += 1;

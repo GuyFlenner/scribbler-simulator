@@ -135,13 +135,13 @@ Per CLAUDE.md: no remote, no GitHub Actions. The "CI" gate is `npm run test:all`
 
 Each of the 5 items shipped with one or more of these caveats:
 
-| Item | Caveat |
-|---|---|
-| 1 — MVP sim core | "Manual: load board with 20 obstacles, run for 60s, observe DevTools shows fps stays >50" — never automated |
-| 2 — Block editor | "Blockly in jsdom: real workspace mounting is exercised by the mode-toggle test only. Block-drag-and-drop interactions are not unit-testable in jsdom" |
-| 3 — Sensor sim | No visual gate that sensor-driven behaviour produces the expected motion arc on the canvas |
-| 4 — Bilingual UI | RTL layout, Hebrew font rendering, Blockly's `msg/he` injection — none verified visually |
-| 5 — Practice features | "Pragmatic editor (palette + click-to-place + property panel)" — interaction never tested, only the resulting `BoardState` |
+| Item                  | Caveat                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 — MVP sim core      | "Manual: load board with 20 obstacles, run for 60s, observe DevTools shows fps stays >50" — never automated                                            |
+| 2 — Block editor      | "Blockly in jsdom: real workspace mounting is exercised by the mode-toggle test only. Block-drag-and-drop interactions are not unit-testable in jsdom" |
+| 3 — Sensor sim        | No visual gate that sensor-driven behaviour produces the expected motion arc on the canvas                                                             |
+| 4 — Bilingual UI      | RTL layout, Hebrew font rendering, Blockly's `msg/he` injection — none verified visually                                                               |
+| 5 — Practice features | "Pragmatic editor (palette + click-to-place + property panel)" — interaction never tested, only the resulting `BoardState`                             |
 
 ### What Playwright/Vitest-browser would close
 
@@ -157,7 +157,7 @@ Each of the 5 items shipped with one or more of these caveats:
 These remain HITL items the project owner has to eyeball:
 
 1. **"Is this Hebrew text rendering nicely for a kid"** — font choice, line-height, kerning. Screenshot diff catches regressions, not first-pass aesthetics.
-2. **Animation feel** — does the robot motion feel right at 60Hz, is there visible stutter, is the friction tuned. Pixel-perfect screenshots can't tell you the robot moves *too fast* or *too slow* if both states draw correctly per frame.
+2. **Animation feel** — does the robot motion feel right at 60Hz, is there visible stutter, is the friction tuned. Pixel-perfect screenshots can't tell you the robot moves _too fast_ or _too slow_ if both states draw correctly per frame.
 3. **Sound** — `beep` step plays through the AudioContext; we can assert AudioContext was poked but not that it's audibly correct.
 4. **Real-S3 fidelity** — speed/acceleration calibration vs the actual robot. This is documented as out-of-scope until a robot is available.
 5. **Mobile/tablet ergonomics** — viewport-specific tests add complexity; not in scope for Phase 1-3.
@@ -169,21 +169,21 @@ These remain HITL items the project owner has to eyeball:
 
 ### Considered options
 
-| Option | Pros | Cons |
-|---|---|---|
-| **A. Vitest browser mode + Playwright provider** | Same runner, same config, same `i18n`/store imports as unit tests. `toMatchScreenshot()` mature in Vitest 3.x. Tree-shakes test-mode hooks at build time. One `npm test:all` covers everything. | Less mature ecosystem of plugins than Playwright Test. Visual-regression docs newer (~2025). |
-| **B. Playwright Test (standalone) + the existing dev server** | Largest community, richest debugging (trace viewer, codegen, UI mode). Best-in-class `toHaveScreenshot()`. | Second test runner. Second config. Tests live in their own world — can't import the `useSimStore` directly, must script through `window`. Encourages duplicate fixtures. |
-| **C. Playwright component testing** | Real browser per component | Marked "experimental" in Playwright docs. React 19 + Blockly + Zustand mounting story is unproven; many community gotchas. Component CT for an SPA is a worse fit than full-page tests. |
-| **D. Cypress** | Familiar, good DX | Two engines (its own + Chromium). Slower, more flake than Playwright in 2026 benchmarks. No advantage for a no-backend SPA. |
-| **E. Stay jsdom-only, accept the manual gate** | Zero churn | Doesn't close the autonomous-gap that is the whole point of this plan. |
+| Option                                                        | Pros                                                                                                                                                                                            | Cons                                                                                                                                                                                    |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A. Vitest browser mode + Playwright provider**              | Same runner, same config, same `i18n`/store imports as unit tests. `toMatchScreenshot()` mature in Vitest 3.x. Tree-shakes test-mode hooks at build time. One `npm test:all` covers everything. | Less mature ecosystem of plugins than Playwright Test. Visual-regression docs newer (~2025).                                                                                            |
+| **B. Playwright Test (standalone) + the existing dev server** | Largest community, richest debugging (trace viewer, codegen, UI mode). Best-in-class `toHaveScreenshot()`.                                                                                      | Second test runner. Second config. Tests live in their own world — can't import the `useSimStore` directly, must script through `window`. Encourages duplicate fixtures.                |
+| **C. Playwright component testing**                           | Real browser per component                                                                                                                                                                      | Marked "experimental" in Playwright docs. React 19 + Blockly + Zustand mounting story is unproven; many community gotchas. Component CT for an SPA is a worse fit than full-page tests. |
+| **D. Cypress**                                                | Familiar, good DX                                                                                                                                                                               | Two engines (its own + Chromium). Slower, more flake than Playwright in 2026 benchmarks. No advantage for a no-backend SPA.                                                             |
+| **E. Stay jsdom-only, accept the manual gate**                | Zero churn                                                                                                                                                                                      | Doesn't close the autonomous-gap that is the whole point of this plan.                                                                                                                  |
 
 ### Recommendation: **A — Vitest browser mode**, with **B as a reserve** for true E2E flows
 
-The qa-automation (Java) repo is a useful pattern source for *test architecture* (page object split, `WaitUtils` named timeouts, screenshot-on-failure as Allure attachments — see [§ Patterns from qa-automation](#patterns-from-qa-automation)). It is not a fit for stack choice. That repo tests an authenticated multi-page Salesforce app across browsers; scribbler-simulator is a single-page no-auth no-backend kid's tool.
+The qa-automation (Java) repo is a useful pattern source for _test architecture_ (page object split, `WaitUtils` named timeouts, screenshot-on-failure as Allure attachments — see [§ Patterns from qa-automation](#patterns-from-qa-automation)). It is not a fit for stack choice. That repo tests an authenticated multi-page Salesforce app across browsers; scribbler-simulator is a single-page no-auth no-backend kid's tool.
 
 The hard tipping factor: the existing 85 tests already use `useSimStore.getState()` + `act()` + RTL `screen.getByLabelText()` — this idiom continues to work in Vitest browser mode (via `vitest-browser-react`), but would require a complete rewrite under standalone Playwright Test. Migration cost favours A.
 
-If a flow requires a true page reload (e.g. "set lang to Hebrew, reload, assert it stuck"), Vitest browser mode handles it via `page.reload()` already — Playwright Test doesn't add anything. The reserve clause for B applies only to tests that need *multiple tabs* or genuine cross-origin behaviour, neither of which exists in this product.
+If a flow requires a true page reload (e.g. "set lang to Hebrew, reload, assert it stuck"), Vitest browser mode handles it via `page.reload()` already — Playwright Test doesn't add anything. The reserve clause for B applies only to tests that need _multiple tabs_ or genuine cross-origin behaviour, neither of which exists in this product.
 
 ---
 
@@ -191,25 +191,25 @@ If a flow requires a true page reload (e.g. "set lang to Hebrew, reload, assert 
 
 Priority key: **Must** = needed before Phase 1 sign-off. **Should** = Phase 2. **Could** = Phase 3+. **Won't** = explicitly out of scope.
 
-| Feature area | jsdom now tests | Only a browser can verify | Proposed browser test | Priority |
-|---|---|---|---|---|
-| Press-button → robot moves | Store mutation, label-by-aria | Canvas actually redraws at new robot position | `simulator-canvas.spec.ts::press2-moves-robot` (sample pixel at expected end position) | Must |
-| Reset board | Store reset to initial pose | Canvas A marker rendered, robot back at A pixel-wise | `simulator-canvas.spec.ts::reset-returns-to-A` | Must |
-| Goal overlay | Text "well done" in DOM | Overlay actually visible on top of canvas, not z-index'd off-screen | `simulator-canvas.spec.ts::goal-overlay-visible` | Must |
-| Stall indicator | `data-testid` present in DOM | Canvas robot turns red on stall (visual cue) | `simulator-canvas.spec.ts::stall-tints-robot-red` | Should |
-| Editor mount | Editor view's tab strip renders | Blockly SVG workspace actually injects, toolbox visible | `editor-blockly.spec.ts::editor-mounts-blockly` | Must |
-| Block drag → Step[] | Codegen tested with hand-built JSON fixtures | Real `mousedown`/`mousemove`/`mouseup` from toolbox onto workspace produces the same Step[] | `editor-blockly.spec.ts::drag-drive-block-compiles` | Should |
-| Editor persistence | localStorage round-trip in jsdom | Real reload re-hydrates programs, Blockly workspace re-renders | `persistence.spec.ts::programs-survive-reload` | Should |
-| Bilingual toggle (text) | `screen.getByRole('heading', name: /סקריבלר/)` | Hebrew strings actually render in the correct font, not as `???` | `language-toggle.spec.ts::hebrew-strings-render` | Should |
-| RTL flip | `document.documentElement.dir === 'rtl'` | Layout actually mirrors — header right-aligned, button order flipped | `language-toggle.spec.ts::rtl-mirrors-header` (screenshot) | Should |
-| Blockly Hebrew msgs | None — opaque inside Blockly | Blockly toolbox renders RTL with `msg/he` strings | `editor-blockly.spec.ts::blockly-hebrew-toolbox` (screenshot) | Could |
-| Boards panel | List items in DOM | Panel renders; "Edit" / "Delete" buttons clickable; new board persists | `boards-editor.spec.ts::create-edit-save-board` | Should |
-| Board editor click-to-place | Tested by simulating `click()` events | Real coordinate math (`getBoundingClientRect`) gives same result | `boards-editor.spec.ts::click-places-obstacle-at-cursor` | Should |
-| Run history | Store CRUD | Run list actually populates after a sim run; replay button click triggers replay | `simulator-canvas.spec.ts::run-history-after-goal` | Should |
-| Lazy-loaded chunks | Forced-loaded in jsdom | Real Suspense fallback "..." shows, then chunk arrives, then editor mounts | `smoke.spec.ts::editor-tab-shows-suspense` | Could |
-| Animation perf | None | 60fps sustained over a 30s run | Skip — see [§ What we explicitly do NOT test](#what-we-explicitly-do-not-test) | Won't |
-| Mobile viewport | None | Tablet layout doesn't break | Skip until post-competition | Won't |
-| Cross-browser | None | Firefox/Webkit don't crash | Skip — chromium-only Phase 1-3, see Phase 4 | Won't (until Phase 4) |
+| Feature area                | jsdom now tests                                | Only a browser can verify                                                                   | Proposed browser test                                                                  | Priority              |
+| --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------- |
+| Press-button → robot moves  | Store mutation, label-by-aria                  | Canvas actually redraws at new robot position                                               | `simulator-canvas.spec.ts::press2-moves-robot` (sample pixel at expected end position) | Must                  |
+| Reset board                 | Store reset to initial pose                    | Canvas A marker rendered, robot back at A pixel-wise                                        | `simulator-canvas.spec.ts::reset-returns-to-A`                                         | Must                  |
+| Goal overlay                | Text "well done" in DOM                        | Overlay actually visible on top of canvas, not z-index'd off-screen                         | `simulator-canvas.spec.ts::goal-overlay-visible`                                       | Must                  |
+| Stall indicator             | `data-testid` present in DOM                   | Canvas robot turns red on stall (visual cue)                                                | `simulator-canvas.spec.ts::stall-tints-robot-red`                                      | Should                |
+| Editor mount                | Editor view's tab strip renders                | Blockly SVG workspace actually injects, toolbox visible                                     | `editor-blockly.spec.ts::editor-mounts-blockly`                                        | Must                  |
+| Block drag → Step[]         | Codegen tested with hand-built JSON fixtures   | Real `mousedown`/`mousemove`/`mouseup` from toolbox onto workspace produces the same Step[] | `editor-blockly.spec.ts::drag-drive-block-compiles`                                    | Should                |
+| Editor persistence          | localStorage round-trip in jsdom               | Real reload re-hydrates programs, Blockly workspace re-renders                              | `persistence.spec.ts::programs-survive-reload`                                         | Should                |
+| Bilingual toggle (text)     | `screen.getByRole('heading', name: /סקריבלר/)` | Hebrew strings actually render in the correct font, not as `???`                            | `language-toggle.spec.ts::hebrew-strings-render`                                       | Should                |
+| RTL flip                    | `document.documentElement.dir === 'rtl'`       | Layout actually mirrors — header right-aligned, button order flipped                        | `language-toggle.spec.ts::rtl-mirrors-header` (screenshot)                             | Should                |
+| Blockly Hebrew msgs         | None — opaque inside Blockly                   | Blockly toolbox renders RTL with `msg/he` strings                                           | `editor-blockly.spec.ts::blockly-hebrew-toolbox` (screenshot)                          | Could                 |
+| Boards panel                | List items in DOM                              | Panel renders; "Edit" / "Delete" buttons clickable; new board persists                      | `boards-editor.spec.ts::create-edit-save-board`                                        | Should                |
+| Board editor click-to-place | Tested by simulating `click()` events          | Real coordinate math (`getBoundingClientRect`) gives same result                            | `boards-editor.spec.ts::click-places-obstacle-at-cursor`                               | Should                |
+| Run history                 | Store CRUD                                     | Run list actually populates after a sim run; replay button click triggers replay            | `simulator-canvas.spec.ts::run-history-after-goal`                                     | Should                |
+| Lazy-loaded chunks          | Forced-loaded in jsdom                         | Real Suspense fallback "..." shows, then chunk arrives, then editor mounts                  | `smoke.spec.ts::editor-tab-shows-suspense`                                             | Could                 |
+| Animation perf              | None                                           | 60fps sustained over a 30s run                                                              | Skip — see [§ What we explicitly do NOT test](#what-we-explicitly-do-not-test)         | Won't                 |
+| Mobile viewport             | None                                           | Tablet layout doesn't break                                                                 | Skip until post-competition                                                            | Won't                 |
+| Cross-browser               | None                                           | Firefox/Webkit don't crash                                                                  | Skip — chromium-only Phase 1-3, see Phase 4                                            | Won't (until Phase 4) |
 
 Total Must = 4. Should = 8. Could = 2. Won't = 3.
 
@@ -234,8 +234,9 @@ Run order: `unit` first, then `browser`. Browser tests are slower, no point runn
 **Pick: typed test-helper functions, not page objects**, with a thin "screen" wrapper around `vitest-browser-react`'s built-in locators.
 
 Rationale:
+
 - The qa-automation repo's POM (Page Object Model) split into `Locators` / `Actions` / `Flows` / `Bible` is sized for a 50-page Salesforce org with thousands of tests. scribbler-simulator has ~5 visible "screens" (simulator, editor, boards panel, board editor modal, language toggle) and will probably grow to ~10 over the project's life. A POM here is over-engineered.
-- The helper functions sit one level above the locators, exactly the same shape as qa-automation's `LoginFlows::QA_T7_login_happy_flow` — composed from atomic actions — but expressed as plain TS functions instead of a Java class. That preserves the *idiom* the qa-automation repo proves works, without dragging in the ceremony.
+- The helper functions sit one level above the locators, exactly the same shape as qa-automation's `LoginFlows::QA_T7_login_happy_flow` — composed from atomic actions — but expressed as plain TS functions instead of a Java class. That preserves the _idiom_ the qa-automation repo proves works, without dragging in the ceremony.
 
 Skeleton of a helper:
 
@@ -283,24 +284,29 @@ This split mirrors the qa-automation repo's `WaitUtils.isVisibleFast` vs `valida
 **Layered approach:**
 
 1. **Layer 1 — pixel sampling at known coordinates** (preferred for invariants):
+
    ```typescript
    // canvas at goal position (~0.92m × 0.92m on default 1m × 1m board → pixel 460, 460)
    const pixel = await canvas.samplePixel(460, 460);
-   expect(pixel.r).toBeGreaterThan(180);  // red B-marker
+   expect(pixel.r).toBeGreaterThan(180); // red B-marker
    expect(pixel.r).toBeGreaterThan(pixel.g + 80);
    ```
-   No baseline file. Resilient to font tweaks, theme changes. Use for *correctness* assertions (the marker is where it should be, the robot turned red on stall, etc.).
+
+   No baseline file. Resilient to font tweaks, theme changes. Use for _correctness_ assertions (the marker is where it should be, the robot turned red on stall, etc.).
 
 2. **Layer 2 — `toMatchScreenshot()` for whole-canvas baselines** (regression net):
+
    ```typescript
    await expect(page.getByRole('img', { name: /board/i })).toMatchScreenshot('default-board-empty');
    ```
+
    File committed as `screenshots/chromium-win32/default-board-empty.png`. **Baselines are platform-pinned** — only re-generated on the project owner's Windows laptop, where the kid runs the sim. Cross-OS variance is documented as out-of-scope.
 
 3. **Layer 3 — DOM-level overlays** (already passing, don't break):
    The "well done" overlay, stall indicator, and goal markers are rendered as DOM elements over the canvas. Existing `getByText(/well done/)` style assertions stay. They don't need a screenshot.
 
 **Baseline update policy:**
+
 - Baselines live in `screenshots/<browser>-<os>/`, tracked in git.
 - Updates require **explicit operator action**: `npm run test:browser:update` is a manual command, never invoked by the SDLC pipeline.
 - Each baseline file is small (<50 KB PNG); 10-15 baselines total.
@@ -311,10 +317,12 @@ This split mirrors the qa-automation repo's `WaitUtils.isVisibleFast` vs `valida
 Blockly is the hardest surface. The plan uses **three escalating strategies**, picking the cheapest that suffices per test:
 
 1. **Workspace JSON injection** (preferred for codegen verification): seed the workspace via `Blockly.serialization.workspaces.load()` from a JSON fixture, then assert the `editorStore.programs[N]` matches expectations. Bypasses drag entirely.
+
    ```typescript
    await blockly.loadWorkspaceJson(2, fixtures.driveBlockJson);
    expect(storeBridge.editorStore().programs[2]).toEqual([{ kind: 'drive', cm: 30 }]);
    ```
+
    This covers ~80% of editor tests and stays robust against Blockly version bumps.
 
 2. **Coordinate-based mouse events** (for actual drag-and-drop verification): use `page.mouse.move/down/up` over Blockly's SVG, with selectors derived from Blockly's `data-id` attributes which are stable. Used sparingly — one or two tests max.
@@ -331,18 +339,18 @@ Two distinct concerns:
 2. **Visual layout under RTL** — new browser tests:
    - `language-toggle.spec.ts::switches-html-dir` — `expect(document.documentElement).toHaveAttribute('dir', 'rtl')` after Hebrew toggle.
    - `language-toggle.spec.ts::hebrew-text-renders-in-buttons` — read `getByRole('button', { name: /אפס לוח/ })` from the actual rendered page (not just `screen` like jsdom).
-   - `language-toggle.spec.ts::rtl-mirrors-header-layout` — screenshot of the header in EN vs HE, asserting they're mirror images. *This is the only screenshot test that's worth having two baselines (one per locale).*
+   - `language-toggle.spec.ts::rtl-mirrors-header-layout` — screenshot of the header in EN vs HE, asserting they're mirror images. _This is the only screenshot test that's worth having two baselines (one per locale)._
    - `editor-blockly.spec.ts::blockly-hebrew-toolbox` — screenshot of the toolbox after switching to Hebrew, confirming Blockly's `msg/he` actually loaded.
 
 ### Determinism strategy (rAF, timers, animations)
 
 Three hand-offs in the rendering pipeline that have to be controlled:
 
-| Source | Production behaviour | Test mode |
-|---|---|---|
-| `requestAnimationFrame` in `BoardCanvas` | Browser-driven, ~60fps, real wall-clock | `page.clock.install()` overrides rAF. Tests advance with `page.clock.runFor(ms)` to step exactly N frames. |
-| `Date.now()` for `runStartedAt` | Wall clock | `page.clock.setSystemTime(<fixed>)` so run records are deterministic |
-| CSS animations (e.g. fade-in) | Real | Vitest browser mode disables animations during `toMatchScreenshot` by default; explicit opt-out only if a test wants to verify an animation runs |
+| Source                                   | Production behaviour                    | Test mode                                                                                                                                        |
+| ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `requestAnimationFrame` in `BoardCanvas` | Browser-driven, ~60fps, real wall-clock | `page.clock.install()` overrides rAF. Tests advance with `page.clock.runFor(ms)` to step exactly N frames.                                       |
+| `Date.now()` for `runStartedAt`          | Wall clock                              | `page.clock.setSystemTime(<fixed>)` so run records are deterministic                                                                             |
+| CSS animations (e.g. fade-in)            | Real                                    | Vitest browser mode disables animations during `toMatchScreenshot` by default; explicit opt-out only if a test wants to verify an animation runs |
 
 The current code already accommodates this — `tick(dtSeconds)` is parameterized, so `runFor(ms)` translates to a known number of `dt = 1/60` ticks. No source change needed beyond the window bridge.
 
@@ -353,11 +361,13 @@ The current code already accommodates this — `tick(dtSeconds)` is parameterize
 **Decision: expose `window.__scribbler` in test mode only.**
 
 Pro:
+
 - Test code can read `useSimStore.getState().robot` directly — no DOM-reverse-engineering, no scraping the canvas.
-- Identical to how the existing 85 unit tests work (`useSimStore.getState()` is *the* test API). Migration is mechanical.
+- Identical to how the existing 85 unit tests work (`useSimStore.getState()` is _the_ test API). Migration is mechanical.
 - Compile-time stripped: `if (import.meta.env.MODE === 'test')` is a constant in production, Vite/Rollup's tree-shake removes the entire branch.
 
 Con:
+
 - A future security review might flag "leaks app internals to the global object." Mitigation: the bridge is gated behind `import.meta.env.MODE === 'test'` AND `import.meta.env.VITE_E2E === '1'`, both of which are inert in the production build.
 - Tests become tightly coupled to store shape. Mitigation: same coupling already exists in the 85 unit tests; this isn't a new tax.
 
@@ -446,17 +456,18 @@ Zero on production. The window-bridge in `main.tsx` is dead-code-eliminated when
 
 ### CI time impact (local "CI", per CLAUDE.md)
 
-| Stage | Before | After Phase 1 | After Phase 1+2 | After Phase 1+2+3 |
-|---|---|---|---|---|
-| `npm run test` | ~3s | ~13s | ~63s | ~78s |
-| `npm run typecheck` | ~4s | ~4s | ~4s | ~4s |
-| Total dev round-trip | ~7s | ~17s | ~67s | ~82s |
+| Stage                | Before | After Phase 1 | After Phase 1+2 | After Phase 1+2+3 |
+| -------------------- | ------ | ------------- | --------------- | ----------------- |
+| `npm run test`       | ~3s    | ~13s          | ~63s            | ~78s              |
+| `npm run typecheck`  | ~4s    | ~4s           | ~4s             | ~4s               |
+| Total dev round-trip | ~7s    | ~17s          | ~67s            | ~82s              |
 
 Phase 1+2 stays under 90s, which is the project owner's stated rough target for "still feels fast." Phase 3 visual regression pushes the upper end; mitigation: visual baselines run only in `npm run test:browser`, not `npm run test`, so the SDLC pipeline opts in.
 
 ### Maintenance burden
 
 Visual baselines are the biggest maintenance cost. Mitigations:
+
 - **Cap baselines at ~10 files** — only the highest-value scenes
 - **Pin to one platform** — Windows laptop, chromium only
 - **Manual update gate** — never auto-update
@@ -467,15 +478,15 @@ If a baseline-breaking change ships, the project owner reviews the diff in the V
 
 ### What we explicitly do NOT test
 
-| Won't test | Why |
-|---|---|
-| 60fps perf sustained over 30s | Hard to assert on a single laptop reliably; manual eyeball still required. |
+| Won't test                                                      | Why                                                                                                                                            |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 60fps perf sustained over 30s                                   | Hard to assert on a single laptop reliably; manual eyeball still required.                                                                     |
 | Real timing accuracy (e.g. "drive 30cm in 2.0s") in the browser | Already covered by deterministic unit tests with bit-exact tick replay. Browser tests use `clock.install`, which removes timing as a variable. |
-| Cross-browser compat (Firefox, Webkit) | Only chromium in Phase 1-3. Kid's family laptop runs Chrome. Phase 4 is the trigger. |
-| Mobile viewport | Out of scope per CLAUDE.md. Tablet may follow post-competition. |
-| Audio (`beep` step) | AudioContext sampling is deep magic; assert it was *invoked*, not that it was *audible*. |
-| Real keyboard accessibility (tab order, focus rings) | Should add later; not Phase 1-3. |
-| Print / PDF export | No such feature exists or is planned. |
+| Cross-browser compat (Firefox, Webkit)                          | Only chromium in Phase 1-3. Kid's family laptop runs Chrome. Phase 4 is the trigger.                                                           |
+| Mobile viewport                                                 | Out of scope per CLAUDE.md. Tablet may follow post-competition.                                                                                |
+| Audio (`beep` step)                                             | AudioContext sampling is deep magic; assert it was _invoked_, not that it was _audible_.                                                       |
+| Real keyboard accessibility (tab order, focus rings)            | Should add later; not Phase 1-3.                                                                                                               |
+| Print / PDF export                                              | No such feature exists or is planned.                                                                                                          |
 
 ---
 
@@ -498,6 +509,7 @@ Ship together so the SDLC pipeline can rely on the gate:
 ### Phase 2 — per-feature deep coverage (~10 hours)
 
 Tests 6-17 from the inventory, plus all `helpers/<feature>.ts` modules. Probably split over 2-3 SDLC items, e.g.:
+
 - 2a — editor & blockly tests
 - 2b — boards & persistence tests
 - 2c — language toggle & RTL tests
@@ -518,12 +530,12 @@ Add Firefox + Webkit projects. Re-baseline visual tests per platform. Decide whe
 
 ### Each phase summary
 
-| Phase | Hrs | Tests | Manual still required after |
-|---|---|---|---|
-| 1 | 6 | 5 | Hebrew aesthetics, animation feel |
-| 2 | 10 | 12 | RTL aesthetics, animation feel |
-| 3 | 4 | 3 | Animation feel, font rendering quirks |
-| 4 | (deferred) | — | — |
+| Phase | Hrs        | Tests | Manual still required after           |
+| ----- | ---------- | ----- | ------------------------------------- |
+| 1     | 6          | 5     | Hebrew aesthetics, animation feel     |
+| 2     | 10         | 12    | RTL aesthetics, animation feel        |
+| 3     | 4          | 3     | Animation feel, font rendering quirks |
+| 4     | (deferred) | —     | —                                     |
 
 After Phase 3, the SDLC pipeline can declare features "done" autonomously for ~90% of the gaps `docs/status.md` flagged. The remaining ~10% (animation feel, kid-readability of Hebrew) stay HITL — but they'd stay HITL even with a perfect test suite, because they are genuinely subjective.
 
@@ -546,7 +558,7 @@ import { storeBridge } from './helpers/store-bridge';
 describe('smoke: golden path', () => {
   beforeEach(async () => {
     await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-    await page.goto('/');  // dev server served by Vitest browser mode
+    await page.goto('/'); // dev server served by Vitest browser mode
     await storeBridge.resetAll();
   });
 
@@ -559,7 +571,7 @@ describe('smoke: golden path', () => {
     await time.runFor(2200);
 
     const robot = storeBridge.simStore().robot;
-    expect(robot.x - startX).toBeCloseTo(0.30, 1);
+    expect(robot.x - startX).toBeCloseTo(0.3, 1);
     expect(robot.y).toBeCloseTo(startX, 1);
   });
 });
@@ -592,14 +604,14 @@ describe('simulator canvas: marker rendering', () => {
       Math.round((start.x / board.width) * CANVAS_PX),
       Math.round((start.y / board.height) * CANVAS_PX),
     );
-    expect(startPx.g).toBeGreaterThan(120);     // green A marker
+    expect(startPx.g).toBeGreaterThan(120); // green A marker
     expect(startPx.g).toBeGreaterThan(startPx.r + 20);
 
     const goalPx = await canvas.samplePixel(
       Math.round((goal.x / board.width) * CANVAS_PX),
       Math.round((goal.y / board.height) * CANVAS_PX),
     );
-    expect(goalPx.r).toBeGreaterThan(150);       // red B marker
+    expect(goalPx.r).toBeGreaterThan(150); // red B marker
     expect(goalPx.r).toBeGreaterThan(goalPx.g + 60);
   });
 });
@@ -607,12 +619,15 @@ describe('simulator canvas: marker rendering', () => {
 // helpers/canvas.ts
 export const canvas = {
   async samplePixel(x: number, y: number): Promise<{ r: number; g: number; b: number; a: number }> {
-    return await page.evaluate(([px, py]) => {
-      const c = document.querySelector('canvas[role="img"]') as HTMLCanvasElement;
-      const ctx = c.getContext('2d')!;
-      const data = ctx.getImageData(px, py, 1, 1).data;
-      return { r: data[0], g: data[1], b: data[2], a: data[3] };
-    }, [x, y]);
+    return await page.evaluate(
+      ([px, py]) => {
+        const c = document.querySelector('canvas[role="img"]') as HTMLCanvasElement;
+        const ctx = c.getContext('2d')!;
+        const data = ctx.getImageData(px, py, 1, 1).data;
+        return { r: data[0], g: data[1], b: data[2], a: data[3] };
+      },
+      [x, y],
+    );
   },
 };
 ```
@@ -705,6 +720,7 @@ export const blockly = {
 The Developer should **not** start work from this doc directly — the project owner first reviews the 6 HITL items above, especially the window-bridge decision (#1) and the platform pin (#2). After approval, this becomes the design input for an SDLC item titled "Add browser-based UI test layer (Phase 1 — smoke tests + infra)." That item ships only the 5 Phase-1 tests; Phase 2 and beyond each get their own backlog entries.
 
 Sources consulted:
+
 - Playwright docs: [Clock](https://playwright.dev/docs/clock), [Visual comparisons](https://playwright.dev/docs/test-snapshots), [Components (experimental)](https://playwright.dev/docs/test-components)
 - Vitest docs: [Browser Mode](https://vitest.dev/guide/browser/), [Visual Regression](https://vitest.dev/guide/browser/visual-regression-testing), [Configuring Playwright provider](https://vitest.dev/config/browser/playwright)
 - [Vitest Browser Mode vs Playwright Component Testing — pkgpulse 2026](https://www.pkgpulse.com/blog/vitest-browser-mode-vs-playwright-component-testing-vs-2026)

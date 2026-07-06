@@ -17,7 +17,16 @@ export function RunHistoryPanel({ boardId }: { boardId: string }): ReactElement 
       {runs.length === 0 ? (
         <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>{t('boards.no_runs')}</p>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <ul
+          style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}
+        >
           {runs.map((run) => (
             <li
               key={run.id}

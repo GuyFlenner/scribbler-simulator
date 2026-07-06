@@ -59,11 +59,11 @@ src/
 ```typescript
 // src/sim/types.ts
 export interface RobotState {
-  x: number;            // metres, board coordinates (0..1 for a 1m × 1m board)
+  x: number; // metres, board coordinates (0..1 for a 1m × 1m board)
   y: number;
-  heading: number;      // radians, 0 = +x axis (east)
-  vLinear: number;      // m/s
-  vAngular: number;     // rad/s, positive = counter-clockwise
+  heading: number; // radians, 0 = +x axis (east)
+  vLinear: number; // m/s
+  vAngular: number; // rad/s, positive = counter-clockwise
   isStalled: boolean;
   encoderTicksLeft: number;
   encoderTicksRight: number;
@@ -72,9 +72,9 @@ export interface RobotState {
 export interface SimState {
   robot: RobotState;
   board: BoardState;
-  tickIndex: number;    // monotonic, used for determinism + replay
+  tickIndex: number; // monotonic, used for determinism + replay
   status: 'idle' | 'running' | 'reached-goal' | 'stalled';
-  runStartedAt: number | null;  // wall clock ms; null if idle
+  runStartedAt: number | null; // wall clock ms; null if idle
 }
 ```
 
@@ -102,14 +102,14 @@ export type Step =
   | { kind: 'repeat'; times: number; body: Step[] };
 
 export interface Behavior {
-  pressCount: number;     // 2..8
+  pressCount: number; // 2..8
   label: string;
   steps: Step[];
 }
 
 export interface Program {
   version: 1;
-  behaviors: Behavior[];  // sparse — only defined press-counts present
+  behaviors: Behavior[]; // sparse — only defined press-counts present
 }
 ```
 
@@ -124,9 +124,9 @@ export type BoardElement =
 
 export interface BoardState {
   version: 1;
-  id: string;             // user-given; default board has id='default'
+  id: string; // user-given; default board has id='default'
   name: string;
-  width: number;          // metres
+  width: number; // metres
   height: number;
   elements: BoardElement[];
 }
@@ -134,7 +134,7 @@ export interface BoardState {
 
 ```typescript
 // src/sim/physics.ts
-export function tick(state: SimState, dtSeconds: number): SimState;       // pure; deterministic
+export function tick(state: SimState, dtSeconds: number): SimState; // pure; deterministic
 export function detectCollision(robot: RobotState, board: BoardState): CollisionResult;
 export function makeRobotState(init: Partial<RobotState>): RobotState;
 
@@ -143,7 +143,7 @@ export function readLineSensorLeft(robot: RobotState, board: BoardState): boolea
 export function readLineSensorRight(robot: RobotState, board: BoardState): boolean;
 export function readObstacleLeft(robot: RobotState, board: BoardState): boolean;
 export function readObstacleRight(robot: RobotState, board: BoardState): boolean;
-export function readLightSensor(robot: RobotState, board: BoardState): number;  // 0..255
+export function readLightSensor(robot: RobotState, board: BoardState): number; // 0..255
 
 // src/sim/runtime.ts
 export interface RuntimeHandle {
@@ -165,6 +165,7 @@ export function compileWorkspace(workspace: Blockly.WorkspaceSvg): Step[];
 ## Why
 
 The simulator delivers four things, in order of importance:
+
 1. **Foundational sim engine** — without a working physics + render loop, no other piece is observable
 2. **Block-editor authoring surface** — the kid must be able to define behaviors that match what he built in class
 3. **Sensor reactivity** — his class programs use both deterministic and sensor-based behaviors
@@ -274,9 +275,15 @@ describe('physics.tick — drive forward', () => {
   // AC: clicking "Press 2x" drives forward 30cm in <2s
   it('moves 0.30m forward at 0.15 m/s after 2 seconds of ticks', () => {
     const robot = makeRobotState({ x: 0, y: 0, heading: 0, vLinear: 0.15 });
-    let state = { robot, board: defaultBoard, tickIndex: 0, status: 'running' as const, runStartedAt: 0 };
+    let state = {
+      robot,
+      board: defaultBoard,
+      tickIndex: 0,
+      status: 'running' as const,
+      runStartedAt: 0,
+    };
     for (let i = 0; i < 120; i++) state = tick(state, 1 / 60); // FAILS until tick is implemented
-    expect(state.robot.x).toBeCloseTo(0.30, 2);
+    expect(state.robot.x).toBeCloseTo(0.3, 2);
     expect(state.robot.y).toBeCloseTo(0, 2);
   });
 });
@@ -286,7 +293,7 @@ describe('physics.tick — collision', () => {
   it('stops the robot at the collision point and sets isStalled', () => {
     const board = {
       ...defaultBoard,
-      elements: [{ kind: 'obstacle' as const, x: 0.10, y: -0.05, w: 0.05, h: 0.10 }],
+      elements: [{ kind: 'obstacle' as const, x: 0.1, y: -0.05, w: 0.05, h: 0.1 }],
     };
     const robot = makeRobotState({ x: 0, y: 0, heading: 0, vLinear: 0.15 });
     let state = { robot, board, tickIndex: 0, status: 'running' as const, runStartedAt: 0 };
@@ -336,10 +343,14 @@ describe('parseBoard — security', () => {
   // AC (security boilerplate, made explicit): malformed boards rejected
   it('rejects boards with non-numeric coordinates', () => {
     const malformed = JSON.stringify({
-      version: 1, id: 'evil', name: 'x', width: 1, height: 1,
+      version: 1,
+      id: 'evil',
+      name: 'x',
+      width: 1,
+      height: 1,
       elements: [{ kind: 'obstacle', x: '<script>', y: 0, w: 1, h: 1 }],
     });
-    expect(() => parseBoard(malformed)).toThrow(/invalid|expected number/i);  // FAILS until parseBoard validates
+    expect(() => parseBoard(malformed)).toThrow(/invalid|expected number/i); // FAILS until parseBoard validates
   });
 });
 ```
@@ -349,12 +360,12 @@ describe('parseBoard — security', () => {
 import { describe, it, expect } from 'vitest';
 import he from './he.json';
 import en from './en.json';
-import { deepKeys } from './deep-keys';   // helper to be implemented
+import { deepKeys } from './deep-keys'; // helper to be implemented
 
 describe('i18n parity', () => {
   // AC (Item 4): no missing translation keys
   it('every he.json key exists in en.json and vice versa', () => {
-    expect(deepKeys(he).sort()).toEqual(deepKeys(en).sort());  // FAILS if any key missing on either side
+    expect(deepKeys(he).sort()).toEqual(deepKeys(en).sort()); // FAILS if any key missing on either side
   });
 });
 ```

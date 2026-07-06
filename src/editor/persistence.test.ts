@@ -10,9 +10,7 @@ describe('validateProgram — accepts valid', () => {
   it('parses a minimal valid program', () => {
     const valid = {
       version: 1,
-      behaviors: [
-        { pressCount: 2, label: 'Forward', steps: [{ kind: 'drive', cm: 30 }] },
-      ],
+      behaviors: [{ pressCount: 2, label: 'Forward', steps: [{ kind: 'drive', cm: 30 }] }],
     };
     const program = validateProgram(valid);
     expect(program.behaviors).toHaveLength(1);
@@ -26,9 +24,7 @@ describe('validateProgram — accepts valid', () => {
         {
           pressCount: 3,
           label: 'Square',
-          steps: [
-            { kind: 'repeat', times: 4, body: [{ kind: 'drive', cm: 10 }] },
-          ],
+          steps: [{ kind: 'repeat', times: 4, body: [{ kind: 'drive', cm: 10 }] }],
         },
       ],
     };
@@ -89,9 +85,7 @@ describe('loadProgram / saveProgram', () => {
   it('round-trips a program through localStorage', () => {
     const program: Program = {
       version: 1,
-      behaviors: [
-        { pressCount: 2, label: 'Hop', steps: [{ kind: 'drive', cm: 5 }] },
-      ],
+      behaviors: [{ pressCount: 2, label: 'Hop', steps: [{ kind: 'drive', cm: 5 }] }],
     };
     saveProgram(program);
     const loaded = loadProgram();

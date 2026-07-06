@@ -18,8 +18,8 @@ describe('mazeBoard — structure', () => {
     expect(walls.length).toBeGreaterThan(20);
     for (const w of walls) {
       if (w.kind !== 'obstacle') continue;
-      expect(w.w).toBe(0.10);
-      expect(w.h).toBe(0.10);
+      expect(w.w).toBe(0.1);
+      expect(w.h).toBe(0.1);
       // x,y are integer multiples of 0.10 (within float epsilon)
       expect(Math.round(w.x * 10) / 10).toBeCloseTo(w.x, 6);
       expect(Math.round(w.y * 10) / 10).toBeCloseTo(w.y, 6);

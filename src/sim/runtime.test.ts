@@ -142,9 +142,7 @@ describe('runtime — drive_arc', () => {
   });
 
   it('with radius 0 behaves like in-place rotation', () => {
-    const { state, done } = runProgram([
-      { kind: 'drive_arc', radiusCm: 0, degrees: 45 },
-    ]);
+    const { state, done } = runProgram([{ kind: 'drive_arc', radiusCm: 0, degrees: 45 }]);
     expect(done).toBe(true);
     expect(state.robot.heading).toBeCloseTo(Math.PI / 4, 1);
     expect(state.robot.x).toBeCloseTo(0.5, 3);

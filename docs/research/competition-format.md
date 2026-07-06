@@ -12,23 +12,23 @@
 ## Top 3 actionable findings
 
 1. **Add `drive_wheels` (independent L/R speeds) and `drive_arc` (radius + angle) to the Step schema.** These are first-class BlocklyProp blocks. The user already flagged this in their question; my research confirms it is a real Parallax block, not a niche one.
-2. **Ask the teacher for the cheat-sheet template and rule set.** Without standardised national rules, the teacher's specific scoring criteria (time? collisions? completion only?) is the *only* source of truth. Without this, "competition readiness" is impossible to verify.
-3. **Verify the kid's class programs use the press-count idiom as we modelled it.** Standard BlocklyProp has the kid wrap each press-count handler in an `if reset_button_count == N` block in *one main program*. Our simulator treats each press-count as a separate "behavior" in a `Program.behaviors[]` array — this is a UX simplification that should match the kid's mental model, but worth verifying.
+2. **Ask the teacher for the cheat-sheet template and rule set.** Without standardised national rules, the teacher's specific scoring criteria (time? collisions? completion only?) is the _only_ source of truth. Without this, "competition readiness" is impossible to verify.
+3. **Verify the kid's class programs use the press-count idiom as we modelled it.** Standard BlocklyProp has the kid wrap each press-count handler in an `if reset_button_count == N` block in _one main program_. Our simulator treats each press-count as a separate "behavior" in a `Program.behaviors[]` array — this is a UX simplification that should match the kid's mental model, but worth verifying.
 
 ## Confidence levels
 
-| Finding | Confidence | Why |
-|---|---|---|
-| S3 reset-button press count is a real platform feature with 8 slots | HIGH | Parallax learn.parallax.com tutorials directly document this |
-| `drive_speed` (independent L/R wheels) is a standard S3 block | HIGH | Documented in Parallax block reference |
-| `drive a turn` (arc) is a standard S3 block | HIGH | Documented in Parallax block reference |
-| Israeli MoE / Skillz uses Krypton / Fischertechnik / EV3 / Edubot — NOT Scribbler | HIGH | Stated explicitly on official Skillz / pop.education.gov.il pages |
-| Israeli MoE elementary robotics tasks are scenario-based ("mask challenge", "Dr. Hassan's clinic", "Corona pranks"), not generic A-to-B | MEDIUM | Found scenario names in Skillz portal article but not full rules |
-| Robotraffic (Technion) is the closest national road-safety themed competition; grades 4-12 | HIGH | Multiple corroborating Technion / Times of Israel sources |
-| Robotraffic uses *autonomous* sensor-driven driving, not press-count behaviors | HIGH | Press releases emphasise "robots move automatically" |
-| The teacher's competition is school-internal (not affiliated with Skillz/Robotraffic) | MEDIUM | Inferred — no national format matches the WhatsApp description, and S3 isn't on the MoE list |
-| Past-year debriefs / parent blogs about the specific competition | LOW | Found nothing specific; Israeli school WhatsApp groups don't surface publicly |
-| Photos of actual competition boards | LOW | None found for this format |
+| Finding                                                                                                                                 | Confidence | Why                                                                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
+| S3 reset-button press count is a real platform feature with 8 slots                                                                     | HIGH       | Parallax learn.parallax.com tutorials directly document this                                 |
+| `drive_speed` (independent L/R wheels) is a standard S3 block                                                                           | HIGH       | Documented in Parallax block reference                                                       |
+| `drive a turn` (arc) is a standard S3 block                                                                                             | HIGH       | Documented in Parallax block reference                                                       |
+| Israeli MoE / Skillz uses Krypton / Fischertechnik / EV3 / Edubot — NOT Scribbler                                                       | HIGH       | Stated explicitly on official Skillz / pop.education.gov.il pages                            |
+| Israeli MoE elementary robotics tasks are scenario-based ("mask challenge", "Dr. Hassan's clinic", "Corona pranks"), not generic A-to-B | MEDIUM     | Found scenario names in Skillz portal article but not full rules                             |
+| Robotraffic (Technion) is the closest national road-safety themed competition; grades 4-12                                              | HIGH       | Multiple corroborating Technion / Times of Israel sources                                    |
+| Robotraffic uses _autonomous_ sensor-driven driving, not press-count behaviors                                                          | HIGH       | Press releases emphasise "robots move automatically"                                         |
+| The teacher's competition is school-internal (not affiliated with Skillz/Robotraffic)                                                   | MEDIUM     | Inferred — no national format matches the WhatsApp description, and S3 isn't on the MoE list |
+| Past-year debriefs / parent blogs about the specific competition                                                                        | LOW        | Found nothing specific; Israeli school WhatsApp groups don't surface publicly                |
+| Photos of actual competition boards                                                                                                     | LOW        | None found for this format                                                                   |
 
 ## Competition format
 
@@ -61,11 +61,11 @@ The teacher's WhatsApp description does not match any nationally-documented Isra
 
 Inferred only. From the teacher's quote "each pair will get a sheet listing what each button press does as a reminder", the cheat-sheet is provided **by the team** (they wrote the programs, so they know the mapping) but printed by the teacher. Likely a small table:
 
-| Press count | What it does |
-|---|---|
-| 2× | Drive forward 30 cm |
-| 3× | Rotate right 90° |
-| 4× | ... |
+| Press count | What it does        |
+| ----------- | ------------------- |
+| 2×          | Drive forward 30 cm |
+| 3×          | Rotate right 90°    |
+| 4×          | ...                 |
 
 The simulator should be able to **export this cheat-sheet** so the kid can hand it in / print it. (See Recommendations.)
 
@@ -73,16 +73,16 @@ The simulator should be able to **export this cheat-sheet** so the kid can hand 
 
 Source: Parallax S3 block reference (https://learn.parallax.com/reference/scribbler-3-robot-block-reference/) plus the motors sub-page.
 
-| Primitive | In BlocklyProp S3 | In our simulator (`schema.ts`) | Gap | Priority |
-|---|---|---|---|---|
-| `drive` (continuous, runs until stop) | yes | NO — we only have distance-bounded `drive` | Medium gap; useful for "drive forward until line sensor triggers" patterns | medium |
-| `drive_speed` (independent L/R, optional duration) | yes — `-100..100` per side, optional 0..65535 ms | **NO** | **Yes — the user flagged this** | **HIGH** |
-| `drive_distance` (cm/in/mm/encoder, sync stop) | yes — speed `1..100`% | yes (`Step.drive`, cm) — but no speed unit harmonisation | minor | low |
-| `rotate` (in-place, 1..359°) | yes | yes (`Step.rotate`, degrees) | none | — |
-| `drive_a_turn` (arc with radius + angle, radius 0 = in-place, ±radius = direction, angle -1080..1080°) | yes | **NO** | **Yes — second-most important motion block** | **HIGH** |
-| `drive_to` (XY relative coordinate) | yes | NO | Probably unused at this age; pivots-then-moves is awkward UX | low |
-| `stop driving` | yes | yes (`Step.stop`) | none | — |
-| `reset_button_count` (read N from last reset) | yes — sensor block, value 1..8 | implicit (we model press-count as binding key, not as readable value) | **Conceptual mismatch** — see note below | medium |
+| Primitive                                                                                              | In BlocklyProp S3                                | In our simulator (`schema.ts`)                                        | Gap                                                                        | Priority |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | --------------------------------------------------------------------- | -------------------------------------------------------------------------- | -------- |
+| `drive` (continuous, runs until stop)                                                                  | yes                                              | NO — we only have distance-bounded `drive`                            | Medium gap; useful for "drive forward until line sensor triggers" patterns | medium   |
+| `drive_speed` (independent L/R, optional duration)                                                     | yes — `-100..100` per side, optional 0..65535 ms | **NO**                                                                | **Yes — the user flagged this**                                            | **HIGH** |
+| `drive_distance` (cm/in/mm/encoder, sync stop)                                                         | yes — speed `1..100`%                            | yes (`Step.drive`, cm) — but no speed unit harmonisation              | minor                                                                      | low      |
+| `rotate` (in-place, 1..359°)                                                                           | yes                                              | yes (`Step.rotate`, degrees)                                          | none                                                                       | —        |
+| `drive_a_turn` (arc with radius + angle, radius 0 = in-place, ±radius = direction, angle -1080..1080°) | yes                                              | **NO**                                                                | **Yes — second-most important motion block**                               | **HIGH** |
+| `drive_to` (XY relative coordinate)                                                                    | yes                                              | NO                                                                    | Probably unused at this age; pivots-then-moves is awkward UX               | low      |
+| `stop driving`                                                                                         | yes                                              | yes (`Step.stop`)                                                     | none                                                                       | —        |
+| `reset_button_count` (read N from last reset)                                                          | yes — sensor block, value 1..8                   | implicit (we model press-count as binding key, not as readable value) | **Conceptual mismatch** — see note below                                   | medium   |
 
 ### Conceptual mismatch on press-count modelling
 
@@ -97,15 +97,15 @@ Our simulator models each press-count as a **separate behavior** in `Program.beh
 
 ### Sensor blocks (already covered, light review)
 
-| Sensor | In S3 reference | In our simulator | Notes |
-|---|---|---|---|
-| Line sensor (left/right) | yes | yes | matches |
-| Obstacle sensor (left/right, IR) | yes | yes | matches |
-| Light sensor | yes (3-channel: left/centre/right) | partial — we have `light_above` with single threshold, no L/C/R | low gap unless kid uses light-following |
-| Encoder counts | yes (used inside `drive_distance`) | implicit in physics | n/a — we don't expose encoder reads to user code |
-| Microphone / sound | yes | NO | out of scope per CLAUDE.md |
-| Reset button count | yes (1..8) | n/a (modelled at higher level) | see conceptual mismatch above |
-| IR remote | yes | NO | out of scope, kid won't have remote |
+| Sensor                           | In S3 reference                    | In our simulator                                                | Notes                                            |
+| -------------------------------- | ---------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| Line sensor (left/right)         | yes                                | yes                                                             | matches                                          |
+| Obstacle sensor (left/right, IR) | yes                                | yes                                                             | matches                                          |
+| Light sensor                     | yes (3-channel: left/centre/right) | partial — we have `light_above` with single threshold, no L/C/R | low gap unless kid uses light-following          |
+| Encoder counts                   | yes (used inside `drive_distance`) | implicit in physics                                             | n/a — we don't expose encoder reads to user code |
+| Microphone / sound               | yes                                | NO                                                              | out of scope per CLAUDE.md                       |
+| Reset button count               | yes (1..8)                         | n/a (modelled at higher level)                                  | see conceptual mismatch above                    |
+| IR remote                        | yes                                | NO                                                              | out of scope, kid won't have remote              |
 
 ## Comparison to current simulator
 
@@ -120,14 +120,14 @@ Our simulator models each press-count as a **separate behavior** in `Program.beh
 
 ### What we missed
 
-| Severity | Gap |
-|---|---|
-| HIGH | `drive_speed` (independent L/R wheel speeds) — explicitly asked by user |
-| HIGH | `drive_arc` (`drive_a_turn`) — radius + angle |
-| MEDIUM | Cheat-sheet print/export view — competition essential, not just nice-to-have |
-| MEDIUM | The 8-slot ceiling isn't enforced or surfaced — should match S3's native limit |
-| LOW | Continuous `drive` with no distance bound (run-until-stop pattern) |
-| LOW | 3-channel light sensor (we have one channel) |
+| Severity | Gap                                                                            |
+| -------- | ------------------------------------------------------------------------------ |
+| HIGH     | `drive_speed` (independent L/R wheel speeds) — explicitly asked by user        |
+| HIGH     | `drive_arc` (`drive_a_turn`) — radius + angle                                  |
+| MEDIUM   | Cheat-sheet print/export view — competition essential, not just nice-to-have   |
+| MEDIUM   | The 8-slot ceiling isn't enforced or surfaced — should match S3's native limit |
+| LOW      | Continuous `drive` with no distance bound (run-until-stop pattern)             |
+| LOW      | 3-channel light sensor (we have one channel)                                   |
 
 ### What we got that the competition doesn't need (over-engineered)
 
@@ -149,7 +149,7 @@ These don't hurt, just don't move the competition needle.
 
 ### Should-have for practice quality
 
-5. **Show robot bounding box prominently** when robot is near an obstacle (e.g., red highlight when bbox is within 2cm of obstacle). Common pitfall in physical robots: kids forget the robot has *width* and plan for the centre point only.
+5. **Show robot bounding box prominently** when robot is near an obstacle (e.g., red highlight when bbox is within 2cm of obstacle). Common pitfall in physical robots: kids forget the robot has _width_ and plan for the centre point only.
 6. **"Last collision" indicator persistence** — currently a "stall" indicator is per AC; persist it after recovery so the kid can review where they hit.
 7. **Time-to-completion display** + a "personal best" tracker per board. Matches likely scoring criterion.
 8. **"What if?" mode** — pause the robot mid-run, change press-count, resume. Helps kid debug mid-program.
@@ -165,14 +165,14 @@ These don't hurt, just don't move the competition needle.
 
 These need the teacher / kid to confirm — without them, several recommendations above are guesses.
 
-1. **What scoring rule wins?** Pure time? Time + collision penalties? "First team to finish without crashing"? This determines whether collision-handling needs to be punitive in the simulator or just informative. *(High priority — affects UI feedback design.)*
-2. **What's on the cheat-sheet template?** Does the teacher provide a template the team fills in, or do teams design their own? If templated, the simulator's cheat-sheet export should match the format the kid will see on competition day. *(Medium priority — easy to change later.)*
-3. **What blocks are taught in class?** Specifically: did the teacher cover `drive_wheels` (independent speeds) and `drive_a_turn` (arcs)? Or is the curriculum limited to `drive_distance` + `rotate`? If the latter, our gap is theoretical. *(High priority — determines whether the gap-fix recommendations 1 & 2 above are essential or optional.)*
-4. **How big is the physical board?** Cardboard? Painter's tape on classroom floor? If 1m × 1m our default matches; if 2m × 1.5m, the kid's mental scale will be wrong. *(Medium priority.)*
-5. **What do the obstacles look like physically?** Books? Boxes? Traffic cones? If 3D objects with non-trivial height, the kid's IR obstacle sensor matters. If flat tape, only the bounding box matters. *(Low priority — simulator can show generic rectangles either way.)*
-6. **Are sensor-reactive behaviors expected, or only deterministic sequences?** A kid programming `drive forward until line sensor triggers` is fundamentally different from `drive forward 30cm`. *(Medium priority — affects which blocks to highlight in the editor.)*
-7. **Is there a time limit per attempt?** If yes, the simulator should display a countdown timer matching the real one. *(Medium priority.)*
-8. **Are the press-count slots really 2..N (skipping 1)?** S3's factory demos use 2..8. The teacher's WhatsApp says "2x = behavior A, 3x = behavior B" suggesting same convention. Worth a one-line confirmation. *(Low priority — current code aligns with S3 convention.)*
+1. **What scoring rule wins?** Pure time? Time + collision penalties? "First team to finish without crashing"? This determines whether collision-handling needs to be punitive in the simulator or just informative. _(High priority — affects UI feedback design.)_
+2. **What's on the cheat-sheet template?** Does the teacher provide a template the team fills in, or do teams design their own? If templated, the simulator's cheat-sheet export should match the format the kid will see on competition day. _(Medium priority — easy to change later.)_
+3. **What blocks are taught in class?** Specifically: did the teacher cover `drive_wheels` (independent speeds) and `drive_a_turn` (arcs)? Or is the curriculum limited to `drive_distance` + `rotate`? If the latter, our gap is theoretical. _(High priority — determines whether the gap-fix recommendations 1 & 2 above are essential or optional.)_
+4. **How big is the physical board?** Cardboard? Painter's tape on classroom floor? If 1m × 1m our default matches; if 2m × 1.5m, the kid's mental scale will be wrong. _(Medium priority.)_
+5. **What do the obstacles look like physically?** Books? Boxes? Traffic cones? If 3D objects with non-trivial height, the kid's IR obstacle sensor matters. If flat tape, only the bounding box matters. _(Low priority — simulator can show generic rectangles either way.)_
+6. **Are sensor-reactive behaviors expected, or only deterministic sequences?** A kid programming `drive forward until line sensor triggers` is fundamentally different from `drive forward 30cm`. _(Medium priority — affects which blocks to highlight in the editor.)_
+7. **Is there a time limit per attempt?** If yes, the simulator should display a countdown timer matching the real one. _(Medium priority.)_
+8. **Are the press-count slots really 2..N (skipping 1)?** S3's factory demos use 2..8. The teacher's WhatsApp says "2x = behavior A, 3x = behavior B" suggesting same convention. Worth a one-line confirmation. _(Low priority — current code aligns with S3 convention.)_
 
 ## Sources
 
@@ -181,9 +181,9 @@ Primary (HIGH-value):
 - [Parallax S3 Block Reference index](https://learn.parallax.com/reference/scribbler-3-robot-block-reference/) — confirmed motor block category exists
 - [Parallax S3 Motors block page](http://learn.parallax.com/support/reference/scribbler-3-robot-block-reference/actions/motors) — full parameter table for `drive`, `drive_speed`, `drive_distance`, `rotate`, `drive_a_turn`, `drive_to`. Authoritative source for gap analysis.
 - [Parallax: Using Reset as Part of a Program](https://learn.parallax.com/tutorials/robot/scribbler-robot/getting-started-blocklyprop-s3/using-reset-part-program) — confirms 1..8 reset-press slot pattern, factory demo precedent
-- [Skillz / משרד החינוך — תחרויות בחשיבה מחשובית ורובוטיקה](https://pop.education.gov.il/tchumey_daat/madaei-mahshev-robotika/yesodi/oraat-madaey-mahshev/competitions-robotics/) — official MoE elementary competition page. Confirms grades 3-6, scenario-based tasks (mask, clinic, etc), supports Krypton/Fischertechnik/EV3/Edubot. Hebrew. *(Translated gist: yearly challenge for grades 3-6, mixes Scratch animations and robotics, uses Krypton/Fischertechnik/EV3 or Edubot simulator. No mention of Scribbler.)*
+- [Skillz / משרד החינוך — תחרויות בחשיבה מחשובית ורובוטיקה](https://pop.education.gov.il/tchumey_daat/madaei-mahshev-robotika/yesodi/oraat-madaey-mahshev/competitions-robotics/) — official MoE elementary competition page. Confirms grades 3-6, scenario-based tasks (mask, clinic, etc), supports Krypton/Fischertechnik/EV3/Edubot. Hebrew. _(Translated gist: yearly challenge for grades 3-6, mixes Scratch animations and robotics, uses Krypton/Fischertechnik/EV3 or Edubot simulator. No mention of Scribbler.)_
 - [Skillz — תחרות חשיבה מחשובית ורובוטיקה (finals article)](https://pub.skillz-edu.org/portal/articles/crb-finals/) — listed COVID-era scenario challenges ("אתגר המסכה" / Mask Challenge, "הקליניקה של ד"ר חסן" / Dr Hassan's Clinic, "תעלולי קורון" / Corona Pranks)
-- [Edubot simulator official MoE page](https://pop.education.gov.il/tchumey_daat/madaei-mahshev-robotika/yesodi/noseem_nilmadim/edubot-robotics/) — confirms 20cm grid squares, ultrasonic sensor, tank-drive + steering-drive modes, includes "line follow", "pinball", "fire" challenges. Hebrew. *(Useful comparator: real MoE simulator uses 20cm grid; our 1m × 1m default board would be a 5×5 grid in their convention.)*
+- [Edubot simulator official MoE page](https://pop.education.gov.il/tchumey_daat/madaei-mahshev-robotika/yesodi/noseem_nilmadim/edubot-robotics/) — confirms 20cm grid squares, ultrasonic sensor, tank-drive + steering-drive modes, includes "line follow", "pinball", "fire" challenges. Hebrew. _(Useful comparator: real MoE simulator uses 20cm grid; our 1m × 1m default board would be a 5×5 grid in their convention.)_
 
 Secondary (corroborating):
 

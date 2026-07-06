@@ -140,7 +140,8 @@ export const buildBlockDefinitions = (t: TFunction): BlockDefinition[] => [
   },
 ];
 
-export const buildToolboxXml = (t: TFunction): string => `
+export const buildToolboxXml = (t: TFunction): string =>
+  `
 <xml id="scribbler-toolbox">
   <category name="${t('blocks.category_motion')}" colour="220">
     <block type="drive_distance"></block>

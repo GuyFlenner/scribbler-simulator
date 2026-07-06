@@ -5,6 +5,7 @@
 A browser-based simulator for the Parallax Scribbler 3 (S3) robot. Built so an 8-year-old can practice for an Israeli school robotics competition without access to physical hardware.
 
 The simulator models:
+
 - Differential-drive physics on a 2D top-down board
 - Press-count button actuation (the real S3 has only one physical Reset button; pressing it 2×/3×/4×… triggers different pre-programmed behaviors)
 - Sensors: line-following, IR obstacle, encoder-based motion, light
@@ -29,6 +30,7 @@ use sdlc: <feature or bug description>
 ```
 
 This triggers the full autonomous pipeline:
+
 ```
 PO → Team Lead → Architect → Developer → Security → Review → Tests → PR → Retro
 ```
@@ -98,21 +100,21 @@ SDLC_TEST_IMAGE=node:22-alpine
 
 ## SDLC Skills Available
 
-| Skill | Trigger | Model |
-|-------|---------|-------|
-| `sdlc` | `use sdlc: <description>` | Orchestrator |
-| `product-owner` | `/product-owner` | Opus |
-| `team-lead` | `/team-lead` | Opus |
-| `architect` | `/architect` | Opus + extended thinking |
-| `developer` | internal | Sonnet |
-| `react-developer` | `/react-developer` | Sonnet |
-| `test-reviewer` | internal (Phase 4.5) | Sonnet |
-| `security-researcher` | `/security-researcher` | Sonnet |
-| `code-reviewer` | `/code-reviewer` | Sonnet |
-| `flow-reviewer` | `/flow-reviewer` | Sonnet |
-| `diagram-generator` | `/diagram-generator` | Sonnet |
-| `skill-inventory` | `/skill-inventory` | Sonnet |
-| `btw-status` | `/btw-status` | — |
+| Skill                 | Trigger                   | Model                    |
+| --------------------- | ------------------------- | ------------------------ |
+| `sdlc`                | `use sdlc: <description>` | Orchestrator             |
+| `product-owner`       | `/product-owner`          | Opus                     |
+| `team-lead`           | `/team-lead`              | Opus                     |
+| `architect`           | `/architect`              | Opus + extended thinking |
+| `developer`           | internal                  | Sonnet                   |
+| `react-developer`     | `/react-developer`        | Sonnet                   |
+| `test-reviewer`       | internal (Phase 4.5)      | Sonnet                   |
+| `security-researcher` | `/security-researcher`    | Sonnet                   |
+| `code-reviewer`       | `/code-reviewer`          | Sonnet                   |
+| `flow-reviewer`       | `/flow-reviewer`          | Sonnet                   |
+| `diagram-generator`   | `/diagram-generator`      | Sonnet                   |
+| `skill-inventory`     | `/skill-inventory`        | Sonnet                   |
+| `btw-status`          | `/btw-status`             | —                        |
 
 Skills synced from `C:\code\claude-sdlc` per `claude-skills.lock`. To refresh: `.\scripts\sync-claude-skills.ps1`.
 
@@ -121,6 +123,7 @@ Skills synced from `C:\code\claude-sdlc` per `claude-skills.lock`. To refresh: `
 ## Coding Standards
 
 ### General
+
 - **TypeScript strict mode** required (no `any`, no implicit any)
 - **All public function signatures typed** — exports must declare return types
 - **Async**: prefer `async/await` over raw promises
@@ -130,11 +133,13 @@ Skills synced from `C:\code\claude-sdlc` per `claude-skills.lock`. To refresh: `
 - **Bilingual strings**: every user-facing string lives in `src/i18n/{he,en}.json` — no hardcoded UI text
 
 ### Security
+
 - **No secrets in repo** — none expected (pure client-side static app)
 - **Input validation**: validate at file-import boundaries (saved programs, custom boards)
 - **Dependencies**: pin major versions; audit on each new dep
 
 ### Project-specific
+
 - **Block vocabulary** mirrors BlocklyProp Solo. Two block sets, both required:
   - **Distance/rotation**: `drive_distance`, `rotate_degrees`, `stop`, `beep`, `set_led`
   - **Sensor-reactive**: `line_sensor_left`/`right`, `obstacle_left`/`right`, `light_sensor`, `button_pressed`
@@ -146,6 +151,7 @@ Skills synced from `C:\code\claude-sdlc` per `claude-skills.lock`. To refresh: `
 ## Git Workflow
 
 ### Branching
+
 ```
 main (only branch in active use right now)
 ```
@@ -153,6 +159,7 @@ main (only branch in active use right now)
 Feature branches will be reintroduced after the MVP ships.
 
 ### Commit message format
+
 ```
 <type>(<scope>): <subject>
 
@@ -192,6 +199,7 @@ OTEL_ENDPOINT=
 ## HITL Policy
 
 The SDLC pipeline runs autonomously except when:
+
 1. A decision requires the project owner's input (scope, naming, kid-UX trade-offs)
 2. Security researcher returns BLOCKED
 3. Tests fail outside the current sprint scope
@@ -204,13 +212,16 @@ HITL items are collected by the Team Lead and presented clearly with options.
 ## Project-Specific Context
 
 ### Target audience
+
 - **Primary user**: 8-year-old Hebrew speaker, familiar with BlocklyProp Solo from school class
 - **Secondary user**: parent — supervising practice sessions, may also tweak board layouts
 
 ### The competition format (per teacher's WhatsApp, 2026-05)
+
 > "in the final, students are tested on operating the robot with emphasis on road safety. There will be a board with obstacles marked, and they need to bring the robot from point A to point B in the most efficient way. Operation of the robot is according to the code they built and know, and each pair will get a sheet listing what each button press does as a reminder."
 
 So the simulator's "competition mode" should let the kid:
+
 1. See a board with obstacles + A/B markers
 2. See a cheat-sheet of "Press Reset Nx → does X" (matching what they programmed)
 3. Click virtual buttons to actuate behaviors
@@ -218,6 +229,7 @@ So the simulator's "competition mode" should let the kid:
 5. Reset and retry; track time-to-completion
 
 ### Out of scope for the 4-week timeline
+
 - Importing real BlocklyProp Solo `.svg` files
 - 3D rendering
 - Multiplayer / network features
@@ -226,6 +238,7 @@ So the simulator's "competition mode" should let the kid:
 - Mic / sound-based behaviors (S3 has a mic, but kid programs are unlikely to use it)
 
 ### Stretch goals (post-competition)
+
 - Import/export real BlocklyProp Solo programs
 - Pen-down drawing mode (Scribbler-Art-style)
 - Replay recording → shareable link
@@ -238,6 +251,7 @@ So the simulator's "competition mode" should let the kid:
 Architecture diagrams are generated as draw.io XML (`.drawio` files). View at [app.diagrams.net](https://app.diagrams.net).
 
 To generate a new diagram:
+
 ```
 /diagram-generator explain the architecture of the simulator core loop
 ```
@@ -249,6 +263,7 @@ To generate a new diagram:
 Skills synced from `C:\code\claude-sdlc` via `claude-skills.lock` and `scripts/sync-claude-skills.ps1`. See `C:\code\claude-sdlc\docs\skills-sharing.md` for the convention.
 
 To refresh:
+
 ```powershell
 .\scripts\sync-claude-skills.ps1 -DryRun  # preview
 .\scripts\sync-claude-skills.ps1          # apply

@@ -13,7 +13,12 @@ interface ScribblerBridge {
 const ensureBridge = (): ScribblerBridge => {
   const w = window as Window & { __scribbler?: ScribblerBridge };
   if (!w.__scribbler) {
-    w.__scribbler = { simStore: useSimStore, editorStore: useEditorStore, boardsStore: useBoardsStore, i18n };
+    w.__scribbler = {
+      simStore: useSimStore,
+      editorStore: useEditorStore,
+      boardsStore: useBoardsStore,
+      i18n,
+    };
   }
   return w.__scribbler;
 };

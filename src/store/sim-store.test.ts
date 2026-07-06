@@ -40,7 +40,7 @@ describe('sim-store — heading snap on natural completion (regression)', () => 
 
     const afterDrive = useSimStore.getState().robot;
     expect(afterDrive.x - afterRotate.x).toBeCloseTo(0, 9);
-    expect(afterDrive.y - afterRotate.y).toBeCloseTo(0.10, 3);
+    expect(afterDrive.y - afterRotate.y).toBeCloseTo(0.1, 3);
     expect(afterDrive.heading).toBeCloseTo(Math.PI / 2, 9);
   });
 
@@ -57,7 +57,7 @@ describe('sim-store — heading snap on natural completion (regression)', () => 
     advance(120);
 
     const afterDrive = useSimStore.getState().robot;
-    expect(afterDrive.x - afterRotate.x).toBeCloseTo(-0.10, 3);
+    expect(afterDrive.x - afterRotate.x).toBeCloseTo(-0.1, 3);
     expect(afterDrive.y - afterRotate.y).toBeCloseTo(0, 9);
   });
 });
@@ -134,7 +134,7 @@ describe('sim-store — fast-click guard (no diagonal from mid-rotation interrup
 
     const afterDrive = useSimStore.getState().robot;
     expect(afterDrive.x - afterRotate.x).toBeCloseTo(0, 9);
-    expect(afterDrive.y - afterRotate.y).toBeCloseTo(0.10, 3);
+    expect(afterDrive.y - afterRotate.y).toBeCloseTo(0.1, 3);
   });
 
   it('cumulative drift: four +90° turns end at exactly 360° heading', () => {

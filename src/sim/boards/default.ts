@@ -17,8 +17,8 @@ export const defaultBoard: BoardState = {
   elements: [
     { kind: 'start', x: 0.05, y: 0.05, heading: 0 },
     { kind: 'goal', x: 0.95, y: 0.95, toleranceCm: 5 },
-    { kind: 'obstacle', x: 0.30, y: 0.20, w: 0.10, h: 0.10 },
-    { kind: 'obstacle', x: 0.60, y: 0.60, w: 0.10, h: 0.10 },
+    { kind: 'obstacle', x: 0.3, y: 0.2, w: 0.1, h: 0.1 },
+    { kind: 'obstacle', x: 0.6, y: 0.6, w: 0.1, h: 0.1 },
   ],
 };
 
@@ -36,8 +36,8 @@ export const bonusBoard: BoardState = {
   elements: [
     { kind: 'start', x: 0.05, y: 0.05, heading: 0 },
     { kind: 'goal', x: 0.95, y: 0.95, toleranceCm: 5 },
-    { kind: 'obstacle', x: 0.30, y: 0.20, w: 0.10, h: 0.10 },
-    { kind: 'obstacle', x: 0.60, y: 0.60, w: 0.10, h: 0.10 },
+    { kind: 'obstacle', x: 0.3, y: 0.2, w: 0.1, h: 0.1 },
+    { kind: 'obstacle', x: 0.6, y: 0.6, w: 0.1, h: 0.1 },
     { kind: 'bonus', x: 0.45, y: 0.55, toleranceCm: 8 },
   ],
 };
@@ -64,24 +64,59 @@ export const bonusBoard: BoardState = {
  *  row 9 #...#....G
  */
 const mazeWallCells: Array<[number, number]> = [
-  [2, 0], [3, 0], [9, 0],
-  [0, 1], [2, 1], [5, 1], [6, 1], [7, 1],
-  [0, 2], [2, 2], [4, 2], [6, 2], [8, 2],
-  [0, 3], [4, 3], [6, 3], [8, 3],
-  [0, 4], [2, 4], [3, 4], [4, 4], [6, 4], [8, 4],
-  [0, 5], [6, 5], [8, 5],
-  [0, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [8, 6],
-  [0, 7], [2, 7], [8, 7],
-  [0, 8], [2, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8],
-  [0, 9], [4, 9],
+  [2, 0],
+  [3, 0],
+  [9, 0],
+  [0, 1],
+  [2, 1],
+  [5, 1],
+  [6, 1],
+  [7, 1],
+  [0, 2],
+  [2, 2],
+  [4, 2],
+  [6, 2],
+  [8, 2],
+  [0, 3],
+  [4, 3],
+  [6, 3],
+  [8, 3],
+  [0, 4],
+  [2, 4],
+  [3, 4],
+  [4, 4],
+  [6, 4],
+  [8, 4],
+  [0, 5],
+  [6, 5],
+  [8, 5],
+  [0, 6],
+  [2, 6],
+  [3, 6],
+  [4, 6],
+  [5, 6],
+  [6, 6],
+  [8, 6],
+  [0, 7],
+  [2, 7],
+  [8, 7],
+  [0, 8],
+  [2, 8],
+  [4, 8],
+  [5, 8],
+  [6, 8],
+  [7, 8],
+  [8, 8],
+  [0, 9],
+  [4, 9],
 ];
 
 const mazeWalls: Obstacle[] = mazeWallCells.map(([col, row]) => ({
   kind: 'obstacle' as const,
-  x: col * 0.10,
-  y: row * 0.10,
-  w: 0.10,
-  h: 0.10,
+  x: col * 0.1,
+  y: row * 0.1,
+  w: 0.1,
+  h: 0.1,
 }));
 
 export const mazeBoard: BoardState = {
@@ -99,8 +134,7 @@ export const mazeBoard: BoardState = {
 
 export const bundledBoards: BoardState[] = [mazeBoard, defaultBoard, bonusBoard];
 
-export const isBundledBoardId = (id: string): boolean =>
-  bundledBoards.some((b) => b.id === id);
+export const isBundledBoardId = (id: string): boolean => bundledBoards.some((b) => b.id === id);
 
 export const findBundledBoard = (id: string): BoardState | undefined =>
   bundledBoards.find((b) => b.id === id);

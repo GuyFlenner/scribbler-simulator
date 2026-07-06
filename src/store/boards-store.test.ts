@@ -40,9 +40,7 @@ describe('boards-store — list + select', () => {
 
   it('refuses to save over a bundled board id', () => {
     useBoardsStore.getState().setActiveBoard(defaultBoard.id);
-    useBoardsStore
-      .getState()
-      .saveBoard({ ...defaultBoard, name: 'Hijacked' });
+    useBoardsStore.getState().saveBoard({ ...defaultBoard, name: 'Hijacked' });
     expect(useBoardsStore.getState().getActiveBoard().name).toBe(defaultBoard.name);
   });
 

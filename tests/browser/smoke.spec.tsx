@@ -53,7 +53,9 @@ describe('smoke: golden path', () => {
     const goal = board.elements.find((el) => el.kind === 'goal');
     if (!goal || goal.kind !== 'goal') throw new Error('default board has no goal');
 
-    const w = window as Window & { __scribbler?: { simStore: typeof import('../../src/store/sim-store').useSimStore } };
+    const w = window as Window & {
+      __scribbler?: { simStore: typeof import('../../src/store/sim-store').useSimStore };
+    };
     const sim = w.__scribbler!.simStore;
     sim.setState({
       robot: { ...storeBridge.simStore().robot, x: goal.x, y: goal.y, heading: 0 },

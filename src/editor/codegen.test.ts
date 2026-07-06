@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { compileBlocklyJson, compileBlocks, stepsToWorkspaceJson, type BlocklyBlock } from './codegen';
+import {
+  compileBlocklyJson,
+  compileBlocks,
+  stepsToWorkspaceJson,
+  type BlocklyBlock,
+} from './codegen';
 import type { Step } from '../sim/behaviors/schema';
 
 describe('codegen — single blocks', () => {
@@ -28,9 +33,7 @@ describe('codegen — single blocks', () => {
       type: 'drive_arc',
       fields: { RADIUS_CM: 25, DEGREES: 45 },
     };
-    expect(compileBlocks([block])).toEqual([
-      { kind: 'drive_arc', radiusCm: 25, degrees: 45 },
-    ]);
+    expect(compileBlocks([block])).toEqual([{ kind: 'drive_arc', radiusCm: 25, degrees: 45 }]);
   });
 
   it('compiles stop to a stop Step', () => {
@@ -163,16 +166,10 @@ describe('codegen — workspace serialization', () => {
     const ws = {
       blocks: {
         languageVersion: 0,
-        blocks: [
-          { type: 'drive_distance', fields: { CM: 10 } },
-          { type: 'stop' },
-        ],
+        blocks: [{ type: 'drive_distance', fields: { CM: 10 } }, { type: 'stop' }],
       },
     };
-    expect(compileBlocklyJson(ws)).toEqual([
-      { kind: 'drive', cm: 10 },
-      { kind: 'stop' },
-    ]);
+    expect(compileBlocklyJson(ws)).toEqual([{ kind: 'drive', cm: 10 }, { kind: 'stop' }]);
   });
 
   it('returns an empty array for an empty workspace', () => {
@@ -188,10 +185,7 @@ describe('codegen — workspace serialization', () => {
     const ws = {
       blocks: {
         languageVersion: 0,
-        blocks: [
-          { type: 'mystery_block', fields: { X: 1 } },
-          { type: 'stop' },
-        ],
+        blocks: [{ type: 'mystery_block', fields: { X: 1 } }, { type: 'stop' }],
       },
     };
     expect(compileBlocklyJson(ws)).toEqual([{ kind: 'stop' }]);

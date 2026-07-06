@@ -55,7 +55,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.10, 4);
+    expect(robot.x).toBeCloseTo(0.1, 4);
     expect(robot.y).toBeCloseTo(0, 4);
     expect(robot.heading).toBeCloseTo(0, 8);
   });
@@ -64,7 +64,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
     useSimStore.getState().pressButton(2, stepsFor(2));
     advance(4, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.20, 4);
+    expect(robot.x).toBeCloseTo(0.2, 4);
     expect(robot.y).toBeCloseTo(0, 4);
     expect(robot.heading).toBeCloseTo(0, 8);
   });
@@ -73,7 +73,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
     useSimStore.getState().pressButton(3, stepsFor(3));
     advance(6, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.40, 4);
+    expect(robot.x).toBeCloseTo(0.4, 4);
     expect(robot.y).toBeCloseTo(0, 4);
     expect(robot.heading).toBeCloseTo(0, 8);
   });
@@ -89,7 +89,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
       if (useSimStore.getState().status !== 'running') break;
     }
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.10, 4);
+    expect(robot.x).toBeCloseTo(0.1, 4);
     expect(robot.y).toBeCloseTo(0, 4);
   });
 
@@ -103,7 +103,7 @@ describe('competition button validation — drive (btn1/2/3)', () => {
       useSimStore.getState().tick(dt);
       if (useSimStore.getState().status !== 'running') break;
     }
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.20, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.2, 4);
   });
 });
 
@@ -187,7 +187,7 @@ describe('competition button validation — sequences (kid-realistic combos)', (
     // should move 10cm in +y direction.
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.10, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.1, 4);
     expect(useSimStore.getState().robot.y).toBeCloseTo(0, 4);
 
     useSimStore.getState().pressButton(4, stepsFor(4));
@@ -197,14 +197,14 @@ describe('competition button validation — sequences (kid-realistic combos)', (
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
     const robot = useSimStore.getState().robot;
-    expect(robot.x).toBeCloseTo(0.10, 4);
-    expect(robot.y).toBeCloseTo(0.10, 4);
+    expect(robot.x).toBeCloseTo(0.1, 4);
+    expect(robot.y).toBeCloseTo(0.1, 4);
   });
 
   it('btn3 (40cm) then btn6 (180°) then btn3 → back at origin (full path round-trip)', () => {
     useSimStore.getState().pressButton(3, stepsFor(3));
     advance(6, 1 / 60);
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.40, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.4, 4);
 
     useSimStore.getState().pressButton(6, stepsFor(6));
     advance(4, 1 / 60);
@@ -262,7 +262,7 @@ describe('guardrail — no diagonal movement after a cardinal turn', () => {
     const robot = useSimStore.getState().robot;
     // Heading is π/2 → cos=0, sin=1 → only y should change
     expect(robot.x).toBeCloseTo(0, 3);
-    expect(robot.y).toBeCloseTo(0.10, 4);
+    expect(robot.y).toBeCloseTo(0.1, 4);
   });
 
   it('btn5 (left 90°) then btn1: x stays at 0, y moves exactly -10cm', () => {
@@ -285,7 +285,7 @@ describe('guardrail — no diagonal movement after a cardinal turn', () => {
     const robot = useSimStore.getState().robot;
     // Heading is -π/2 → cos=0, sin=-1 → only y should change (negative)
     expect(robot.x).toBeCloseTo(0.5, 3);
-    expect(robot.y).toBeCloseTo(0.40, 4);
+    expect(robot.y).toBeCloseTo(0.4, 4);
   });
 
   it('btn6 (180°) then btn1: y stays at 0, x moves exactly -10cm', () => {
@@ -308,7 +308,7 @@ describe('guardrail — no diagonal movement after a cardinal turn', () => {
     const robot = useSimStore.getState().robot;
     // Heading π → cos=-1, sin≈0 → only x should change (negative)
     expect(robot.y).toBeCloseTo(0.5, 3);
-    expect(robot.x).toBeCloseTo(0.40, 4);
+    expect(robot.x).toBeCloseTo(0.4, 4);
   });
 });
 
@@ -349,6 +349,6 @@ describe('guardrail — boundary: robot stalls at board edge', () => {
     useSimStore.getState().pressButton(1, stepsFor(1));
     advance(3, 1 / 60);
     expect(useSimStore.getState().status).not.toBe('stalled');
-    expect(useSimStore.getState().robot.x).toBeCloseTo(0.10, 4);
+    expect(useSimStore.getState().robot.x).toBeCloseTo(0.1, 4);
   });
 });

@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import type { BoardState } from '../sim/boards/schema';
 import { parseBoard } from '../sim/boards/schema';
-import { bundledBoards, mazeBoard, findBundledBoard, isBundledBoardId } from '../sim/boards/default';
+import {
+  bundledBoards,
+  mazeBoard,
+  findBundledBoard,
+  isBundledBoardId,
+} from '../sim/boards/default';
 import { RANDOM_BOARD_ID, generateRandomBoard } from '../sim/boards/random';
 import type { RunRecord } from '../sim/replay';
 
@@ -61,10 +66,7 @@ const loadRuns = (): Record<string, RunRecord[]> => {
   }
 };
 
-const persistBoards = (
-  customBoards: Record<string, BoardState>,
-  activeBoardId: string,
-): void => {
+const persistBoards = (customBoards: Record<string, BoardState>, activeBoardId: string): void => {
   const payload: PersistedBoards = { version: 1, customBoards, activeBoardId };
   localStorage.setItem(BOARDS_KEY, JSON.stringify(payload));
 };
@@ -74,7 +76,8 @@ const persistRuns = (byBoard: Record<string, RunRecord[]>): void => {
   localStorage.setItem(RUNS_KEY, JSON.stringify(payload));
 };
 
-export const newBoardId = (): string => `board-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+export const newBoardId = (): string =>
+  `board-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const createBlankBoard = (name: string): BoardState => ({
   version: 1,
@@ -106,7 +109,11 @@ interface BoardsStoreState {
   resetAll: () => void;
 }
 
-const initial = (): { customBoards: Record<string, BoardState>; activeBoardId: string; runsByBoard: Record<string, RunRecord[]> } => {
+const initial = (): {
+  customBoards: Record<string, BoardState>;
+  activeBoardId: string;
+  runsByBoard: Record<string, RunRecord[]>;
+} => {
   const { customBoards, activeBoardId } = loadBoards();
   return { customBoards, activeBoardId, runsByBoard: loadRuns() };
 };

@@ -24,17 +24,17 @@ const numField = (block: BlocklyBlock, name: string, fallback: number): number =
 const childBlock = (block: BlocklyBlock, inputName: string): BlocklyBlock | undefined =>
   block.inputs?.[inputName]?.block ?? block.inputs?.[inputName]?.shadow;
 
-const SENSOR_KINDS = new Set([
-  'line_left',
-  'line_right',
-  'obstacle_left',
-  'obstacle_right',
-]);
+const SENSOR_KINDS = new Set(['line_left', 'line_right', 'obstacle_left', 'obstacle_right']);
 
 const sensorFromField = (block: BlocklyBlock): SensorPredicate | null => {
   const raw = block.fields?.SENSOR;
   if (typeof raw !== 'string') return null;
-  if (raw === 'line_left' || raw === 'line_right' || raw === 'obstacle_left' || raw === 'obstacle_right') {
+  if (
+    raw === 'line_left' ||
+    raw === 'line_right' ||
+    raw === 'obstacle_left' ||
+    raw === 'obstacle_right'
+  ) {
     return { kind: raw };
   }
   if (SENSOR_KINDS.has(raw)) return { kind: raw as SensorPredicate['kind'] } as SensorPredicate;

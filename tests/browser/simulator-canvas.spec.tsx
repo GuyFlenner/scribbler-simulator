@@ -66,16 +66,19 @@ describe('simulator canvas: real-pixel rendering', () => {
     time.runSimSeconds(0.5);
     expect(storeBridge.simStore().robot.isStalled).toBe(true);
 
-    return canvas.waitForFrame().then(() => canvas.waitForFrame()).then(() => {
-      const robot = storeBridge.simStore().robot;
-      const pxX = Math.round((robot.x / board.width) * CANVAS_PX);
-      const pxY = Math.round((robot.y / board.height) * CANVAS_PX);
-      const px = canvas.samplePixel(pxX, pxY);
-      // Stalled robot fills with #cc0000. R should dominate over G/B even with
-      // anti-aliasing or partial overlap with the yellow nose accent.
-      expect(px.r).toBeGreaterThan(150);
-      expect(px.r).toBeGreaterThan(px.g + 40);
-      expect(px.r).toBeGreaterThan(px.b + 40);
-    });
+    return canvas
+      .waitForFrame()
+      .then(() => canvas.waitForFrame())
+      .then(() => {
+        const robot = storeBridge.simStore().robot;
+        const pxX = Math.round((robot.x / board.width) * CANVAS_PX);
+        const pxY = Math.round((robot.y / board.height) * CANVAS_PX);
+        const px = canvas.samplePixel(pxX, pxY);
+        // Stalled robot fills with #cc0000. R should dominate over G/B even with
+        // anti-aliasing or partial overlap with the yellow nose accent.
+        expect(px.r).toBeGreaterThan(150);
+        expect(px.r).toBeGreaterThan(px.g + 40);
+        expect(px.r).toBeGreaterThan(px.b + 40);
+      });
   });
 });

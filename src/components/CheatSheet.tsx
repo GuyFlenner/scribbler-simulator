@@ -131,10 +131,19 @@ export function CheatSheet({ onClose }: Props): ReactElement {
       >
         <thead>
           <tr style={{ background: '#f0f0f0' }}>
-            <th style={{ padding: '0.6rem 1rem', borderBottom: '2px solid #333', textAlign: 'start', width: '20%' }}>
+            <th
+              style={{
+                padding: '0.6rem 1rem',
+                borderBottom: '2px solid #333',
+                textAlign: 'start',
+                width: '20%',
+              }}
+            >
               {t('cheatsheet.press_column')}
             </th>
-            <th style={{ padding: '0.6rem 1rem', borderBottom: '2px solid #333', textAlign: 'start' }}>
+            <th
+              style={{ padding: '0.6rem 1rem', borderBottom: '2px solid #333', textAlign: 'start' }}
+            >
               {t('cheatsheet.description_column')}
             </th>
           </tr>
@@ -142,9 +151,10 @@ export function CheatSheet({ onClose }: Props): ReactElement {
         <tbody>
           {PRESS_COUNTS.map((n) => {
             const userSteps = programs[n];
-            const description = userSteps && userSteps.length > 0
-              ? describeBehavior(userSteps, t)
-              : t('cheatsheet.empty_row');
+            const description =
+              userSteps && userSteps.length > 0
+                ? describeBehavior(userSteps, t)
+                : t('cheatsheet.empty_row');
             const isEmpty = !userSteps?.length;
             return (
               <tr key={n} style={{ borderBottom: '1px solid #ccc' }}>

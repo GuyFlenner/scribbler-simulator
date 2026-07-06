@@ -57,11 +57,7 @@ const normaliseAngle = (a: number): number => {
   return r;
 };
 
-const sensorOverLine = (
-  sensorX: number,
-  sensorY: number,
-  board: BoardState,
-): boolean => {
+const sensorOverLine = (sensorX: number, sensorY: number, board: BoardState): boolean => {
   for (const el of board.elements) {
     if (el.kind !== 'line') continue;
     const dist = distPointToSegment(sensorX, sensorY, el.x1, el.y1, el.x2, el.y2);
@@ -80,7 +76,11 @@ export function readLineSensorRight(robot: RobotState, board: BoardState): boole
   return sensorOverLine(p.x, p.y, board);
 }
 
-const readObstacleSide = (robot: RobotState, board: BoardState, side: 'left' | 'right'): boolean => {
+const readObstacleSide = (
+  robot: RobotState,
+  board: BoardState,
+  side: 'left' | 'right',
+): boolean => {
   const front = localToWorld(robot, ROBOT_LENGTH_M / 2, 0);
   for (const el of board.elements) {
     if (el.kind !== 'obstacle') continue;

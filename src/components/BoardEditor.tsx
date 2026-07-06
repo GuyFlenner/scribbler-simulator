@@ -86,7 +86,9 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
   return (
     <div style={{ padding: '0.5rem' }}>
       <h3 style={{ margin: '0 0 0.5rem' }}>{t('board_editor.heading')}</h3>
-      <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#666' }}>{t('board_editor.tip')}</p>
+      <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#666' }}>
+        {t('board_editor.tip')}
+      </p>
 
       <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: '0.5rem' }}>
         {t('board_editor.name_label')}
@@ -229,44 +231,115 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
         </div>
 
         <div style={{ flex: 1, minWidth: 220 }}>
-          <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>{t('board_editor.selected_heading')}</h4>
+          <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>
+            {t('board_editor.selected_heading')}
+          </h4>
           {selected && selectedIdx !== null ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {selected.kind === 'obstacle' && (
                 <>
-                  <NumberField label={t('board_editor.x')} value={selected.x} onChange={(v) => updateElement(selectedIdx, { x: v })} />
-                  <NumberField label={t('board_editor.y')} value={selected.y} onChange={(v) => updateElement(selectedIdx, { y: v })} />
-                  <NumberField label={t('board_editor.width')} value={selected.w} onChange={(v) => updateElement(selectedIdx, { w: v })} />
-                  <NumberField label={t('board_editor.height')} value={selected.h} onChange={(v) => updateElement(selectedIdx, { h: v })} />
+                  <NumberField
+                    label={t('board_editor.x')}
+                    value={selected.x}
+                    onChange={(v) => updateElement(selectedIdx, { x: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y')}
+                    value={selected.y}
+                    onChange={(v) => updateElement(selectedIdx, { y: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.width')}
+                    value={selected.w}
+                    onChange={(v) => updateElement(selectedIdx, { w: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.height')}
+                    value={selected.h}
+                    onChange={(v) => updateElement(selectedIdx, { h: v })}
+                  />
                 </>
               )}
               {selected.kind === 'line' && (
                 <>
-                  <NumberField label={t('board_editor.x1')} value={selected.x1} onChange={(v) => updateElement(selectedIdx, { x1: v })} />
-                  <NumberField label={t('board_editor.y1')} value={selected.y1} onChange={(v) => updateElement(selectedIdx, { y1: v })} />
-                  <NumberField label={t('board_editor.x2')} value={selected.x2} onChange={(v) => updateElement(selectedIdx, { x2: v })} />
-                  <NumberField label={t('board_editor.y2')} value={selected.y2} onChange={(v) => updateElement(selectedIdx, { y2: v })} />
-                  <NumberField label={t('board_editor.thickness')} value={selected.thickness} onChange={(v) => updateElement(selectedIdx, { thickness: v })} />
+                  <NumberField
+                    label={t('board_editor.x1')}
+                    value={selected.x1}
+                    onChange={(v) => updateElement(selectedIdx, { x1: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y1')}
+                    value={selected.y1}
+                    onChange={(v) => updateElement(selectedIdx, { y1: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.x2')}
+                    value={selected.x2}
+                    onChange={(v) => updateElement(selectedIdx, { x2: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y2')}
+                    value={selected.y2}
+                    onChange={(v) => updateElement(selectedIdx, { y2: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.thickness')}
+                    value={selected.thickness}
+                    onChange={(v) => updateElement(selectedIdx, { thickness: v })}
+                  />
                 </>
               )}
               {selected.kind === 'light' && (
                 <>
-                  <NumberField label={t('board_editor.x')} value={selected.x} onChange={(v) => updateElement(selectedIdx, { x: v })} />
-                  <NumberField label={t('board_editor.y')} value={selected.y} onChange={(v) => updateElement(selectedIdx, { y: v })} />
-                  <NumberField label={t('board_editor.intensity')} value={selected.intensity} onChange={(v) => updateElement(selectedIdx, { intensity: v })} />
+                  <NumberField
+                    label={t('board_editor.x')}
+                    value={selected.x}
+                    onChange={(v) => updateElement(selectedIdx, { x: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y')}
+                    value={selected.y}
+                    onChange={(v) => updateElement(selectedIdx, { y: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.intensity')}
+                    value={selected.intensity}
+                    onChange={(v) => updateElement(selectedIdx, { intensity: v })}
+                  />
                 </>
               )}
-              {(selected.kind === 'start' || selected.kind === 'goal') && isMovableKind(selected) && (
-                <>
-                  <NumberField label={t('board_editor.x')} value={selected.x} onChange={(v) => updateElement(selectedIdx, { x: v })} />
-                  <NumberField label={t('board_editor.y')} value={selected.y} onChange={(v) => updateElement(selectedIdx, { y: v })} />
-                </>
-              )}
+              {(selected.kind === 'start' || selected.kind === 'goal') &&
+                isMovableKind(selected) && (
+                  <>
+                    <NumberField
+                      label={t('board_editor.x')}
+                      value={selected.x}
+                      onChange={(v) => updateElement(selectedIdx, { x: v })}
+                    />
+                    <NumberField
+                      label={t('board_editor.y')}
+                      value={selected.y}
+                      onChange={(v) => updateElement(selectedIdx, { y: v })}
+                    />
+                  </>
+                )}
               {selected.kind === 'bonus' && (
                 <>
-                  <NumberField label={t('board_editor.x')} value={selected.x} onChange={(v) => updateElement(selectedIdx, { x: v })} />
-                  <NumberField label={t('board_editor.y')} value={selected.y} onChange={(v) => updateElement(selectedIdx, { y: v })} />
-                  <NumberField label={t('board_editor.tolerance_cm')} value={selected.toleranceCm} onChange={(v) => updateElement(selectedIdx, { toleranceCm: v })} />
+                  <NumberField
+                    label={t('board_editor.x')}
+                    value={selected.x}
+                    onChange={(v) => updateElement(selectedIdx, { x: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y')}
+                    value={selected.y}
+                    onChange={(v) => updateElement(selectedIdx, { y: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.tolerance_cm')}
+                    value={selected.toleranceCm}
+                    onChange={(v) => updateElement(selectedIdx, { toleranceCm: v })}
+                  />
                 </>
               )}
               <button
@@ -296,14 +369,28 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
         <button
           type="button"
           onClick={() => onSave(board)}
-          style={{ padding: '0.4rem 0.9rem', cursor: 'pointer', borderRadius: 4, border: '1px solid #2c5cff', background: '#2c5cff', color: '#fff', fontWeight: 'bold' }}
+          style={{
+            padding: '0.4rem 0.9rem',
+            cursor: 'pointer',
+            borderRadius: 4,
+            border: '1px solid #2c5cff',
+            background: '#2c5cff',
+            color: '#fff',
+            fontWeight: 'bold',
+          }}
         >
           {t('board_editor.save')}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          style={{ padding: '0.4rem 0.9rem', cursor: 'pointer', borderRadius: 4, border: '1px solid #555', background: '#fff' }}
+          style={{
+            padding: '0.4rem 0.9rem',
+            cursor: 'pointer',
+            borderRadius: 4,
+            border: '1px solid #555',
+            background: '#fff',
+          }}
         >
           {t('board_editor.cancel')}
         </button>

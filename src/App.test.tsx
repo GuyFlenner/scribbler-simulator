@@ -131,7 +131,9 @@ describe('App — editor mode toggle', () => {
   it('switches to the editor view when the Edit behaviors tab is clicked', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: /edit behaviors/i }));
-    expect(await screen.findByRole('tab', { name: /edit press 2 times/i }, { timeout: 5000 })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('tab', { name: /edit press 2 times/i }, { timeout: 5000 }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -251,18 +253,18 @@ describe('App — cheat-sheet', () => {
   });
 
   it('describes a user-defined drive_wheels program', () => {
-    useEditorStore.getState().setBehavior(2, [
-      { kind: 'drive_wheels', leftSpeedPct: 50, rightSpeedPct: -50, durationMs: 1000 },
-    ]);
+    useEditorStore
+      .getState()
+      .setBehavior(2, [
+        { kind: 'drive_wheels', leftSpeedPct: 50, rightSpeedPct: -50, durationMs: 1000 },
+      ]);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
     expect(screen.getByRole('dialog')).toHaveTextContent(/L=50%.*R=-50%.*1000/);
   });
 
   it('describes a user-defined drive_arc program (positive degrees = right)', () => {
-    useEditorStore.getState().setBehavior(3, [
-      { kind: 'drive_arc', radiusCm: 25, degrees: 90 },
-    ]);
+    useEditorStore.getState().setBehavior(3, [{ kind: 'drive_arc', radiusCm: 25, degrees: 90 }]);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
     expect(screen.getByRole('dialog')).toHaveTextContent(/arc right.*radius 25.*90/i);
@@ -297,7 +299,8 @@ describe('App — stall on collision', () => {
   it('shows a stall indicator when the robot collides with an obstacle', () => {
     render(<App />);
     const obstacle = defaultBoard.elements.find((e) => e.kind === 'obstacle');
-    if (!obstacle || obstacle.kind !== 'obstacle') throw new Error('default board missing obstacle');
+    if (!obstacle || obstacle.kind !== 'obstacle')
+      throw new Error('default board missing obstacle');
     act(() => {
       useSimStore.setState({
         robot: makeRobotState({
