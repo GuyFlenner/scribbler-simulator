@@ -29,6 +29,9 @@ export default defineConfig({
             provider: 'playwright',
             headless: true,
             instances: [{ browser: 'chromium' }],
+            // Failure screenshots are transient CI/debug artifacts — keep them out of
+            // tests/browser/__screenshots__/, which holds committed baselines only.
+            screenshotDirectory: 'test-results/screenshots',
           },
         },
       },

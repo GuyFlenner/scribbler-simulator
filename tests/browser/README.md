@@ -30,5 +30,14 @@ tests/browser/
 │   ├── store-bridge.ts   typed access to window.__scribbler
 │   └── time.ts            sim-driven runSimSeconds(n)
 ├── smoke.spec.tsx         Phase 1 — golden path (5 tests)
+├── __screenshots__/       committed screenshot baselines (tracked in git)
 └── README.md              this file
 ```
+
+## Screenshot artifacts
+
+- `tests/browser/__screenshots__/` holds **committed baselines** — it is tracked;
+  regenerated baselines must show up in `git status` and be reviewed like code.
+- **Failure screenshots** (auto-captured by Vitest when a browser test fails) are
+  transient debug output. They are redirected to `test-results/screenshots/`
+  (`browser.screenshotDirectory` in `vite.config.ts`), which is gitignored.

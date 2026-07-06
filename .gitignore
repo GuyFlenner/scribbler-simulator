@@ -13,6 +13,8 @@ Thumbs.db
 .idea/
 .history/
 .claude/settings.local.json
-tests/browser/__screenshots__/
+# Transient browser-test artifacts. Failure screenshots go to
+# test-results/screenshots (vite.config.ts browser.screenshotDirectory);
+# tests/browser/__screenshots__/ holds committed baselines and IS tracked.
 test-results/
 _drafts/
