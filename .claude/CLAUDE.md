@@ -58,7 +58,7 @@ PO → Team Lead → Architect → Developer → Security → Review → Tests �
 - **Rendering**: HTML5 Canvas (2D top-down sim)
 - **i18n**: i18next + react-i18next (Hebrew RTL + English)
 - **Test framework**: Vitest + @testing-library/react + jsdom
-- **Linter / formatter**: ESLint 9 + Prettier (to be configured in Phase 1)
+- **Linter / formatter**: ESLint 9 (flat config, `eslint.config.js`: typescript-eslint recommended + react-hooks) + Prettier — `npm run lint`, `npm run format`, `npm run format:check`; enforced in CI
 - **Type checker**: tsc strict
 - **Package manager**: npm
 

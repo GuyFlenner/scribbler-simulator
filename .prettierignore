@@ -1,0 +1,9 @@
+dist/
+coverage/
+node_modules/
+package-lock.json
+tests/browser/__screenshots__/
+test-results/
+_drafts/
+.claude/skills/
+*.tsbuildinfo
