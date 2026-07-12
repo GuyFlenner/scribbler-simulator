@@ -1,8 +1,23 @@
 # Scribbler Simulator — SDLC Status
 
-**Last updated**: 2026-05-10
-**Current state**: All 5 backlog items shipped, polish + 14 browser tests added. Awaiting teacher answers before further feature work.
-**Active backlog item**: none — backlog drained
+**Last updated**: 2026-07-12
+**Current state**: Grade-based competition modes shipped (Grade 4 / Grade 5 / Grades 7-9, mirroring the real Robotraffic tiers photographed at the June 2026 competition). S3 calibration corrected from Parallax driver sources. Benchmark research: this is the only S3 simulator in existence (`docs/comparison-simulators.md`).
+**Active backlog item**: none — grade backlog drained; stretch items listed in comparison doc §Deferred
+
+---
+
+## Session timeline (2026-07-12) — grade modes
+
+| Commit    | What                                                                                                                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `38ca713` | feat(sim): grades 7-9 — line tracks (figure-8 + serpentine, 50mm line), follower starter, WHEEL_BASE_M 0.153 / TICKS_PER_M 2019 calibration fix, OOB float-epsilon fix                                  |
+| `b166721` | feat(board): grade 5 — wall/corner elements, capsule collision, diagonal board, 8-connected generator option, board-editor tools                                                                        |
+| `e20d328` | feat(grade): GradeConfig + selector + grade-filtered toolbox + grade-aware snapHeading + autofill fixes (loadStarter all-8-slots, externalRevision remount, workspaceJson persistence, set_led removal) |
+| `39d398c` | style: prettier-format tracked .memory-backup docs (pre-existing CI breaker)                                                                                                                            |
+
+Snapshot after this session: **275 tests (254 unit + 21 browser)**, strict TS 0 errors, lint/format clean.
+
+Key architecture addition: `src/grade/config.ts` is the single source of truth for everything grade-dependent (snap increment, toolbox, starters, bundled boards, 🎲 connectivity). Grade selection lives in `src/store/grade-store.ts` (`scribbler-sim:grade:v1`); switch side-effects live in `GradeSelector.tsx` only.
 
 ---
 
@@ -30,7 +45,7 @@
 
 ---
 
-## Current snapshot
+## Snapshot (2026-05-10, historical — see 2026-07-12 session above for current)
 
 ```
 Tests:           110/110  (96 unit, 14 browser-chromium)
@@ -116,6 +131,10 @@ The "Edit behaviors freeze" (`9b1e608`) was a class of bug: a `useEffect` that s
 ### Convention pin
 
 **Positive degrees = clockwise on screen = right turn.** This is the screen-coordinate convention (canvas `+y` is down). Documented in `src/sim/types.ts` and locked in by 2 tests in `runtime.test.ts`.
+
+### Calibration pin (2026-07-12)
+
+`WHEEL_BASE_M = 0.153`, `TICKS_PER_M = 2019` — sourced from Parallax's own S3 driver (`scribbler.spin`: `DEFAULT_WHEEL_SPACE = 153`, ~0.5 mm/encoder count). Do not "fix" these back to the old 0.105/340; those were wrong (drive_wheels steering ran ~46% fast). The line-follower starter gains in `starter.ts` were tuned against 0.153 and are pinned by `grade79-follower.validation.test.ts`.
 
 ### Dependency quirk
 
