@@ -3,6 +3,7 @@ name: Son's confirmed competition button layout
 description: The 6 press-count behaviors the kid confirmed for the competition (May 2026) — now updated to 10cm grid
 type: project
 ---
+
 Son confirmed the competition button layout (May 2026 WhatsApp photo of Scribbler Program Maker S3 v2.0):
 
 - Press 1 → forward 10 cm

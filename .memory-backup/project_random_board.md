@@ -1,7 +1,7 @@
 ---
 name: project_random_board
 description: Random board generator — transient (non-persisted) solvable maze from a 🎲 button. Shipped 2026-05-29; rewritten to recursive-division maze (was obstacle scatter) on 2026-06-02.
-metadata: 
+metadata:
   node_type: memory
   type: project
 ---
@@ -11,13 +11,14 @@ that generates a fresh randomized full-cell obstacle layout each click, always
 solvable A→B. Lives in `src/sim/boards/random.ts` (pure, no React/zustand).
 
 Key design decisions (non-obvious from code alone):
+
 - **Transient, not saved.** The random board uses a stable id `RANDOM_BOARD_ID = 'random'`
   held in a `randomBoard: BoardState | null` slot on boards-store — NOT in `customBoards`,
   NOT in localStorage. Repeated clicks regenerate in place so the saved list never grows.
   `getActiveBoard()` resolves it when `activeBoardId === 'random'`; `loadRandomBoard()` sets
   it without calling `persistBoards` (intentional — random is ephemeral).
 - **Generation = PARITY recursive division MAZE** (changed 2026-06-02). The original 2026-05-29
-  implementation just *scattered* 12–24 random obstacle cells and used BFS rejection sampling
+  implementation just _scattered_ 12–24 random obstacle cells and used BFS rejection sampling
   to keep a path open — it was solvable but did NOT look/play like a maze (disconnected blocks).
   Per owner feedback, `generateRandomBoard` now carves a real maze via recursive division in
   exported `carveMaze(size, rng)`; `RandomBoardOptions.obstacleCount` was REMOVED (options are
