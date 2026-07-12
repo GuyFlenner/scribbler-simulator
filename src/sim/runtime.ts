@@ -1,6 +1,6 @@
 import type { Step } from './behaviors/schema';
 import type { BoardState } from './boards/schema';
-import { evalPredicate } from './sensors';
+import { evalPredicate, readLineReflectivity } from './sensors';
 import { TICKS_PER_M, WHEEL_BASE_M, type RobotState } from './types';
 
 const DEFAULT_LINEAR_SPEED = 0.15;
@@ -70,6 +70,47 @@ function* executeDriveWheels(
   while (elapsed < targetSeconds) {
     if (ctx.robot.isStalled) return;
     yield { vLinear, vAngular };
+    elapsed += ctx.dtSeconds;
+  }
+}
+
+// Proportional line follower (uses the analog 0-100 reflectivity sensors —
+// real S3 semantics). Steering is proportional to the left/right reflectivity
+// difference, and forward speed eases off in proportion to the error, so the
+// robot corners smoothly instead of bang-bang zig-zagging. Gains are pinned
+// by grade79-follower.validation.test.ts — tune there, not by eye.
+const FOLLOW_TURN_GAIN_RAD_S = 2.5;
+const FOLLOW_SLOWDOWN_FACTOR = 0.6;
+const FOLLOW_LINE_LOST_TIMEOUT_S = 1;
+
+function* executeFollowLine(
+  step: { kind: 'follow_line'; speedPct: number; seconds: number },
+  ctx: Context,
+): Generator<Velocities> {
+  const clampPct = Math.max(0, Math.min(100, step.speedPct));
+  const speed = (clampPct / 100) * MAX_LINEAR_SPEED;
+  let elapsed = 0;
+  let lostSeconds = 0;
+  while (elapsed < step.seconds) {
+    if (ctx.robot.isStalled) return;
+    const { left, right } = readLineReflectivity(ctx.robot, ctx.board);
+    if (left === 0 && right === 0) {
+      // Fully off the line: keep last-resort straight travel briefly, then
+      // stop rather than wander the board forever.
+      lostSeconds += ctx.dtSeconds;
+      if (lostSeconds >= FOLLOW_LINE_LOST_TIMEOUT_S) {
+        yield ZERO;
+        return;
+      }
+    } else {
+      lostSeconds = 0;
+    }
+    // + error → line is toward the left sensor (+y local) → steer +.
+    const error = (left - right) / 100;
+    yield {
+      vLinear: speed * (1 - FOLLOW_SLOWDOWN_FACTOR * Math.abs(error)),
+      vAngular: FOLLOW_TURN_GAIN_RAD_S * error,
+    };
     elapsed += ctx.dtSeconds;
   }
 }
@@ -152,6 +193,9 @@ function* executeStep(step: Step, ctx: Context): Generator<Velocities> {
       return;
     case 'drive_wheels':
       yield* executeDriveWheels(step, ctx);
+      return;
+    case 'follow_line':
+      yield* executeFollowLine(step, ctx);
       return;
     case 'drive_arc':
       yield* executeDriveArc(step, ctx);

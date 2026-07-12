@@ -42,6 +42,38 @@ const sensorOverLine = (sensorX: number, sensorY: number, board: BoardState): bo
   return false;
 };
 
+// The real S3 line sensor returns 0-100 analog reflectivity, not a boolean.
+// Model: the sensor reads a spot of this radius; reflectivity ramps linearly
+// from 100 (spot fully over the line) to 0 (spot fully off it) as the spot
+// crosses the line edge. The boolean sensors above keep their original exact
+// thickness/2 threshold — analog is an additional view, not a replacement.
+const LINE_SENSOR_SPOT_RADIUS_M = 0.01;
+
+const reflectivityAt = (sensorX: number, sensorY: number, board: BoardState): number => {
+  let best = 0;
+  for (const el of board.elements) {
+    if (el.kind !== 'line') continue;
+    const dist = distPointToSegment(sensorX, sensorY, el.x1, el.y1, el.x2, el.y2);
+    const ramp =
+      (el.thickness / 2 + LINE_SENSOR_SPOT_RADIUS_M - dist) / (2 * LINE_SENSOR_SPOT_RADIUS_M);
+    best = Math.max(best, Math.min(1, Math.max(0, ramp)));
+  }
+  return best * 100;
+};
+
+/** Analog 0-100 reflectivity for the left/right line sensors (real S3 semantics). */
+export function readLineReflectivity(
+  robot: RobotState,
+  board: BoardState,
+): { left: number; right: number } {
+  const leftPoint = localToWorld(robot, ROBOT_LENGTH_M / 2, LINE_SENSOR_LATERAL_OFFSET_M);
+  const rightPoint = localToWorld(robot, ROBOT_LENGTH_M / 2, -LINE_SENSOR_LATERAL_OFFSET_M);
+  return {
+    left: reflectivityAt(leftPoint.x, leftPoint.y, board),
+    right: reflectivityAt(rightPoint.x, rightPoint.y, board),
+  };
+}
+
 export function readLineSensorLeft(robot: RobotState, board: BoardState): boolean {
   const p = localToWorld(robot, ROBOT_LENGTH_M / 2, LINE_SENSOR_LATERAL_OFFSET_M);
   return sensorOverLine(p.x, p.y, board);

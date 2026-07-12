@@ -68,6 +68,18 @@ export const buildBlockDefinitions = (t: TFunction): BlockDefinition[] => [
     tooltip: t('blocks.drive_arc_tooltip'),
   },
   {
+    type: 'follow_line',
+    message0: t('blocks.follow_line'),
+    args0: [
+      { type: 'field_number', name: 'SPEED', value: 60, min: 0, max: 100 },
+      { type: 'field_number', name: 'SECONDS', value: 30, min: 0 },
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 210,
+    tooltip: t('blocks.follow_line_tooltip'),
+  },
+  {
     type: 'stop',
     message0: t('blocks.stop'),
     previousStatement: null,

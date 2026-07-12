@@ -63,6 +63,12 @@ const compileSingle = (block: BlocklyBlock): Step | null => {
         radiusCm: numField(block, 'RADIUS_CM', 20),
         degrees: numField(block, 'DEGREES', 0),
       };
+    case 'follow_line':
+      return {
+        kind: 'follow_line',
+        speedPct: numField(block, 'SPEED', 60),
+        seconds: numField(block, 'SECONDS', 30),
+      };
     case 'rotate_degrees':
       return { kind: 'rotate', degrees: numField(block, 'DEGREES', 0) };
     case 'stop':
@@ -181,6 +187,11 @@ const stepToBlock = (step: Step): BlocklyBlock | null => {
       return {
         type: 'drive_arc',
         fields: { RADIUS_CM: step.radiusCm, DEGREES: step.degrees },
+      };
+    case 'follow_line':
+      return {
+        type: 'follow_line',
+        fields: { SPEED: step.speedPct, SECONDS: step.seconds },
       };
     case 'rotate':
       return { type: 'rotate_degrees', fields: { DEGREES: step.degrees } };

@@ -130,6 +130,7 @@ export const GRADE_CONFIGS: Record<Grade, GradeConfig> = {
         blocks: [
           { type: 'drive_wheels' },
           { type: 'drive_arc' },
+          { type: 'follow_line' },
           { type: 'drive_distance' },
           { type: 'rotate_degrees' },
           { type: 'stop' },

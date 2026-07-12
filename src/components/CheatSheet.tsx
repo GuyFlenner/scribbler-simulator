@@ -16,6 +16,8 @@ const describeStep = (step: Step, t: TFunction): string => {
         right: step.rightSpeedPct,
         ms: step.durationMs,
       });
+    case 'follow_line':
+      return t('cheatsheet.step_follow_line', { speed: step.speedPct, seconds: step.seconds });
     case 'drive_arc':
       if (step.radiusCm === 0) {
         return t('cheatsheet.step_drive_arc_spin', { degrees: step.degrees });

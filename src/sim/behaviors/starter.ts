@@ -66,4 +66,8 @@ export const grade79ProgramSample: StarterEntry[] = [
     steps: [{ kind: 'drive_wheels', leftSpeedPct: 40, rightSpeedPct: -40, durationMs: 350 }],
   },
   { pressCount: 4, steps: [{ kind: 'repeat', times: 3000, body: [followerSlice] }] },
+  // Press 5 is the same job done the grown-up way: the proportional follower
+  // block using the analog reflectivity sensors. Comparing press 4 vs press 5
+  // on the racing track is the intended lesson.
+  { pressCount: 5, steps: [{ kind: 'follow_line', speedPct: 60, seconds: 60 }] },
 ];

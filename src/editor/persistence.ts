@@ -64,6 +64,12 @@ const validateStep = (raw: unknown): Step => {
         durationMs: raw.durationMs,
       };
     }
+    case 'follow_line': {
+      if (!isFiniteNumber(raw.speedPct) || !isFiniteNumber(raw.seconds)) {
+        return fail('follow_line requires numeric speedPct, seconds');
+      }
+      return { kind: 'follow_line', speedPct: raw.speedPct, seconds: raw.seconds };
+    }
     case 'drive_arc': {
       if (!isFiniteNumber(raw.radiusCm) || !isFiniteNumber(raw.degrees)) {
         return fail('drive_arc requires numeric radiusCm, degrees');

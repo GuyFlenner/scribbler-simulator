@@ -60,6 +60,26 @@ describe('grade 7-9 — line follower on the serpentine track', () => {
     expect(travelled).toBeGreaterThan(1.5);
   });
 
+  it('press 5 (proportional follow_line) also completes the track, in a tighter corridor', () => {
+    const proportional = grade79ProgramSample.find((e) => e.pressCount === 5)?.steps;
+    if (!proportional) throw new Error('press-5 follow_line starter missing');
+    useSimStore.getState().pressButton(5, proportional);
+
+    let maxDeviation = 0;
+    const maxTicks = 60 * 90;
+    for (let i = 0; i < maxTicks; i++) {
+      useSimStore.getState().tick(1 / 60);
+      const { robot, status } = useSimStore.getState();
+      maxDeviation = Math.max(maxDeviation, distToTrack(robot.x, robot.y));
+      expect(status).not.toBe('stalled');
+      if (status === 'reached-goal') break;
+    }
+
+    expect(useSimStore.getState().status).toBe('reached-goal');
+    // Proportional control holds the line noticeably tighter than bang-bang.
+    expect(maxDeviation).toBeLessThan(0.04);
+  });
+
   it('tank and pivot starters produce the expected motion primitives', () => {
     // Press 1: tank forward — straight line, no heading change.
     const straight = grade79ProgramSample.find((e) => e.pressCount === 1)?.steps;
