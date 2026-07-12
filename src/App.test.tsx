@@ -310,6 +310,57 @@ describe('App — grade selector', () => {
   });
 });
 
+describe('App — challenges', () => {
+  beforeEach(async () => {
+    const { useChallengesStore } = await import('./store/challenges-store');
+    useChallengesStore.getState().resetAll();
+  });
+
+  it('lists the grade-4 challenges in the Challenges tab', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: /challenges/i }));
+    expect(await screen.findByText(/first drive/i)).toBeInTheDocument();
+    expect(screen.getByText(/bonus hunter/i)).toBeInTheDocument();
+    expect(screen.getByText(/maze runner/i)).toBeInTheDocument();
+  });
+
+  it('completing an active challenge shows earned stars in the goal overlay and records the best', async () => {
+    const { useChallengesStore } = await import('./store/challenges-store');
+    act(() => {
+      useChallengesStore.getState().startChallenge('g4-first-drive');
+    });
+    render(<App />);
+
+    // One press then snap to the goal — a 1-press run beats the 7-press
+    // 3-star threshold.
+    act(() => {
+      useSimStore.getState().pressButton(2, [{ kind: 'drive', cm: 1 }]);
+    });
+    const goal = defaultBoard.elements.find((e) => e.kind === 'goal');
+    if (!goal || goal.kind !== 'goal') throw new Error('no goal');
+    act(() => {
+      useSimStore.setState({
+        robot: makeRobotState({ x: goal.x, y: goal.y, heading: 0 }),
+        status: 'running',
+        runStartedAt: Date.now() - 3000,
+      });
+      useSimStore.getState().tick(1 / 60);
+    });
+
+    expect(screen.getByTestId('challenge-stars')).toBeInTheDocument();
+    expect(useChallengesStore.getState().starsByChallenge['g4-first-drive']).toBe(3);
+  });
+
+  it('shows the active-challenge banner while attempting', async () => {
+    const { useChallengesStore } = await import('./store/challenges-store');
+    act(() => {
+      useChallengesStore.getState().startChallenge('g4-first-drive');
+    });
+    render(<App />);
+    expect(screen.getByTestId('challenge-banner')).toBeInTheDocument();
+  });
+});
+
 describe('App — language toggle', () => {
   it('switches all UI strings to Hebrew and sets html dir=rtl when Hebrew is clicked', async () => {
     render(<App />);

@@ -9,6 +9,7 @@ import type { RobotState, SimState, SimStatus } from '../sim/types';
 import { newRunId, sortEvents, type RunEvent, type RunRecord } from '../sim/replay';
 import { useBoardsStore } from './boards-store';
 import { useGradeStore } from './grade-store';
+import { useChallengesStore } from './challenges-store';
 import { getGradeConfig } from '../grade/config';
 
 const startMarker = (board: BoardState): { x: number; y: number; heading: number } => {
@@ -83,6 +84,8 @@ const recordRunIfDone = (
     bonusHit: state.bonusHit,
   };
   useBoardsStore.getState().recordRun(record);
+  // Score the run against the active challenge (no-op when none is active).
+  useChallengesStore.getState().recordResult(record);
 };
 
 const resolveInitialBoard = (): BoardState => {

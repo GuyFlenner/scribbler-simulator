@@ -11,8 +11,11 @@ const EditorView = lazy(() =>
 const BoardsPanel = lazy(() =>
   import('./components/BoardsPanel').then((m) => ({ default: m.BoardsPanel })),
 );
+const ChallengesPanel = lazy(() =>
+  import('./components/ChallengesPanel').then((m) => ({ default: m.ChallengesPanel })),
+);
 
-type Mode = 'simulator' | 'editor' | 'boards';
+type Mode = 'simulator' | 'editor' | 'boards' | 'challenges';
 
 const TAB_BUTTON_STYLE = (active: boolean): React.CSSProperties => ({
   padding: '0.4rem 0.9rem',
@@ -70,6 +73,15 @@ export default function App(): ReactElement {
             >
               {t('boards.tab_label')}
             </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'challenges'}
+              onClick={() => setMode('challenges')}
+              style={TAB_BUTTON_STYLE(mode === 'challenges')}
+            >
+              {t('challenges.tab_label')}
+            </button>
           </div>
           <button
             type="button"
@@ -100,6 +112,7 @@ export default function App(): ReactElement {
       >
         {mode === 'editor' && <EditorView />}
         {mode === 'boards' && <BoardsPanel />}
+        {mode === 'challenges' && <ChallengesPanel onStartChallenge={() => setMode('simulator')} />}
       </Suspense>
     </main>
   );

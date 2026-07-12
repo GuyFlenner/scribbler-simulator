@@ -1,8 +1,11 @@
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSimStore } from '../store/sim-store';
+import { useChallengesStore } from '../store/challenges-store';
+import { findChallenge } from '../challenges/catalog';
 import { BoardCanvas } from './BoardCanvas';
 import { PressButtons } from './PressButtons';
+import { StarRow } from './StarRow';
 
 const formatElapsedSeconds = (startedAt: number | null): string => {
   if (startedAt === null) return '0.0';
@@ -16,11 +19,34 @@ export function SimulatorView(): ReactElement {
   const runStartedAt = useSimStore((s) => s.runStartedAt);
   const isStalled = useSimStore((s) => s.robot.isStalled);
   const bonusHit = useSimStore((s) => s.bonusHit);
+  const activeChallengeId = useChallengesStore((s) => s.activeChallengeId);
+  const lastResult = useChallengesStore((s) => s.lastResult);
+  const activeChallenge = activeChallengeId ? findChallenge(activeChallengeId) : undefined;
+  const challengeStars =
+    lastResult && lastResult.challengeId === activeChallengeId ? lastResult.stars : null;
 
   return (
     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', padding: 24 }}>
       <div style={{ position: 'relative' }}>
         <BoardCanvas />
+        {activeChallenge && status !== 'reached-goal' && (
+          <div
+            data-testid="challenge-banner"
+            style={{
+              position: 'absolute',
+              bottom: 8,
+              insetInlineStart: 8,
+              background: 'rgba(44, 92, 255, 0.92)',
+              color: '#fff',
+              padding: '4px 10px',
+              borderRadius: 4,
+              fontSize: '0.85rem',
+              fontWeight: 'bold',
+            }}
+          >
+            {t('challenges.active_label', { title: t(activeChallenge.titleKey) })}
+          </div>
+        )}
         {status === 'reached-goal' && (
           <div
             role="status"
@@ -40,6 +66,15 @@ export function SimulatorView(): ReactElement {
             }}
           >
             <span>{bonusHit ? t('simulator.well_done_with_bonus') : t('simulator.well_done')}</span>
+            {activeChallenge && challengeStars !== null && (
+              <span
+                data-testid="challenge-stars"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1rem' }}
+              >
+                <span style={{ color: '#333' }}>{t(activeChallenge.titleKey)}:</span>
+                <StarRow stars={challengeStars} size="1.6rem" />
+              </span>
+            )}
             <span style={{ fontSize: '1rem', color: '#333' }}>
               {t('simulator.time_label', { seconds: formatElapsedSeconds(runStartedAt) })}
             </span>
