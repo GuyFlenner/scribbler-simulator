@@ -30,7 +30,24 @@ export const CELL_M = 0.1;
 /** Random source in [0,1). Defaults to Math.random; inject for deterministic tests. */
 export type Rng = () => number;
 
-export interface RandomBoardOptions {
+export interface SolvabilityOptions {
+  /**
+   * Grid connectivity for the BFS. 4 (default) = orthogonal moves only —
+   * the grade-4 movement model. 8 adds diagonal moves (grade 5), with a
+   * no-corner-cutting rule: a diagonal step is allowed only when BOTH
+   * orthogonal neighbours it passes between are open, because the physical
+   * robot cannot squeeze between two corner-touching 10cm blocks.
+   *
+   * Note: under no-corner-cutting, a permitted diagonal always has an open
+   * orthogonal detour, so 8-connectivity never changes WHETHER a grid is
+   * solvable — only how short the path can be. The option models grade-5
+   * diagonal shortcuts and keeps the API ready for movement models where
+   * the equivalence no longer holds (e.g. a smaller collision footprint).
+   */
+  connectivity?: 4 | 8;
+}
+
+export interface RandomBoardOptions extends SolvabilityOptions {
   /** Random source in [0,1). Defaults to Math.random. */
   rng?: Rng;
   /** Grid dimension (cells per side). Defaults to GRID_SIZE (10). */
@@ -40,11 +57,17 @@ export interface RandomBoardOptions {
 const cellKey = (col: number, row: number): string => `${col},${row}`;
 
 /**
- * 4-connected BFS from cell (0,0) to (size-1,size-1) over an occupancy grid.
+ * BFS from cell (0,0) to (size-1,size-1) over an occupancy grid.
  * `blocked[row][col] === true` means the cell is impassable. Returns true iff
  * the goal cell is reachable (and neither start nor goal is itself blocked).
+ * Connectivity is 4 (orthogonal) by default; see SolvabilityOptions.
  */
-export function isGridSolvable(blocked: boolean[][], size = GRID_SIZE): boolean {
+export function isGridSolvable(
+  blocked: boolean[][],
+  size = GRID_SIZE,
+  options: SolvabilityOptions = {},
+): boolean {
+  const connectivity = options.connectivity ?? 4;
   if (size <= 0) return false;
   if (blocked[0]?.[0] || blocked[size - 1]?.[size - 1]) return false;
 
@@ -63,6 +86,19 @@ export function isGridSolvable(blocked: boolean[][], size = GRID_SIZE): boolean 
       [row, col - 1],
       [row, col + 1],
     ];
+    if (connectivity === 8) {
+      for (const dr of [-1, 1]) {
+        for (const dc of [-1, 1]) {
+          const r = row + dr;
+          const c = col + dc;
+          if (r < 0 || r >= size || c < 0 || c >= size) continue;
+          // No corner cutting: both orthogonal cells flanking the diagonal
+          // must be open for the robot to fit through.
+          if (blocked[row][c] || blocked[r][col]) continue;
+          neighbours.push([r, c]);
+        }
+      }
+    }
     for (const [r, c] of neighbours) {
       if (r < 0 || r >= size || c < 0 || c >= size) continue;
       if (blocked[r][c] || visited[r][c]) continue;
@@ -88,8 +124,12 @@ export function boardOccupancy(board: BoardState, size = GRID_SIZE): boolean[][]
 }
 
 /** True iff the board is BFS-solvable from start cell to goal cell. */
-export function isBoardSolvable(board: BoardState, size = GRID_SIZE): boolean {
-  return isGridSolvable(boardOccupancy(board, size), size);
+export function isBoardSolvable(
+  board: BoardState,
+  size = GRID_SIZE,
+  options: SolvabilityOptions = {},
+): boolean {
+  return isGridSolvable(boardOccupancy(board, size), size, options);
 }
 
 /** True iff an even integer exists in [lo, hi]. */
@@ -230,8 +270,11 @@ export function generateRandomBoard(options: RandomBoardOptions = {}): BoardStat
   const rng = options.rng ?? Math.random;
   const size = options.size ?? GRID_SIZE;
 
+  // The carver produces 4-connected-solvable mazes by construction; a
+  // 4-solvable maze is also 8-solvable, so the connectivity option (grade 5)
+  // only loosens the defensive check + fallback below.
   const blocked = carveMaze(size, rng);
-  if (!isGridSolvable(blocked, size)) carveSafetyPath(blocked, size);
+  if (!isGridSolvable(blocked, size, options)) carveSafetyPath(blocked, size);
 
   return buildBoard(blocked, size);
 }

@@ -32,6 +32,11 @@ export interface SimState {
 // unambiguous after a 90° turn.
 export const ROBOT_LENGTH_M = 0.09;
 export const ROBOT_WIDTH_M = 0.065;
+// Circle approximation of the robot footprint used for wall/corner (segment)
+// collision — the mean of half-length and half-width. Tunable: raise for
+// stricter boundaries, lower to let the robot hug walls closer. Rectangular
+// obstacles keep the original AABB check (grade-4 behavior untouched).
+export const ROBOT_COLLISION_RADIUS_M = (ROBOT_LENGTH_M + ROBOT_WIDTH_M) / 4;
 // Wheel-base stays at the real S3's 10.5 cm — used by physics (encoder ticks,
 // differential wheel speeds), not by the visual.
 export const WHEEL_BASE_M = 0.105;

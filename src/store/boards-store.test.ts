@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useBoardsStore, createBlankBoard } from './boards-store';
-import { defaultBoard, mazeBoard } from '../sim/boards/default';
+import { bundledBoards, defaultBoard, mazeBoard } from '../sim/boards/default';
 import { RANDOM_BOARD_ID, isBoardSolvable } from '../sim/boards/random';
 import type { RunRecord } from '../sim/replay';
 
@@ -10,12 +10,13 @@ beforeEach(() => {
 });
 
 describe('boards-store — list + select', () => {
-  it('lists all three bundled boards (maze first, then default, then bonus) on a fresh state', () => {
+  it('lists all bundled boards (maze first, then default, bonus, diagonal) on a fresh state', () => {
     const boards = useBoardsStore.getState().listBoards();
-    expect(boards).toHaveLength(3);
+    expect(boards).toHaveLength(bundledBoards.length);
     expect(boards[0].id).toBe('maze');
     expect(boards[1].id).toBe(defaultBoard.id);
     expect(boards[2].id).toBe('default-bonus');
+    expect(boards[3].id).toBe('diagonal');
   });
 
   it('defaults the active board to maze on a fresh state', () => {
@@ -27,8 +28,8 @@ describe('boards-store — list + select', () => {
     const board = createBlankBoard('Practice 1');
     useBoardsStore.getState().saveBoard(board);
     const boards = useBoardsStore.getState().listBoards();
-    expect(boards).toHaveLength(4);
-    expect(boards[3].name).toBe('Practice 1');
+    expect(boards).toHaveLength(bundledBoards.length + 1);
+    expect(boards[bundledBoards.length].name).toBe('Practice 1');
   });
 
   it('persists boards across store rebuilds via localStorage', () => {
@@ -82,7 +83,7 @@ describe('boards-store — random board', () => {
 
   it('does not pollute the saved board list or persist to localStorage', () => {
     useBoardsStore.getState().loadRandomBoard();
-    expect(useBoardsStore.getState().listBoards()).toHaveLength(3);
+    expect(useBoardsStore.getState().listBoards()).toHaveLength(bundledBoards.length);
     const stored = localStorage.getItem('scribbler-sim:boards:v1');
     expect(stored ?? '').not.toContain(RANDOM_BOARD_ID);
   });

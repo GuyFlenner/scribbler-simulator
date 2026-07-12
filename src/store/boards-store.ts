@@ -7,7 +7,11 @@ import {
   findBundledBoard,
   isBundledBoardId,
 } from '../sim/boards/default';
-import { RANDOM_BOARD_ID, generateRandomBoard } from '../sim/boards/random';
+import {
+  RANDOM_BOARD_ID,
+  generateRandomBoard,
+  type RandomBoardOptions,
+} from '../sim/boards/random';
 import type { RunRecord } from '../sim/replay';
 
 const BOARDS_KEY = 'scribbler-sim:boards:v1';
@@ -103,7 +107,7 @@ interface BoardsStoreState {
   saveBoard: (board: BoardState) => void;
   deleteBoard: (id: string) => void;
   /** Generate a fresh, guaranteed-solvable random board and make it the active board. */
-  loadRandomBoard: () => BoardState;
+  loadRandomBoard: (options?: RandomBoardOptions) => BoardState;
   recordRun: (run: RunRecord) => void;
   getRunsForBoard: (id: string) => RunRecord[];
   resetAll: () => void;
@@ -147,8 +151,8 @@ export const useBoardsStore = create<BoardsStoreState>((set, get) => ({
     persistBoards(customBoards, get().activeBoardId);
   },
 
-  loadRandomBoard: () => {
-    const board = generateRandomBoard();
+  loadRandomBoard: (options) => {
+    const board = generateRandomBoard(options);
     // Random boards are transient: held in memory, never written to the custom
     // list or localStorage, so repeated clicks don't accumulate clutter.
     set({ randomBoard: board, activeBoardId: RANDOM_BOARD_ID });

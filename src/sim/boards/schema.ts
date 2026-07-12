@@ -7,13 +7,37 @@ export type LineSegment = {
   y2: number;
   thickness: number;
 };
+/**
+ * An impassable boundary segment at any angle (grade-5 boards use diagonals).
+ * Crossing it stalls the robot like an obstacle. 'dashed' (default) renders
+ * as the competition's red dashed penalty line; 'solid' as a solid barrier.
+ */
+export type Wall = {
+  kind: 'wall';
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  thickness: number;
+  style?: 'solid' | 'dashed';
+};
+/**
+ * A forbidden triangular zone tucked into a board corner (green triangle with
+ * a red dashed hypotenuse on the real grade-5 boards). `size` is the leg
+ * length along both board edges; the derived hypotenuse is the collision edge.
+ */
+export type CornerCut = {
+  kind: 'corner';
+  corner: 'nw' | 'ne' | 'sw' | 'se';
+  size: number;
+};
 export type LightSource = { kind: 'light'; x: number; y: number; intensity: number };
 export type StartMarker = { kind: 'start'; x: number; y: number; heading: number };
 export type GoalMarker = { kind: 'goal'; x: number; y: number; toleranceCm: number };
 export type BonusZone = { kind: 'bonus'; x: number; y: number; toleranceCm: number };
 
 export type BoardElement =
-  Obstacle | LineSegment | LightSource | StartMarker | GoalMarker | BonusZone;
+  Obstacle | LineSegment | Wall | CornerCut | LightSource | StartMarker | GoalMarker | BonusZone;
 
 export interface BoardState {
   version: 1;
@@ -70,6 +94,42 @@ const parseElement = (raw: unknown, idx: number): BoardElement => {
         y2: obj.y2,
         thickness: obj.thickness,
       };
+    }
+    case 'wall': {
+      if (
+        !isFiniteNumber(obj.x1) ||
+        !isFiniteNumber(obj.y1) ||
+        !isFiniteNumber(obj.x2) ||
+        !isFiniteNumber(obj.y2) ||
+        !isFiniteNumber(obj.thickness)
+      ) {
+        return fail(`element ${idx} (wall) has non-numeric coordinates`);
+      }
+      const wall: Wall = {
+        kind: 'wall',
+        x1: obj.x1,
+        y1: obj.y1,
+        x2: obj.x2,
+        y2: obj.y2,
+        thickness: obj.thickness,
+      };
+      if (obj.style !== undefined) {
+        if (obj.style !== 'solid' && obj.style !== 'dashed') {
+          return fail(`element ${idx} (wall) has invalid style: ${String(obj.style)}`);
+        }
+        wall.style = obj.style;
+      }
+      return wall;
+    }
+    case 'corner': {
+      const corner = obj.corner;
+      if (corner !== 'nw' && corner !== 'ne' && corner !== 'sw' && corner !== 'se') {
+        return fail(`element ${idx} (corner) has invalid corner: ${String(corner)}`);
+      }
+      if (!isFiniteNumber(obj.size) || obj.size <= 0) {
+        return fail(`element ${idx} (corner) size must be a positive number`);
+      }
+      return { kind: 'corner', corner, size: obj.size };
     }
     case 'light': {
       if (!isFiniteNumber(obj.x) || !isFiniteNumber(obj.y) || !isFiniteNumber(obj.intensity)) {

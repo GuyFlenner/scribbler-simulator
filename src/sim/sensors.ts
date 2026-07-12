@@ -1,5 +1,11 @@
 import type { BoardState } from './boards/schema';
 import type { SensorPredicate } from './behaviors/schema';
+import {
+  boardWallSegments,
+  closestPointOnSegment,
+  distPointToRect,
+  distPointToSegment,
+} from './geometry';
 import { ROBOT_LENGTH_M, type RobotState } from './types';
 
 const LINE_SENSOR_LATERAL_OFFSET_M = 0.03;
@@ -18,36 +24,6 @@ const localToWorld = (
     x: robot.x + localX * cosH - localY * sinH,
     y: robot.y + localX * sinH + localY * cosH,
   };
-};
-
-const distPointToSegment = (
-  px: number,
-  py: number,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-): number => {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len2 = dx * dx + dy * dy;
-  if (len2 === 0) return Math.hypot(px - x1, py - y1);
-  let t = ((px - x1) * dx + (py - y1) * dy) / len2;
-  t = Math.max(0, Math.min(1, t));
-  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
-};
-
-const distPointToRect = (
-  px: number,
-  py: number,
-  rx: number,
-  ry: number,
-  rw: number,
-  rh: number,
-): number => {
-  const cx = Math.max(rx, Math.min(px, rx + rw));
-  const cy = Math.max(ry, Math.min(py, ry + rh));
-  return Math.hypot(px - cx, py - cy);
 };
 
 const normaliseAngle = (a: number): number => {
@@ -90,6 +66,19 @@ const readObstacleSide = (
     const cy = el.y + el.h / 2;
     const angleToCentre = Math.atan2(cy - front.y, cx - front.x);
     const rel = normaliseAngle(angleToCentre - robot.heading);
+    if (Math.abs(rel) > IR_SENSOR_HALF_CONE_RAD) continue;
+    if (side === 'left' && rel >= 0) return true;
+    if (side === 'right' && rel <= 0) return true;
+  }
+  // Diagonal walls / corner-cut hypotenuses reflect IR like obstacles do —
+  // grade-5 kids need to sense the boundaries they must not cross. Bearing is
+  // taken to the closest point on the segment (a wall has no meaningful centre).
+  for (const seg of boardWallSegments(board)) {
+    const dist = distPointToSegment(front.x, front.y, seg.x1, seg.y1, seg.x2, seg.y2);
+    if (dist > IR_SENSOR_RANGE_M) continue;
+    const closest = closestPointOnSegment(front.x, front.y, seg.x1, seg.y1, seg.x2, seg.y2);
+    const angleToWall = Math.atan2(closest.y - front.y, closest.x - front.x);
+    const rel = normaliseAngle(angleToWall - robot.heading);
     if (Math.abs(rel) > IR_SENSOR_HALF_CONE_RAD) continue;
     if (side === 'left' && rel >= 0) return true;
     if (side === 'right' && rel <= 0) return true;

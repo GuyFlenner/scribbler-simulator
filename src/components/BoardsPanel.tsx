@@ -2,6 +2,8 @@ import { useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBoardsStore, createBlankBoard } from '../store/boards-store';
 import { useSimStore } from '../store/sim-store';
+import { useGradeStore } from '../store/grade-store';
+import { getGradeConfig } from '../grade/config';
 import { bundledBoards, defaultBoard, isBundledBoardId } from '../sim/boards/default';
 import { RANDOM_BOARD_ID } from '../sim/boards/random';
 import type { BoardState } from '../sim/boards/schema';
@@ -13,9 +15,16 @@ export function BoardsPanel(): ReactElement {
   const { t } = useTranslation();
   const customBoards = useBoardsStore((s) => s.customBoards);
   const randomBoard = useBoardsStore((s) => s.randomBoard);
+  const grade = useGradeStore((s) => s.grade);
+  const gradeConfig = getGradeConfig(grade);
   const boards = useMemo<BoardState[]>(
-    () => [...bundledBoards, ...Object.values(customBoards), ...(randomBoard ? [randomBoard] : [])],
-    [customBoards, randomBoard],
+    () => [
+      // Bundled boards are grade-filtered; custom boards are always offered.
+      ...bundledBoards.filter((b) => gradeConfig.bundledBoardIds.includes(b.id)),
+      ...Object.values(customBoards),
+      ...(randomBoard && gradeConfig.randomBoard ? [randomBoard] : []),
+    ],
+    [customBoards, randomBoard, gradeConfig],
   );
   const activeBoardId = useBoardsStore((s) => s.activeBoardId);
   const setActiveBoard = useBoardsStore((s) => s.setActiveBoard);
@@ -35,7 +44,8 @@ export function BoardsPanel(): ReactElement {
   };
 
   const handleGenerateRandom = (): void => {
-    const board = loadRandomBoard();
+    if (!gradeConfig.randomBoard) return;
+    const board = loadRandomBoard({ connectivity: gradeConfig.randomBoard.connectivity });
     setSimBoard(board);
   };
 
@@ -77,21 +87,23 @@ export function BoardsPanel(): ReactElement {
         >
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{t('boards.list_heading')}</h2>
           <span style={{ display: 'flex', gap: 6 }}>
-            <button
-              type="button"
-              onClick={handleGenerateRandom}
-              style={{
-                padding: '0.3rem 0.7rem',
-                cursor: 'pointer',
-                borderRadius: 4,
-                border: '1px solid #2c5cff',
-                background: '#fff',
-                color: '#2c5cff',
-                fontSize: '0.85rem',
-              }}
-            >
-              🎲 {t('boards.generate_random')}
-            </button>
+            {gradeConfig.randomBoard && (
+              <button
+                type="button"
+                onClick={handleGenerateRandom}
+                style={{
+                  padding: '0.3rem 0.7rem',
+                  cursor: 'pointer',
+                  borderRadius: 4,
+                  border: '1px solid #2c5cff',
+                  background: '#fff',
+                  color: '#2c5cff',
+                  fontSize: '0.85rem',
+                }}
+              >
+                🎲 {t('boards.generate_random')}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleNew}

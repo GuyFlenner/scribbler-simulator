@@ -4,6 +4,7 @@ import { render } from 'vitest-browser-react';
 import App from '../../src/App';
 import { storeBridge } from './helpers/store-bridge';
 import { RANDOM_BOARD_ID, isBoardSolvable } from '../../src/sim/boards/random';
+import { bundledBoards } from '../../src/sim/boards/default';
 
 describe('random-board: generate button', () => {
   beforeEach(async () => {
@@ -43,7 +44,7 @@ describe('random-board: generate button', () => {
     expect(second).not.toBe(first);
     expect(second!.id).toBe(RANDOM_BOARD_ID);
     expect(isBoardSolvable(second!)).toBe(true);
-    // Still exactly the three bundled boards saved — random never pollutes the list.
-    expect(storeBridge.boardsStore().listBoards()).toHaveLength(3);
+    // Still exactly the bundled boards saved — random never pollutes the list.
+    expect(storeBridge.boardsStore().listBoards()).toHaveLength(bundledBoards.length);
   });
 });

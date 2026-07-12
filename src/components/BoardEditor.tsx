@@ -4,12 +4,12 @@ import type { BoardElement, BoardState } from '../sim/boards/schema';
 
 const CANVAS_PX = 400;
 
-type Tool = 'select' | 'obstacle' | 'line' | 'light' | 'bonus';
+type Tool = 'select' | 'obstacle' | 'line' | 'wall' | 'corner' | 'light' | 'bonus';
 
 const isMovableKind = (
   el: BoardElement,
 ): el is Extract<BoardElement, { kind: 'obstacle' | 'light' | 'start' | 'goal' | 'bonus' }> =>
-  el.kind !== 'line';
+  el.kind !== 'line' && el.kind !== 'wall' && el.kind !== 'corner';
 
 interface Props {
   board: BoardState;
@@ -54,6 +54,29 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
       case 'line':
         newEl = { kind: 'line', x1: x - 0.1, y1: y, x2: x + 0.1, y2: y, thickness: 0.02 };
         break;
+      case 'wall':
+        // Placed as a diagonal by default — that's the grade-5 use case.
+        newEl = {
+          kind: 'wall',
+          x1: x - 0.1,
+          y1: y + 0.1,
+          x2: x + 0.1,
+          y2: y - 0.1,
+          thickness: 0.02,
+          style: 'dashed',
+        };
+        break;
+      case 'corner': {
+        // Snap to whichever board corner the click was nearest.
+        const horizontal = x < board.width / 2 ? 'w' : 'e';
+        const vertical = y < board.height / 2 ? 'n' : 's';
+        newEl = {
+          kind: 'corner',
+          corner: `${vertical}${horizontal}` as 'nw' | 'ne' | 'sw' | 'se',
+          size: 0.2,
+        };
+        break;
+      }
       case 'light':
         newEl = { kind: 'light', x, y, intensity: 100 };
         break;
@@ -79,6 +102,8 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
   const palette: { tool: Tool; label: string }[] = [
     { tool: 'obstacle', label: t('board_editor.obstacle') },
     { tool: 'line', label: t('board_editor.line') },
+    { tool: 'wall', label: t('board_editor.wall') },
+    { tool: 'corner', label: t('board_editor.corner') },
     { tool: 'light', label: t('board_editor.light') },
     { tool: 'bonus', label: t('board_editor.bonus') },
   ];
@@ -199,13 +224,18 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                   </div>
                 );
               }
-              if (el.kind === 'line') {
+              if (el.kind === 'line' || el.kind === 'wall') {
                 const x1 = el.x1 * scaleX;
                 const y1 = el.y1 * scaleY;
                 const x2 = el.x2 * scaleX;
                 const y2 = el.y2 * scaleY;
                 const length = Math.hypot(x2 - x1, y2 - y1);
                 const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+                const background =
+                  el.kind === 'line'
+                    ? '#222'
+                    : // red dashes for penalty walls
+                      'repeating-linear-gradient(90deg, #c0392b 0 6px, transparent 6px 10px)';
                 return (
                   <div
                     key={idx}
@@ -216,9 +246,38 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                       top: y1 - (el.thickness * scaleY) / 2,
                       width: length,
                       height: Math.max(2, el.thickness * scaleY),
-                      background: '#222',
+                      background,
                       transform: `rotate(${angle}deg)`,
                       transformOrigin: '0 50%',
+                      cursor: 'pointer',
+                      ...ringStyle,
+                    }}
+                  />
+                );
+              }
+              if (el.kind === 'corner') {
+                const sizePxX = el.size * scaleX;
+                const sizePxY = el.size * scaleY;
+                const left = el.corner === 'nw' || el.corner === 'sw' ? 0 : CANVAS_PX - sizePxX;
+                const top = el.corner === 'nw' || el.corner === 'ne' ? 0 : CANVAS_PX - sizePxY;
+                const clipPath = {
+                  nw: 'polygon(0 0, 100% 0, 0 100%)',
+                  ne: 'polygon(0 0, 100% 0, 100% 100%)',
+                  sw: 'polygon(0 0, 0 100%, 100% 100%)',
+                  se: 'polygon(100% 0, 100% 100%, 0 100%)',
+                }[el.corner];
+                return (
+                  <div
+                    key={idx}
+                    onClick={(e) => handleElementClick(idx, e)}
+                    style={{
+                      position: 'absolute',
+                      left,
+                      top,
+                      width: sizePxX,
+                      height: sizePxY,
+                      background: 'rgba(46, 160, 67, 0.45)',
+                      clipPath,
                       cursor: 'pointer',
                       ...ringStyle,
                     }}
@@ -286,6 +345,63 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                     label={t('board_editor.thickness')}
                     value={selected.thickness}
                     onChange={(v) => updateElement(selectedIdx, { thickness: v })}
+                  />
+                </>
+              )}
+              {selected.kind === 'wall' && (
+                <>
+                  <NumberField
+                    label={t('board_editor.x1')}
+                    value={selected.x1}
+                    onChange={(v) => updateElement(selectedIdx, { x1: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y1')}
+                    value={selected.y1}
+                    onChange={(v) => updateElement(selectedIdx, { y1: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.x2')}
+                    value={selected.x2}
+                    onChange={(v) => updateElement(selectedIdx, { x2: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y2')}
+                    value={selected.y2}
+                    onChange={(v) => updateElement(selectedIdx, { y2: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.thickness')}
+                    value={selected.thickness}
+                    onChange={(v) => updateElement(selectedIdx, { thickness: v })}
+                  />
+                </>
+              )}
+              {selected.kind === 'corner' && (
+                <>
+                  <label
+                    style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: '0.85rem' }}
+                  >
+                    <span style={{ minWidth: 80 }}>{t('board_editor.corner_position')}</span>
+                    <select
+                      value={selected.corner}
+                      onChange={(e) =>
+                        updateElement(selectedIdx, {
+                          corner: e.target.value as 'nw' | 'ne' | 'sw' | 'se',
+                        })
+                      }
+                      style={{ padding: '0.2rem' }}
+                    >
+                      <option value="nw">{t('board_editor.corner_nw')}</option>
+                      <option value="ne">{t('board_editor.corner_ne')}</option>
+                      <option value="sw">{t('board_editor.corner_sw')}</option>
+                      <option value="se">{t('board_editor.corner_se')}</option>
+                    </select>
+                  </label>
+                  <NumberField
+                    label={t('board_editor.corner_size')}
+                    value={selected.size}
+                    onChange={(v) => updateElement(selectedIdx, { size: v })}
                   />
                 </>
               )}

@@ -1,5 +1,7 @@
 import type { BoardState } from './boards/schema';
+import { boardWallSegments, distPointToSegment } from './geometry';
 import {
+  ROBOT_COLLISION_RADIUS_M,
   ROBOT_LENGTH_M,
   ROBOT_WIDTH_M,
   TICKS_PER_M,
@@ -45,6 +47,15 @@ export function detectCollision(robot: RobotState, board: BoardState): Collision
     if (el.kind !== 'obstacle') continue;
     const ob = { minX: el.x, minY: el.y, maxX: el.x + el.w, maxY: el.y + el.h };
     if (rb.minX < ob.maxX && rb.maxX > ob.minX && rb.minY < ob.maxY && rb.maxY > ob.minY) {
+      return { hit: true };
+    }
+  }
+  // Diagonal walls and corner-cut hypotenuses (grade-5 boards): capsule test —
+  // robot approximated as a circle around its centre. Grade-4 boards have no
+  // such elements, so this loop body never runs for them.
+  for (const seg of boardWallSegments(board)) {
+    const dist = distPointToSegment(robot.x, robot.y, seg.x1, seg.y1, seg.x2, seg.y2);
+    if (dist <= seg.thickness / 2 + ROBOT_COLLISION_RADIUS_M) {
       return { hit: true };
     }
   }

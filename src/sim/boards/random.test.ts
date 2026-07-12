@@ -67,6 +67,50 @@ describe('isGridSolvable — 4-connected BFS', () => {
   });
 });
 
+describe('isGridSolvable — 8-connected BFS (grade 5)', () => {
+  it('rejects a diagonal squeeze between two corner-touching blocks (no corner cutting)', () => {
+    // Start and centre touch only diagonally, with both flanking cells
+    // blocked — the physical robot cannot fit through, so neither 4- nor
+    // 8-connected BFS may bless it.
+    const grid = makeGrid(['.#.', '#.#', '.#.']);
+    expect(isGridSolvable(grid, 3, { connectivity: 8 })).toBe(false);
+    expect(isGridSolvable(grid, 3, { connectivity: 4 })).toBe(false);
+  });
+
+  it('permits diagonal steps when both flanking cells are open', () => {
+    const grid = makeGrid(['..', '..']);
+    expect(isGridSolvable(grid, 2, { connectivity: 8 })).toBe(true);
+  });
+
+  it('defaults to 4-connectivity when no option is given', () => {
+    // Sanity: the option-less call is the grade-4 behavior other tests lock in.
+    const grid = makeGrid(['.#.', '..#', '#..']);
+    expect(isGridSolvable(grid, 3)).toBe(isGridSolvable(grid, 3, { connectivity: 4 }));
+  });
+
+  it('never disagrees with 4-connectivity on solvability for carved mazes (no-corner-cut invariant)', () => {
+    // Under no-corner-cutting a permitted diagonal always has an open
+    // orthogonal detour, so the two connectivities must agree on WHETHER a
+    // maze is solvable (diagonals only shorten paths).
+    for (let seed = 1; seed <= 200; seed++) {
+      const blocked = carveMaze(GRID_SIZE, seededRng(seed));
+      expect(isGridSolvable(blocked, GRID_SIZE, { connectivity: 8 })).toBe(
+        isGridSolvable(blocked, GRID_SIZE, { connectivity: 4 }),
+      );
+    }
+  });
+
+  it('generateRandomBoard accepts a connectivity option and stays solvable', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const board = generateRandomBoard({ rng: seededRng(seed), connectivity: 8 });
+      expect(isBoardSolvable(board, GRID_SIZE, { connectivity: 8 })).toBe(true);
+      // A grade-5 random board must also be solvable for a grade-4 mover —
+      // the carver guarantees 4-connectivity by construction.
+      expect(isBoardSolvable(board)).toBe(true);
+    }
+  });
+});
+
 describe('boardOccupancy + isBoardSolvable', () => {
   it('maps full-cell obstacles to the occupancy grid', () => {
     const board = generateRandomBoard({ rng: seededRng(1) });

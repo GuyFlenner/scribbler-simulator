@@ -1,4 +1,5 @@
 import type { BoardState } from '../sim/boards/schema';
+import { cornerHypotenuse } from '../sim/geometry';
 import { ROBOT_LENGTH_M, ROBOT_WIDTH_M, type RobotState } from '../sim/types';
 
 export interface DrawOptions {
@@ -75,6 +76,36 @@ export function drawBoard(
       ctx.moveTo(el.x1 * scaleX, el.y1 * scaleY);
       ctx.lineTo(el.x2 * scaleX, el.y2 * scaleY);
       ctx.stroke();
+    } else if (el.kind === 'wall') {
+      // Red penalty boundary — dashed by default, matching the competition mats.
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = Math.max(2, el.thickness * scaleY);
+      if ((el.style ?? 'dashed') === 'dashed') ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(el.x1 * scaleX, el.y1 * scaleY);
+      ctx.lineTo(el.x2 * scaleX, el.y2 * scaleY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (el.kind === 'corner') {
+      // Forbidden corner triangle: translucent green fill, red dashed hypotenuse.
+      const hyp = cornerHypotenuse(el.corner, el.size, board.width, board.height);
+      const cornerX = el.corner === 'nw' || el.corner === 'sw' ? 0 : board.width;
+      const cornerY = el.corner === 'nw' || el.corner === 'ne' ? 0 : board.height;
+      ctx.fillStyle = 'rgba(46, 160, 67, 0.35)';
+      ctx.beginPath();
+      ctx.moveTo(cornerX * scaleX, cornerY * scaleY);
+      ctx.lineTo(hyp.x1 * scaleX, hyp.y1 * scaleY);
+      ctx.lineTo(hyp.x2 * scaleX, hyp.y2 * scaleY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(hyp.x1 * scaleX, hyp.y1 * scaleY);
+      ctx.lineTo(hyp.x2 * scaleX, hyp.y2 * scaleY);
+      ctx.stroke();
+      ctx.setLineDash([]);
     } else if (el.kind === 'light' && showLights) {
       const lx = el.x * scaleX;
       const ly = el.y * scaleY;
