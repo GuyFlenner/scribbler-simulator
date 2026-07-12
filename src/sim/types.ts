@@ -19,12 +19,25 @@ export interface RobotState {
 
 export type SimStatus = 'idle' | 'running' | 'reached-goal' | 'stalled';
 
+/** Per-stopzone run state, in board-element order of the stopzone elements. */
+export interface StopZoneProgress {
+  /** Accumulated full-stop time inside the zone during the current visit. */
+  stoppedSeconds: number;
+  /** Current visit's requirement met (reset when the robot leaves). */
+  satisfied: boolean;
+  /** Requirement met at least once this run — gates the goal. */
+  everSatisfied: boolean;
+  wasInside: boolean;
+}
+
 export interface SimState {
   robot: RobotState;
   board: BoardState;
   tickIndex: number;
   status: SimStatus;
   runStartedAt: number | null;
+  /** Lazily initialised by physics.tick for boards with stopzone elements. */
+  stopZoneProgress?: StopZoneProgress[];
 }
 
 // Visual + collision footprint. Sized to fit within one 10cm grid square; the

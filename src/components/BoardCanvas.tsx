@@ -24,7 +24,9 @@ export function BoardCanvas(): ReactElement {
       prev = now;
       tick(dt);
       const state = useSimStore.getState();
-      drawBoard(ctx, state.board, CANVAS_PX, CANVAS_PX, state.robot);
+      drawBoard(ctx, state.board, CANVAS_PX, CANVAS_PX, state.robot, {
+        stopZoneStates: state.stopZoneProgress?.map((p) => p.everSatisfied),
+      });
       raf = requestAnimationFrame(loop);
     };
 

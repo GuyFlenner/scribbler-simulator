@@ -91,7 +91,7 @@ export const GRADE_CONFIGS: Record<Grade, GradeConfig> = {
       sensorsCategory,
     ],
     starterProgram: classProgramSample,
-    bundledBoardIds: ['maze', 'default', 'default-bonus'],
+    bundledBoardIds: ['maze', 'default', 'default-bonus', 'junction-drill'],
     defaultBoardId: 'maze',
     randomBoard: { connectivity: 4 },
   },
@@ -115,7 +115,7 @@ export const GRADE_CONFIGS: Record<Grade, GradeConfig> = {
       sensorsCategory,
     ],
     starterProgram: grade5ProgramSample,
-    bundledBoardIds: ['maze', 'default', 'default-bonus', 'diagonal'],
+    bundledBoardIds: ['maze', 'default', 'default-bonus', 'diagonal', 'junction-drill'],
     defaultBoardId: 'diagonal',
     randomBoard: { connectivity: 8 },
   },
@@ -144,7 +144,7 @@ export const GRADE_CONFIGS: Record<Grade, GradeConfig> = {
     // Serpentine first and default: the press-4 starter follower completes it
     // end-to-end (validated). The figure-8's self-crossing defeats bang-bang
     // followers — it's for careful-driving practice with motion blocks.
-    bundledBoardIds: ['track-serpentine', 'track-figure8'],
+    bundledBoardIds: ['track-serpentine', 'track-figure8', 'junction-drill'],
     defaultBoardId: 'track-serpentine',
     randomBoard: null,
   },

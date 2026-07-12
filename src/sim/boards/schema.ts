@@ -31,13 +31,36 @@ export type CornerCut = {
   corner: 'nw' | 'ne' | 'sw' | 'se';
   size: number;
 };
+/**
+ * A road-rule zone (stop sign 🛑, traffic light 🚦, or plain checkpoint 📍).
+ * The robot must come to a full stop inside the zone for requiredStopSeconds
+ * (0 = just pass through) — leaving without doing so stalls the robot ("you
+ * ran the sign"). Reaching the goal only counts once EVERY zone on the board
+ * has been satisfied during the run, so zones double as route checkpoints.
+ */
+export type StopZone = {
+  kind: 'stopzone';
+  x: number;
+  y: number;
+  toleranceCm: number;
+  requiredStopSeconds: number;
+  sign?: 'stop' | 'light' | 'checkpoint';
+};
 export type LightSource = { kind: 'light'; x: number; y: number; intensity: number };
 export type StartMarker = { kind: 'start'; x: number; y: number; heading: number };
 export type GoalMarker = { kind: 'goal'; x: number; y: number; toleranceCm: number };
 export type BonusZone = { kind: 'bonus'; x: number; y: number; toleranceCm: number };
 
 export type BoardElement =
-  Obstacle | LineSegment | Wall | CornerCut | LightSource | StartMarker | GoalMarker | BonusZone;
+  | Obstacle
+  | LineSegment
+  | Wall
+  | CornerCut
+  | StopZone
+  | LightSource
+  | StartMarker
+  | GoalMarker
+  | BonusZone;
 
 export interface BoardState {
   version: 1;
@@ -130,6 +153,33 @@ const parseElement = (raw: unknown, idx: number): BoardElement => {
         return fail(`element ${idx} (corner) size must be a positive number`);
       }
       return { kind: 'corner', corner, size: obj.size };
+    }
+    case 'stopzone': {
+      if (
+        !isFiniteNumber(obj.x) ||
+        !isFiniteNumber(obj.y) ||
+        !isFiniteNumber(obj.toleranceCm) ||
+        obj.toleranceCm <= 0
+      ) {
+        return fail(`element ${idx} (stopzone) needs numeric x, y and positive toleranceCm`);
+      }
+      if (!isFiniteNumber(obj.requiredStopSeconds) || obj.requiredStopSeconds < 0) {
+        return fail(`element ${idx} (stopzone) requiredStopSeconds must be >= 0`);
+      }
+      const zone: StopZone = {
+        kind: 'stopzone',
+        x: obj.x,
+        y: obj.y,
+        toleranceCm: obj.toleranceCm,
+        requiredStopSeconds: obj.requiredStopSeconds,
+      };
+      if (obj.sign !== undefined) {
+        if (obj.sign !== 'stop' && obj.sign !== 'light' && obj.sign !== 'checkpoint') {
+          return fail(`element ${idx} (stopzone) has invalid sign: ${String(obj.sign)}`);
+        }
+        zone.sign = obj.sign;
+      }
+      return zone;
     }
     case 'light': {
       if (!isFiniteNumber(obj.x) || !isFiniteNumber(obj.y) || !isFiniteNumber(obj.intensity)) {

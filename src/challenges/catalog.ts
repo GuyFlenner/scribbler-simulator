@@ -64,6 +64,16 @@ export const CHALLENGES: readonly Challenge[] = [
     star3: { maxPresses: 20 }, // shortest path is 24 cells with long straights
   },
 
+  {
+    id: 'g4-junction-drill',
+    titleKey: 'challenges.g4_junction_drill_title',
+    descKey: 'challenges.g4_junction_drill_desc',
+    grade: 'grade4',
+    boardId: 'junction-drill',
+    star2: { maxPresses: 12 },
+    star3: { maxPresses: 9 }, // min with the class starter set (validated)
+  },
+
   // Grade 5 — the diagonal board, first by press count, then against the clock.
   {
     id: 'g5-diagonal-path',

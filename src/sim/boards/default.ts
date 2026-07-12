@@ -1,6 +1,7 @@
 import type { BoardState, Obstacle } from './schema';
 import { diagonalBoard } from './grade5';
 import { figureEightBoard, serpentineBoard } from './tracks';
+import { junctionDrillBoard } from './junction';
 
 /**
  * The "plain" default board — A, B, two obstacles. Use this for practice
@@ -142,6 +143,7 @@ export const bundledBoards: BoardState[] = [
   diagonalBoard,
   figureEightBoard,
   serpentineBoard,
+  junctionDrillBoard,
 ];
 
 export const isBundledBoardId = (id: string): boolean => bundledBoards.some((b) => b.id === id);

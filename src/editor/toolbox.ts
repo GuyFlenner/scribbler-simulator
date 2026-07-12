@@ -153,6 +153,18 @@ export const buildBlockDefinitions = (t: TFunction): BlockDefinition[] => [
   },
 ];
 
+// Every interpolated value is bundled config/i18n today, so there is no
+// injection path — this escape is insurance so a future user-controlled
+// source (custom block names, community translations) can't silently
+// create one. Flagged by the 2026-07-12 security review.
+const escapeXml = (value: string | number): string =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
 /**
  * Build the toolbox for a grade from its GradeConfig. All blocks stay
  * registered regardless of grade (see registerBlocks) — the toolbox only
@@ -164,12 +176,12 @@ export const buildToolboxXml = (t: TFunction, grade: Grade = DEFAULT_GRADE): str
       const blocks = category.blocks
         .map((entry) => {
           const fields = Object.entries(entry.fields ?? {})
-            .map(([name, value]) => `<field name="${name}">${value}</field>`)
+            .map(([name, value]) => `<field name="${escapeXml(name)}">${escapeXml(value)}</field>`)
             .join('');
-          return `    <block type="${entry.type}">${fields}</block>`;
+          return `    <block type="${escapeXml(entry.type)}">${fields}</block>`;
         })
         .join('\n');
-      return `  <category name="${t(category.labelKey)}" colour="${category.colour}">\n${blocks}\n  </category>`;
+      return `  <category name="${escapeXml(t(category.labelKey))}" colour="${category.colour}">\n${blocks}\n  </category>`;
     })
     .join('\n');
   return `<xml id="scribbler-toolbox">\n${categories}\n</xml>`;

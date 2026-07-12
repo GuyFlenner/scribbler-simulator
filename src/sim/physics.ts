@@ -1,4 +1,4 @@
-import type { BoardState } from './boards/schema';
+import type { BoardState, StopZone } from './boards/schema';
 import { boardWallSegments, distPointToSegment } from './geometry';
 import {
   ROBOT_COLLISION_RADIUS_M,
@@ -9,7 +9,21 @@ import {
   type RobotState,
   type SimState,
   type SimStatus,
+  type StopZoneProgress,
 } from './types';
+
+/** Velocities below this count as "stopped" for stop-sign purposes. */
+const STOPPED_EPSILON = 1e-6;
+
+const boardStopZones = (board: BoardState): StopZone[] =>
+  board.elements.filter((el): el is StopZone => el.kind === 'stopzone');
+
+const freshZoneProgress = (): StopZoneProgress => ({
+  stoppedSeconds: 0,
+  satisfied: false,
+  everSatisfied: false,
+  wasInside: false,
+});
 
 const ROBOT_HALF_LENGTH = ROBOT_LENGTH_M / 2;
 const ROBOT_HALF_WIDTH = ROBOT_WIDTH_M / 2;
@@ -120,13 +134,58 @@ export function tick(state: SimState, dtSeconds: number): SimState {
     encoderTicksRight: r.encoderTicksRight + vRight * dtSeconds * TICKS_PER_M,
   };
 
+  // Road-rule zones: accumulate full-stop time while inside; leaving a zone
+  // without satisfying its stop requirement stalls the robot ("ran the sign").
+  const zones = boardStopZones(state.board);
+  let stopZoneProgress = state.stopZoneProgress;
+  if (zones.length > 0) {
+    const previous =
+      stopZoneProgress && stopZoneProgress.length === zones.length
+        ? stopZoneProgress
+        : zones.map(freshZoneProgress);
+    const isStopped =
+      Math.abs(r.vLinear) < STOPPED_EPSILON && Math.abs(r.vAngular) < STOPPED_EPSILON;
+    let ranASign = false;
+    stopZoneProgress = zones.map((zone, i) => {
+      const p = { ...previous[i] };
+      const inside = Math.hypot(advanced.x - zone.x, advanced.y - zone.y) <= zone.toleranceCm / 100;
+      if (inside) {
+        p.wasInside = true;
+        if (isStopped) p.stoppedSeconds += dtSeconds;
+        if (p.stoppedSeconds >= zone.requiredStopSeconds) {
+          p.satisfied = true;
+          p.everSatisfied = true;
+        }
+      } else if (p.wasInside) {
+        if (!p.satisfied && zone.requiredStopSeconds > 0) ranASign = true;
+        p.wasInside = false;
+        p.satisfied = false;
+        p.stoppedSeconds = 0;
+      }
+      return p;
+    });
+    if (ranASign) {
+      return {
+        ...state,
+        robot: { ...advanced, vLinear: 0, vAngular: 0, isStalled: true },
+        status: 'stalled',
+        stopZoneProgress,
+        tickIndex: state.tickIndex + 1,
+      };
+    }
+  }
+
   let nextStatus: SimStatus = state.status;
   if (state.status === 'running') {
     const goal = state.board.elements.find((el) => el.kind === 'goal');
     if (goal && goal.kind === 'goal') {
       const dx = advanced.x - goal.x;
       const dy = advanced.y - goal.y;
-      if (Math.hypot(dx, dy) <= goal.toleranceCm / 100) {
+      // On boards with road-rule zones, finishing only counts after every
+      // zone has been satisfied — the zones double as route checkpoints.
+      const allZonesDone =
+        zones.length === 0 || (stopZoneProgress?.every((p) => p.everSatisfied) ?? false);
+      if (Math.hypot(dx, dy) <= goal.toleranceCm / 100 && allZonesDone) {
         nextStatus = 'reached-goal';
       }
     }
@@ -136,6 +195,7 @@ export function tick(state: SimState, dtSeconds: number): SimState {
     ...state,
     robot: advanced,
     status: nextStatus,
+    stopZoneProgress,
     tickIndex: state.tickIndex + 1,
   };
 }

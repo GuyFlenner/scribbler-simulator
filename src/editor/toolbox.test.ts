@@ -41,6 +41,14 @@ describe('buildToolboxXml — grade filtering', () => {
     expect(types.indexOf('drive_wheels')).toBeLessThan(types.indexOf('drive_distance'));
   });
 
+  it('escapes XML-special characters from translated category names', () => {
+    const evilT = ((key: string) =>
+      key === 'blocks.category_motion' ? 'Mo<t&"ion>' : key) as unknown as TFunction;
+    const xml = buildToolboxXml(evilT, 'grade4');
+    expect(xml).toContain('Mo&lt;t&amp;&quot;ion&gt;');
+    expect(xml).not.toContain('Mo<t&"ion>');
+  });
+
   it('keeps the four category structure with stable colours', () => {
     const xml = buildToolboxXml(t, 'grade4');
     expect(xml).toContain('colour="220"'); // motion

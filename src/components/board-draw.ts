@@ -8,6 +8,8 @@ export interface DrawOptions {
   showLights?: boolean;
   showRobot?: boolean;
   markerRadiusPx?: number;
+  /** everSatisfied flag per stopzone, in board-element order of the zones. */
+  stopZoneStates?: boolean[];
 }
 
 export function drawBoard(
@@ -24,7 +26,9 @@ export function drawBoard(
     showLights = true,
     showRobot = true,
     markerRadiusPx = Math.max(6, Math.min(width, height) / 28),
+    stopZoneStates = [],
   } = opts;
+  let stopZoneIndex = 0;
 
   const scaleX = width / board.width;
   const scaleY = height / board.height;
@@ -113,6 +117,26 @@ export function drawBoard(
       ctx.lineTo(hyp.x2 * scaleX, hyp.y2 * scaleY);
       ctx.stroke();
       ctx.setLineDash([]);
+    } else if (el.kind === 'stopzone') {
+      const zx = el.x * scaleX;
+      const zy = el.y * scaleY;
+      const satisfied = stopZoneStates[stopZoneIndex] === true;
+      stopZoneIndex += 1;
+      const zoneR = (el.toleranceCm / 100) * Math.min(scaleX, scaleY);
+      // Zone disc: amber while pending, soft green once satisfied this run.
+      ctx.fillStyle = satisfied ? 'rgba(46, 160, 67, 0.25)' : 'rgba(255, 165, 0, 0.3)';
+      ctx.beginPath();
+      ctx.arc(zx, zy, Math.max(6, zoneR), 0, 2 * Math.PI);
+      ctx.fill();
+      const emoji = el.sign === 'light' ? '🚦' : el.sign === 'checkpoint' ? '📍' : '🛑';
+      ctx.font = emojiFont(markerRadiusPx * 2);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, zx, zy);
+      if (satisfied) {
+        ctx.font = emojiFont(markerRadiusPx * 1.1);
+        ctx.fillText('✅', zx + markerRadiusPx, zy - markerRadiusPx);
+      }
     } else if (el.kind === 'light' && showLights) {
       const lx = el.x * scaleX;
       const ly = el.y * scaleY;

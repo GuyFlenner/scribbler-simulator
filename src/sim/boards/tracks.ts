@@ -68,6 +68,23 @@ export const figureEightBoard: BoardState = {
     // Start ON the line at t=0 with heading = curve tangent (straight down).
     { kind: 'start', x: 0.5 + FIG8_A, y: 0.5, heading: Math.PI / 2 },
     { kind: 'goal', ...figureEightPoint(FIG8_GOAL_T), toleranceCm: 5 },
+    // Road rules on the way round (both lie before the goal at t=0.85):
+    // a stop sign on the far lobe and a traffic light on the way back.
+    // They also gate the finish, so cutting across the middle doesn't count.
+    {
+      kind: 'stopzone',
+      ...figureEightPoint(0.4),
+      toleranceCm: 6,
+      requiredStopSeconds: 2,
+      sign: 'stop',
+    },
+    {
+      kind: 'stopzone',
+      ...figureEightPoint(0.6),
+      toleranceCm: 6,
+      requiredStopSeconds: 2,
+      sign: 'light',
+    },
     ...sampleCurve(figureEightPoint, 160),
   ],
 };

@@ -178,6 +178,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       tickIndex: physicsResult.tickIndex,
       status: nextStatus,
       bonusHit,
+      stopZoneProgress: physicsResult.stopZoneProgress,
     });
     recordRunIfDone(prevStatus, nextStatus, get());
   },
@@ -194,6 +195,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       currentRunEvents: [],
       replayQueue: null,
       bonusHit: false,
+      stopZoneProgress: undefined,
     });
   },
 
@@ -209,6 +211,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       currentRunEvents: [],
       replayQueue: null,
       bonusHit: false,
+      stopZoneProgress: undefined,
     });
   },
 
@@ -224,6 +227,7 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
       currentRunEvents: [],
       replayQueue: sortEvents(record.events),
       bonusHit: false,
+      stopZoneProgress: undefined,
     });
   },
 }));

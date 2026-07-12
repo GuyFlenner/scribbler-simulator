@@ -4,7 +4,7 @@ import type { BoardElement, BoardState } from '../sim/boards/schema';
 
 const CANVAS_PX = 400;
 
-type Tool = 'select' | 'obstacle' | 'line' | 'wall' | 'corner' | 'light' | 'bonus';
+type Tool = 'select' | 'obstacle' | 'line' | 'wall' | 'corner' | 'stopzone' | 'light' | 'bonus';
 
 const isMovableKind = (
   el: BoardElement,
@@ -77,6 +77,9 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
         };
         break;
       }
+      case 'stopzone':
+        newEl = { kind: 'stopzone', x, y, toleranceCm: 6, requiredStopSeconds: 2, sign: 'stop' };
+        break;
       case 'light':
         newEl = { kind: 'light', x, y, intensity: 100 };
         break;
@@ -104,6 +107,7 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
     { tool: 'line', label: t('board_editor.line') },
     { tool: 'wall', label: t('board_editor.wall') },
     { tool: 'corner', label: t('board_editor.corner') },
+    { tool: 'stopzone', label: t('board_editor.stopzone') },
     { tool: 'light', label: t('board_editor.light') },
     { tool: 'bonus', label: t('board_editor.bonus') },
   ];
@@ -198,6 +202,32 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                       ...ringStyle,
                     }}
                   />
+                );
+              }
+              if (el.kind === 'stopzone') {
+                const emoji = el.sign === 'light' ? '🚦' : el.sign === 'checkpoint' ? '📍' : '🛑';
+                return (
+                  <div
+                    key={idx}
+                    onClick={(e) => handleElementClick(idx, e)}
+                    style={{
+                      position: 'absolute',
+                      left: el.x * scaleX - 14,
+                      top: el.y * scaleY - 14,
+                      width: 28,
+                      height: 28,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.3rem',
+                      background: 'rgba(255, 165, 0, 0.35)',
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                      ...ringStyle,
+                    }}
+                  >
+                    {emoji}
+                  </div>
                 );
               }
               if (el.kind === 'start' || el.kind === 'goal' || el.kind === 'bonus') {
@@ -403,6 +433,48 @@ export function BoardEditor({ board: initialBoard, onSave, onCancel }: Props): R
                     value={selected.size}
                     onChange={(v) => updateElement(selectedIdx, { size: v })}
                   />
+                </>
+              )}
+              {selected.kind === 'stopzone' && (
+                <>
+                  <NumberField
+                    label={t('board_editor.x')}
+                    value={selected.x}
+                    onChange={(v) => updateElement(selectedIdx, { x: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.y')}
+                    value={selected.y}
+                    onChange={(v) => updateElement(selectedIdx, { y: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.tolerance_cm')}
+                    value={selected.toleranceCm}
+                    onChange={(v) => updateElement(selectedIdx, { toleranceCm: v })}
+                  />
+                  <NumberField
+                    label={t('board_editor.stop_seconds')}
+                    value={selected.requiredStopSeconds}
+                    onChange={(v) => updateElement(selectedIdx, { requiredStopSeconds: v })}
+                  />
+                  <label
+                    style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: '0.85rem' }}
+                  >
+                    <span style={{ minWidth: 80 }}>{t('board_editor.sign')}</span>
+                    <select
+                      value={selected.sign ?? 'stop'}
+                      onChange={(e) =>
+                        updateElement(selectedIdx, {
+                          sign: e.target.value as 'stop' | 'light' | 'checkpoint',
+                        })
+                      }
+                      style={{ padding: '0.2rem' }}
+                    >
+                      <option value="stop">{t('board_editor.sign_stop')}</option>
+                      <option value="light">{t('board_editor.sign_light')}</option>
+                      <option value="checkpoint">{t('board_editor.sign_checkpoint')}</option>
+                    </select>
+                  </label>
                 </>
               )}
               {selected.kind === 'light' && (
