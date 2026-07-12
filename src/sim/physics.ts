@@ -62,11 +62,22 @@ export function detectCollision(robot: RobotState, board: BoardState): Collision
   return { hit: false };
 }
 
+// Tolerance for the boundary check: a drive that ends exactly on the board
+// edge can land a few 1e-16 outside it from float accumulation — that must
+// not read as out-of-bounds (surfaced when TICKS_PER_M changed the final-tick
+// float pattern of executeDrive).
+const OOB_EPSILON_M = 1e-9;
+
 function isOutOfBounds(robot: RobotState, board: BoardState): boolean {
   // Check robot centre — not the full bbox — so a robot placed near the edge
   // by the start marker doesn't immediately stall. Only the robot's travel
   // past the board boundary triggers a stall.
-  return robot.x < 0 || robot.x > board.width || robot.y < 0 || robot.y > board.height;
+  return (
+    robot.x < -OOB_EPSILON_M ||
+    robot.x > board.width + OOB_EPSILON_M ||
+    robot.y < -OOB_EPSILON_M ||
+    robot.y > board.height + OOB_EPSILON_M
+  );
 }
 
 export function tick(state: SimState, dtSeconds: number): SimState {

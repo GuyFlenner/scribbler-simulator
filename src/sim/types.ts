@@ -37,7 +37,10 @@ export const ROBOT_WIDTH_M = 0.065;
 // stricter boundaries, lower to let the robot hug walls closer. Rectangular
 // obstacles keep the original AABB check (grade-4 behavior untouched).
 export const ROBOT_COLLISION_RADIUS_M = (ROBOT_LENGTH_M + ROBOT_WIDTH_M) / 4;
-// Wheel-base stays at the real S3's 10.5 cm — used by physics (encoder ticks,
-// differential wheel speeds), not by the visual.
-export const WHEEL_BASE_M = 0.105;
-export const TICKS_PER_M = 340;
+// Calibrated against Parallax's own S3 driver (scribbler.spin):
+// DEFAULT_WHEEL_SPACE = 153 → wheel-to-wheel spacing 0.153 m, and ~0.5 mm per
+// encoder count → ~2019 ticks/m (507.4 counts/rev over an ~8 cm wheel).
+// Used by physics (encoder ticks, differential wheel speeds), not the visual.
+// Fixed 2026-07-12 from 0.105/340 — drive_wheels steering was ~46% too fast.
+export const WHEEL_BASE_M = 0.153;
+export const TICKS_PER_M = 2019;

@@ -35,13 +35,20 @@ export function drawBoard(
   if (showGrid) {
     ctx.strokeStyle = '#bfb59f';
     ctx.lineWidth = 1;
-    const cells = 10;
-    for (let i = 1; i < cells; i++) {
-      const px = (i * width) / cells;
-      const py = (i * height) / cells;
+    // One cell = 10cm, derived from board dimensions (not hard-coded to 10)
+    // so non-square or larger boards still draw a correct grid.
+    const cellsX = Math.max(1, Math.round(board.width / 0.1));
+    const cellsY = Math.max(1, Math.round(board.height / 0.1));
+    for (let i = 1; i < cellsX; i++) {
+      const px = (i * width) / cellsX;
       ctx.beginPath();
       ctx.moveTo(px, 0);
       ctx.lineTo(px, height);
+      ctx.stroke();
+    }
+    for (let i = 1; i < cellsY; i++) {
+      const py = (i * height) / cellsY;
+      ctx.beginPath();
       ctx.moveTo(0, py);
       ctx.lineTo(width, py);
       ctx.stroke();

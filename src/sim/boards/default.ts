@@ -1,5 +1,6 @@
 import type { BoardState, Obstacle } from './schema';
 import { diagonalBoard } from './grade5';
+import { figureEightBoard, serpentineBoard } from './tracks';
 
 /**
  * The "plain" default board — A, B, two obstacles. Use this for practice
@@ -134,7 +135,14 @@ export const mazeBoard: BoardState = {
 };
 
 // Append-only: maze must stay at index 0 (first-load default; asserted in tests).
-export const bundledBoards: BoardState[] = [mazeBoard, defaultBoard, bonusBoard, diagonalBoard];
+export const bundledBoards: BoardState[] = [
+  mazeBoard,
+  defaultBoard,
+  bonusBoard,
+  diagonalBoard,
+  figureEightBoard,
+  serpentineBoard,
+];
 
 export const isBundledBoardId = (id: string): boolean => bundledBoards.some((b) => b.id === id);
 
