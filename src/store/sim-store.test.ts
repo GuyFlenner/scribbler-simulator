@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useSimStore } from './sim-store';
 import { useBoardsStore } from './boards-store';
+import { useGradeStore } from './grade-store';
 import type { BoardState } from '../sim/boards/schema';
 import type { Step } from '../sim/behaviors/schema';
 
@@ -161,5 +162,54 @@ describe('sim-store — fast-click guard (no diagonal from mid-rotation interrup
     expect(end.y).toBeCloseTo(start.y, 3);
     const finalDegrees = ((end.heading * 180) / Math.PI) % 360;
     expect(Math.abs(finalDegrees) % 360).toBeCloseTo(0, 6);
+  });
+});
+
+describe('sim-store — grade-aware heading snap', () => {
+  afterEach(() => {
+    useGradeStore.getState().setGrade('grade4');
+  });
+
+  it('grade5: rotate 45° ends at exactly π/4 and a drive then moves diagonally', () => {
+    useGradeStore.getState().setGrade('grade5');
+    useSimStore.getState().pressButton(7, [{ kind: 'rotate', degrees: 45 }]);
+    advance(120);
+
+    const afterRotate = useSimStore.getState().robot;
+    expect(afterRotate.heading).toBeCloseTo(Math.PI / 4, 9);
+
+    useSimStore.getState().pressButton(1, DRIVE_10);
+    advance(120);
+
+    const afterDrive = useSimStore.getState().robot;
+    expect(afterDrive.x - afterRotate.x).toBeCloseTo(0.1 * Math.SQRT1_2, 3);
+    expect(afterDrive.y - afterRotate.y).toBeCloseTo(0.1 * Math.SQRT1_2, 3);
+  });
+
+  it('grade5: a slightly-off 46° turn snaps to the 45° increment', () => {
+    useGradeStore.getState().setGrade('grade5');
+    useSimStore.getState().pressButton(7, [{ kind: 'rotate', degrees: 46 }]);
+    advance(120);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo(Math.PI / 4, 9);
+  });
+
+  it('grade5: rotate 90° still snaps to exactly π/2 (90 is a 45° multiple)', () => {
+    useGradeStore.getState().setGrade('grade5');
+    useSimStore.getState().pressButton(4, ROTATE_RIGHT_90);
+    advance(120);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo(Math.PI / 2, 9);
+  });
+
+  it('grade4: a 46° turn does NOT snap to 45 — rounds to the whole degree 46', () => {
+    useSimStore.getState().pressButton(7, [{ kind: 'rotate', degrees: 46 }]);
+    advance(120);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo((46 * Math.PI) / 180, 9);
+  });
+
+  it('grade79: no coarse snap — a 92° turn stays at 92°, not 90°', () => {
+    useGradeStore.getState().setGrade('grade79');
+    useSimStore.getState().pressButton(2, [{ kind: 'rotate', degrees: 92 }]);
+    advance(140);
+    expect(useSimStore.getState().robot.heading).toBeCloseTo((92 * Math.PI) / 180, 9);
   });
 });

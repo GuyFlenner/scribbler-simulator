@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { DEFAULT_GRADE, getGradeConfig, type Grade } from '../grade/config';
 
 export interface BlockDefinition {
   type: string;
@@ -140,27 +141,24 @@ export const buildBlockDefinitions = (t: TFunction): BlockDefinition[] => [
   },
 ];
 
-export const buildToolboxXml = (t: TFunction): string =>
-  `
-<xml id="scribbler-toolbox">
-  <category name="${t('blocks.category_motion')}" colour="220">
-    <block type="drive_distance"></block>
-    <block type="rotate_degrees"></block>
-    <block type="drive_wheels"></block>
-    <block type="drive_arc"></block>
-    <block type="stop"></block>
-  </category>
-  <category name="${t('blocks.category_sound')}" colour="60">
-    <block type="beep"></block>
-    <block type="wait"></block>
-  </category>
-  <category name="${t('blocks.category_loops')}" colour="290">
-    <block type="repeat"></block>
-    <block type="while_sensor"></block>
-    <block type="while_not_sensor"></block>
-  </category>
-  <category name="${t('blocks.category_sensors')}" colour="210">
-    <block type="if_sensor"></block>
-  </category>
-</xml>
-`.trim();
+/**
+ * Build the toolbox for a grade from its GradeConfig. All blocks stay
+ * registered regardless of grade (see registerBlocks) — the toolbox only
+ * controls what the kid can drag in, so out-of-grade programs still render.
+ */
+export const buildToolboxXml = (t: TFunction, grade: Grade = DEFAULT_GRADE): string => {
+  const categories = getGradeConfig(grade)
+    .toolbox.map((category) => {
+      const blocks = category.blocks
+        .map((entry) => {
+          const fields = Object.entries(entry.fields ?? {})
+            .map(([name, value]) => `<field name="${name}">${value}</field>`)
+            .join('');
+          return `    <block type="${entry.type}">${fields}</block>`;
+        })
+        .join('\n');
+      return `  <category name="${t(category.labelKey)}" colour="${category.colour}">\n${blocks}\n  </category>`;
+    })
+    .join('\n');
+  return `<xml id="scribbler-toolbox">\n${categories}\n</xml>`;
+};

@@ -5,6 +5,7 @@ import i18n from './i18n';
 import { useSimStore } from './store/sim-store';
 import { useEditorStore } from './store/editor-store';
 import { useBoardsStore } from './store/boards-store';
+import { useGradeStore } from './store/grade-store';
 import { defaultBoard } from './sim/boards/default';
 import { makeRobotState } from './sim/physics';
 
@@ -268,6 +269,40 @@ describe('App — cheat-sheet', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /print cheat-sheet/i }));
     expect(screen.getByRole('dialog')).toHaveTextContent(/arc right.*radius 25.*90/i);
+  });
+});
+
+describe('App — grade selector', () => {
+  afterEach(() => {
+    useGradeStore.getState().setGrade('grade4');
+  });
+
+  it('renders the three grade buttons with grade 4 active by default', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: /^grade 4$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /^grade 5$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(screen.getByRole('button', { name: /grades 7-9/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  it('selecting grade 5 activates it and persists to localStorage', async () => {
+    render(<App />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^grade 5$/i }));
+    });
+    expect(screen.getByRole('button', { name: /^grade 5$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(localStorage.getItem('scribbler-sim:grade:v1')).toBe('grade5');
   });
 });
 

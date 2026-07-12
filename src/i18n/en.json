@@ -12,6 +12,12 @@
     "english": "English",
     "hebrew": "עברית"
   },
+  "grade": {
+    "selector_aria": "Grade",
+    "grade4_label": "Grade 4",
+    "grade5_label": "Grade 5",
+    "grade79_label": "Grades 7-9"
+  },
   "simulator": {
     "well_done": "Well done!",
     "well_done_with_bonus": "Well done! ⭐ Bonus collected",
@@ -38,7 +44,8 @@
     "load_sample": "Load sample program",
     "load_sample_now": "Load sample program",
     "load_sample_tooltip": "Loads a starter program transcribed from the kid's class photo (Scribbler Program Maker). Verify the values before competition.",
-    "load_sample_confirm": "Load the sample program? Existing behaviors will be overwritten.",
+    "load_sample_confirm": "Load the sample program? This replaces the programs on ALL press buttons.",
+    "out_of_grade_notice": "This program uses blocks that are hidden in the current grade. It still runs — switch grade to see and edit those blocks.",
     "empty_banner": "No behaviors configured yet. Load the kid's class program to start.",
     "instructions_with_blocks": "Drag blocks to define what the robot does when you press reset {{count}}×. Currently: {{blocks}} block(s).",
     "instructions_empty": "Drag blocks to define what the robot does when you press reset {{count}}×. Empty — nothing will happen until you add blocks."
@@ -105,7 +112,6 @@
     "step_stop": "Stop",
     "step_beep": "Beep ({{ms}}ms)",
     "step_wait": "Wait {{seconds}}s",
-    "step_set_led": "Set LED ({{led}})",
     "step_repeat": "Repeat {{times}}× (...)",
     "step_if": "If sensor (...)",
     "step_while": "While sensor (...)"

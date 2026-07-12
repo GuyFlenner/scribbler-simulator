@@ -166,7 +166,6 @@ function* executeStep(step: Step, ctx: Context): Generator<Velocities> {
       yield ZERO;
       return;
     case 'beep':
-    case 'set_led':
       return;
     case 'if': {
       const cond = evalPredicate(step.condition, ctx.robot, ctx.board);

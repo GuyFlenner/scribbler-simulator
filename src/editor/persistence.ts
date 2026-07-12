@@ -86,16 +86,6 @@ const validateStep = (raw: unknown): Step => {
       if (isFiniteNumber(raw.freqHz)) out.freqHz = raw.freqHz;
       return out;
     }
-    case 'set_led': {
-      const led = raw.led;
-      if (led !== 'left' && led !== 'centre' && led !== 'right') {
-        return fail('set_led.led must be left|centre|right');
-      }
-      if (!isFiniteNumber(raw.r) || !isFiniteNumber(raw.g)) {
-        return fail('set_led.r and .g must be numeric');
-      }
-      return { kind: 'set_led', led, r: raw.r, g: raw.g };
-    }
     case 'wait': {
       if (!isFiniteNumber(raw.seconds)) return fail('wait.seconds must be numeric');
       return { kind: 'wait', seconds: raw.seconds };
@@ -139,11 +129,17 @@ const validateBehavior = (raw: unknown): Behavior => {
     );
   }
   if (!isString(raw.label)) return fail('behavior.label must be a string');
-  return {
+  const behavior: Behavior = {
     pressCount: raw.pressCount,
     label: raw.label,
     steps: validateSteps(raw.steps),
   };
+  // Optional auxiliary display data: the Blockly workspace JSON the steps were
+  // compiled from. Arbitrary Blockly structure, so accept any plain object and
+  // let the editor's load-time try/catch reject anything Blockly can't parse.
+  // Non-object values are dropped rather than failing the whole program.
+  if (isObject(raw.workspaceJson)) behavior.workspaceJson = raw.workspaceJson;
+  return behavior;
 };
 
 export function validateProgram(raw: unknown): Program {

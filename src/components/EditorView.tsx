@@ -2,20 +2,24 @@ import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BlocklyEditor } from '../editor/BlocklyEditor';
 import { useEditorStore } from '../store/editor-store';
-import { classProgramSample } from '../sim/behaviors/starter';
-import { stepsToWorkspaceJson } from '../editor/codegen';
+import { useGradeStore } from '../store/grade-store';
+import { getGradeConfig, stepKindsOutsideGrade } from '../grade/config';
 import { PressCountTabs } from './PressCountTabs';
 
 export function EditorView(): ReactElement {
   const { t, i18n } = useTranslation();
   const selected = useEditorStore((s) => s.selectedPressCount);
   const resetAll = useEditorStore((s) => s.resetAll);
-  const setBehavior = useEditorStore((s) => s.setBehavior);
+  const loadStarter = useEditorStore((s) => s.loadStarter);
+  const externalRevision = useEditorStore((s) => s.externalRevision);
   const programs = useEditorStore((s) => s.programs);
+  const grade = useGradeStore((s) => s.grade);
+  const gradeConfig = getGradeConfig(grade);
   const stepsForSelected = programs[selected];
 
   const totalConfiguredSlots = Object.values(programs).filter((s) => (s?.length ?? 0) > 0).length;
   const isEmpty = totalConfiguredSlots === 0;
+  const hiddenBlocksInUse = stepKindsOutsideGrade(stepsForSelected ?? [], gradeConfig);
 
   const handleResetAll = (): void => {
     if (window.confirm(t('editor.reset_confirm'))) {
@@ -23,13 +27,10 @@ export function EditorView(): ReactElement {
     }
   };
 
+  // Replaces ALL press-count slots with the current grade's starter set and
+  // bumps externalRevision so the open workspace remounts with the new blocks.
   const loadSampleProgram = (): void => {
-    for (const entry of classProgramSample) {
-      // Generate the matching Blockly JSON so the workspace renders the blocks
-      // immediately on the next tab switch — without this, the workspace stays
-      // blank even though programs[N] has steps.
-      setBehavior(entry.pressCount, entry.steps, stepsToWorkspaceJson(entry.steps));
-    }
+    loadStarter(gradeConfig.starterProgram);
   };
 
   const handleLoadSample = (): void => {
@@ -133,7 +134,26 @@ export function EditorView(): ReactElement {
         }}
       >
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#555' }}>{instructions}</p>
-        <BlocklyEditor key={`${selected}-${i18n.language}`} pressCount={selected} />
+        {hiddenBlocksInUse.length > 0 && (
+          <p
+            role="note"
+            style={{
+              margin: '0 0 0.5rem',
+              padding: '0.4rem 0.75rem',
+              fontSize: '0.85rem',
+              background: '#fff8e1',
+              border: '1px solid #d4a017',
+              borderRadius: 4,
+              color: '#6b5200',
+            }}
+          >
+            {t('editor.out_of_grade_notice')}
+          </p>
+        )}
+        <BlocklyEditor
+          key={`${selected}-${i18n.language}-${grade}-${externalRevision}`}
+          pressCount={selected}
+        />
       </div>
     </div>
   );

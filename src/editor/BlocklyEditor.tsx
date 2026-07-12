@@ -5,6 +5,7 @@ import * as BlocklyEnMsg from 'blockly/msg/en';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useEditorStore } from '../store/editor-store';
+import { useGradeStore } from '../store/grade-store';
 import { buildBlockDefinitions, buildToolboxXml } from './toolbox';
 import { compileBlocklyJson, stepsToWorkspaceJson } from './codegen';
 
@@ -31,6 +32,7 @@ const BLOCK_MUTATION_TYPES: ReadonlySet<string> = new Set([
 
 export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement {
   const { t, i18n } = useTranslation();
+  const grade = useGradeStore((s) => s.grade);
   const isHebrew = i18n.language.startsWith('he');
   const containerRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
@@ -45,7 +47,7 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
     registerBlocks(t);
 
     const ws = Blockly.inject(container, {
-      toolbox: buildToolboxXml(t),
+      toolbox: buildToolboxXml(t, grade),
       rtl: isHebrew,
       trashcan: true,
       grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
@@ -95,7 +97,7 @@ export function BlocklyEditor({ pressCount }: BlocklyEditorProps): ReactElement 
       ws.dispose();
       workspaceRef.current = null;
     };
-  }, [pressCount, isHebrew, t]);
+  }, [pressCount, isHebrew, t, grade]);
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: 480, border: '1px solid #ccc' }} />

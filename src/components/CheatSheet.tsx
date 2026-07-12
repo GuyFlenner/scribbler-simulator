@@ -36,8 +36,6 @@ const describeStep = (step: Step, t: TFunction): string => {
       return t('cheatsheet.step_beep', { ms: step.durationMs });
     case 'wait':
       return t('cheatsheet.step_wait', { seconds: step.seconds });
-    case 'set_led':
-      return t('cheatsheet.step_set_led', { led: step.led });
     case 'repeat':
       return t('cheatsheet.step_repeat', { times: step.times });
     case 'if':

@@ -8,6 +8,8 @@ import type { Step } from '../sim/behaviors/schema';
 import type { RobotState, SimState, SimStatus } from '../sim/types';
 import { newRunId, sortEvents, type RunEvent, type RunRecord } from '../sim/replay';
 import { useBoardsStore } from './boards-store';
+import { useGradeStore } from './grade-store';
+import { getGradeConfig } from '../grade/config';
 
 const startMarker = (board: BoardState): { x: number; y: number; heading: number } => {
   const start = board.elements.find((el) => el.kind === 'start');
@@ -15,15 +17,19 @@ const startMarker = (board: BoardState): { x: number; y: number; heading: number
   return { x: 0, y: 0, heading: 0 };
 };
 
-// Snap a heading (radians) to an exact multiple of 90° when within ±10°,
-// otherwise to the nearest integer degree. Guarantees subsequent drives
-// travel along a clean axis after a turn. Called when a program completes
-// naturally in tick().
-const snapHeading = (heading: number): number => {
+// Snap a heading (radians) to an exact multiple of the grade's increment
+// (90° for grade 4 — the original behavior, 45° for grade 5) when within
+// ±10°, otherwise to the nearest integer degree. Guarantees subsequent
+// drives travel along a clean axis after a turn. Called when a program
+// completes naturally in tick(). incrementDeg null (grades 7-9) rounds to
+// a whole degree only — line-following programs end at arbitrary headings
+// that a coarse snap would corrupt.
+export const snapHeading = (heading: number, incrementDeg: number | null): number => {
   const degreesRaw = (heading * 180) / Math.PI;
-  const nearestMul90 = Math.round(degreesRaw / 90) * 90;
+  if (incrementDeg === null) return Math.round(degreesRaw) * (Math.PI / 180);
+  const nearestMultiple = Math.round(degreesRaw / incrementDeg) * incrementDeg;
   const snappedDegrees =
-    Math.abs(degreesRaw - nearestMul90) <= 10 ? nearestMul90 : Math.round(degreesRaw);
+    Math.abs(degreesRaw - nearestMultiple) <= 10 ? nearestMultiple : Math.round(degreesRaw);
   return snappedDegrees * (Math.PI / 180);
 };
 
@@ -145,7 +151,10 @@ export const useSimStore = create<SimStoreState>((set, get) => ({
           ...nextRobot,
           vLinear: 0,
           vAngular: 0,
-          heading: snapHeading(nextRobot.heading),
+          heading: snapHeading(
+            nextRobot.heading,
+            getGradeConfig(useGradeStore.getState().grade).snapIncrementDeg,
+          ),
         };
       }
     }

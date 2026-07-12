@@ -219,8 +219,6 @@ const stepToBlock = (step: Step): BlocklyBlock | null => {
       if (inner) block.inputs = { DO: { block: inner } };
       return block;
     }
-    case 'set_led':
-      return null;
   }
 };
 

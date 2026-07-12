@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Behavior, Program, Step } from '../sim/behaviors/schema';
 import { loadProgram, saveProgram, clearProgram } from '../editor/persistence';
-import { classProgramSample } from '../sim/behaviors/starter';
+import { classProgramSample, type StarterEntry } from '../sim/behaviors/starter';
 import { stepsToWorkspaceJson } from '../editor/codegen';
 
 export const PRESS_COUNT_MIN = 1;
@@ -20,21 +20,38 @@ interface EditorStoreState {
   selectedPressCount: number;
   programs: Record<number, Step[]>;
   workspaceJsonByPressCount: Record<number, unknown>;
+  /**
+   * Bumped ONLY by non-Blockly program writers (loadStarter, resetAll) so the
+   * open BlocklyEditor remounts and shows the new blocks. The Blockly change
+   * handler's setBehavior must NOT bump it — that would remount the workspace
+   * on every drag.
+   */
+  externalRevision: number;
   selectPressCount: (n: number) => void;
   setBehavior: (pressCount: number, steps: Step[], workspaceJson?: unknown) => void;
   clearBehavior: (pressCount: number) => void;
+  /** Replace ALL press-count slots with a starter set (clears unlisted slots). */
+  loadStarter: (entries: readonly StarterEntry[]) => void;
   resetAll: () => void;
   hasUserProgram: (pressCount: number) => boolean;
   getStepsFor: (pressCount: number) => Step[] | undefined;
 }
 
-const persistFromState = (programs: Record<number, Step[]>): void => {
+const persistFromState = (
+  programs: Record<number, Step[]>,
+  workspaceJsonByPressCount: Record<number, unknown>,
+): void => {
   const behaviors: Behavior[] = Object.entries(programs)
-    .map(([k, steps]) => ({
-      pressCount: Number(k),
-      label: `Press ${k}× behavior`,
-      steps,
-    }))
+    .map(([k, steps]) => {
+      const behavior: Behavior = {
+        pressCount: Number(k),
+        label: `Press ${k}× behavior`,
+        steps,
+      };
+      const workspaceJson = workspaceJsonByPressCount[Number(k)];
+      if (workspaceJson !== undefined) behavior.workspaceJson = workspaceJson;
+      return behavior;
+    })
     .filter((b) => b.steps.length > 0);
   if (behaviors.length === 0) {
     clearProgram();
@@ -43,37 +60,49 @@ const persistFromState = (programs: Record<number, Step[]>): void => {
   saveProgram(programFromBehaviors(behaviors));
 };
 
+const starterMaps = (
+  entries: readonly StarterEntry[],
+): {
+  programs: Record<number, Step[]>;
+  workspaceJsonByPressCount: Record<number, unknown>;
+} => {
+  const programs: Record<number, Step[]> = {};
+  const workspaceJsonByPressCount: Record<number, unknown> = {};
+  for (const entry of entries) {
+    programs[entry.pressCount] = entry.steps;
+    workspaceJsonByPressCount[entry.pressCount] = stepsToWorkspaceJson(entry.steps);
+  }
+  return { programs, workspaceJsonByPressCount };
+};
+
 const hydrate = (): {
   programs: Record<number, Step[]>;
   workspaceJsonByPressCount: Record<number, unknown>;
 } => {
   const loaded = loadProgram();
-  const programs: Record<number, Step[]> = {};
-  const workspaceJsonByPressCount: Record<number, unknown> = {};
   if (loaded) {
+    const programs: Record<number, Step[]> = {};
+    const workspaceJsonByPressCount: Record<number, unknown> = {};
     for (const b of loaded.behaviors) {
       programs[b.pressCount] = b.steps;
+      // Prefer the persisted Blockly JSON (exact workspace); fall back to
+      // regenerating from steps, which is lossy for and/or/light_above.
+      workspaceJsonByPressCount[b.pressCount] = b.workspaceJson ?? stepsToWorkspaceJson(b.steps);
     }
     return { programs, workspaceJsonByPressCount };
   }
   // First load (no localStorage) — seed the kid's competition button layout
   // so `npm run dev` boots with a working program. Returning users keep
   // whatever they had; "Reset all" still clears (resetAll() bypasses this).
-  for (const entry of classProgramSample) {
-    programs[entry.pressCount] = entry.steps;
-    workspaceJsonByPressCount[entry.pressCount] = stepsToWorkspaceJson(entry.steps);
-  }
-  const behaviors: Behavior[] = classProgramSample.map((e) => ({
-    pressCount: e.pressCount,
-    label: `Press ${e.pressCount}× behavior`,
-    steps: e.steps,
-  }));
-  saveProgram({ version: 1, behaviors });
-  return { programs, workspaceJsonByPressCount };
+  // The default grade is grade4, whose starter IS classProgramSample.
+  const maps = starterMaps(classProgramSample);
+  persistFromState(maps.programs, maps.workspaceJsonByPressCount);
+  return maps;
 };
 
 export const useEditorStore = create<EditorStoreState>((set, get) => ({
   selectedPressCount: PRESS_COUNT_MIN,
+  externalRevision: 0,
   ...hydrate(),
 
   selectPressCount: (n) => {
@@ -88,7 +117,7 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
       ? { ...get().workspaceJsonByPressCount, [pressCount]: workspaceJson }
       : get().workspaceJsonByPressCount;
     set({ programs, workspaceJsonByPressCount });
-    persistFromState(programs);
+    persistFromState(programs, workspaceJsonByPressCount);
   },
 
   clearBehavior: (pressCount) => {
@@ -97,11 +126,25 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
     const workspaceJsonByPressCount = { ...get().workspaceJsonByPressCount };
     delete workspaceJsonByPressCount[pressCount];
     set({ programs, workspaceJsonByPressCount });
-    persistFromState(programs);
+    persistFromState(programs, workspaceJsonByPressCount);
+  },
+
+  loadStarter: (entries) => {
+    const { programs, workspaceJsonByPressCount } = starterMaps(entries);
+    set({
+      programs,
+      workspaceJsonByPressCount,
+      externalRevision: get().externalRevision + 1,
+    });
+    persistFromState(programs, workspaceJsonByPressCount);
   },
 
   resetAll: () => {
-    set({ programs: {}, workspaceJsonByPressCount: {} });
+    set({
+      programs: {},
+      workspaceJsonByPressCount: {},
+      externalRevision: get().externalRevision + 1,
+    });
     clearProgram();
   },
 

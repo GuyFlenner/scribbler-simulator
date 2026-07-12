@@ -15,7 +15,6 @@ export type Step =
   | { kind: 'rotate'; degrees: number; speed?: number }
   | { kind: 'stop' }
   | { kind: 'beep'; durationMs: number; freqHz?: number }
-  | { kind: 'set_led'; led: 'left' | 'centre' | 'right'; r: number; g: number }
   | { kind: 'wait'; seconds: number }
   | { kind: 'if'; condition: SensorPredicate; then: Step[]; else?: Step[] }
   | { kind: 'while'; condition: SensorPredicate; body: Step[]; maxIterations: number }
@@ -25,6 +24,12 @@ export interface Behavior {
   pressCount: number;
   label: string;
   steps: Step[];
+  /**
+   * The exact Blockly workspace JSON the steps were compiled from, when known.
+   * Persisting it lets the editor restore the workspace losslessly; without it
+   * the workspace is regenerated from steps (lossy for and/or/light_above).
+   */
+  workspaceJson?: unknown;
 }
 
 export interface Program {

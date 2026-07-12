@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SimulatorView } from './components/SimulatorView';
 import { LanguageToggle } from './components/LanguageToggle';
+import { GradeSelector } from './components/GradeSelector';
 import { CheatSheet } from './components/CheatSheet';
 
 const EditorView = lazy(() =>
@@ -84,6 +85,7 @@ export default function App(): ReactElement {
           >
             {t('cheatsheet.open')}
           </button>
+          <GradeSelector />
           <LanguageToggle />
         </div>
       </header>
