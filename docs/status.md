@@ -10,6 +10,8 @@
 
 | Commit    | What                                                                                                                                                                                                    |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `(M5)`    | feat(challenges): challenge ladder — 7 missions across the grades, 1-3 star scoring from run records (presses/time/bonus), Challenges tab, stars in the goal overlay                                    |
+| `(M4)`    | feat(sim): analog 0-100 line reflectivity (real S3 semantics) + proportional follow_line block in the grade 7-9 toolbox; starter press 5; tighter-corridor validation                                   |
 | `a0baba9` | docs: simulator benchmark study (comparison-simulators.md) + this status update                                                                                                                         |
 | `07bc9a9` | fix(grade): serpentine is the grades-7-9 default (figure-8 X defeats the bang-bang follower — review-gate finding); boardWallSegments memo; CLAUDE.md vocabulary correction                             |
 | `38ca713` | feat(sim): grades 7-9 — line tracks (figure-8 + serpentine, 50mm line), follower starter, WHEEL_BASE_M 0.153 / TICKS_PER_M 2019 calibration fix, OOB float-epsilon fix                                  |
@@ -17,7 +19,7 @@
 | `e20d328` | feat(grade): GradeConfig + selector + grade-filtered toolbox + grade-aware snapHeading + autofill fixes (loadStarter all-8-slots, externalRevision remount, workspaceJson persistence, set_led removal) |
 | `39d398c` | style: prettier-format tracked .memory-backup docs (pre-existing CI breaker)                                                                                                                            |
 
-Snapshot after this session: **276 tests (255 unit + 21 browser)**, strict TS 0 errors, lint/format clean. Quality gates: Security APPROVED (no conditions); Code Review REPAIR → fixed in `07bc9a9`.
+Snapshot after this session: **303 tests (282 unit + 21 browser)**, strict TS 0 errors, lint/format clean. Quality gates: Security APPROVED (no conditions); Code Review REPAIR → fixed in `07bc9a9`.
 
 Key architecture addition: `src/grade/config.ts` is the single source of truth for everything grade-dependent (snap increment, toolbox, starters, bundled boards, 🎲 connectivity). Grade selection lives in `src/store/grade-store.ts` (`scribbler-sim:grade:v1`); switch side-effects live in `GradeSelector.tsx` only.
 
