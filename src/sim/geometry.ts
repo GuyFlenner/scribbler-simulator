@@ -104,12 +104,20 @@ export const cornerHypotenuse = (
   }
 };
 
+// Memoized per board object: detectCollision runs every physics tick and the
+// IR sensors on every predicate read — rebuilding a (usually empty) array from
+// 160+ elements on track boards each time is avoidable. Board objects are
+// treated as immutable throughout the app (stores replace, never mutate).
+const wallSegmentsCache = new WeakMap<BoardState, Segment[]>();
+
 /**
  * All impassable boundary segments of a board: diagonal walls plus the derived
  * corner-cut hypotenuses. Boards without wall/corner elements (all grade-4
  * boards) return an empty array, keeping the original collision path intact.
  */
 export const boardWallSegments = (board: BoardState): Segment[] => {
+  const cached = wallSegmentsCache.get(board);
+  if (cached) return cached;
   const segments: Segment[] = [];
   for (const el of board.elements) {
     if (el.kind === 'wall') {
@@ -118,5 +126,6 @@ export const boardWallSegments = (board: BoardState): Segment[] => {
       segments.push(cornerHypotenuse(el.corner, el.size, board.width, board.height));
     }
   }
+  wallSegmentsCache.set(board, segments);
   return segments;
 };

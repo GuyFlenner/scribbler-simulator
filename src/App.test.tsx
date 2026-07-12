@@ -274,7 +274,11 @@ describe('App — cheat-sheet', () => {
 
 describe('App — grade selector', () => {
   afterEach(() => {
-    useGradeStore.getState().setGrade('grade4');
+    // Wrapped in act: components subscribed to the grade store may still be
+    // mounted when this runs, and a bare store write logs act() warnings.
+    act(() => {
+      useGradeStore.getState().setGrade('grade4');
+    });
   });
 
   it('renders the three grade buttons with grade 4 active by default', () => {

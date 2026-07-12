@@ -141,8 +141,9 @@ Skills synced from `C:\code\claude-sdlc` per `claude-skills.lock`. To refresh: `
 ### Project-specific
 
 - **Block vocabulary** mirrors BlocklyProp Solo. Two block sets, both required:
-  - **Distance/rotation**: `drive_distance`, `rotate_degrees`, `stop`, `beep`, `set_led`
-  - **Sensor-reactive**: `line_sensor_left`/`right`, `obstacle_left`/`right`, `light_sensor`, `button_pressed`
+  - **Distance/rotation**: `drive_distance`, `rotate_degrees`, `drive_wheels`, `drive_arc`, `stop`, `beep` (`set_led` removed 2026-07-12 — was an orphan step with no block/runtime effect; restore only with a real LED visual)
+  - **Sensor-reactive**: `line_left`/`right`, `obstacle_left`/`right`, `light_above` predicates via `if_sensor`/`while_sensor`/`while_not_sensor`
+  - **Grade visibility**: the toolbox is filtered per grade via `src/grade/config.ts` (grade 4 hides `drive_wheels`/`drive_arc`); all blocks stay registered
 - **Press-count idiom**: the simulator's "run" UI is N×Reset buttons. Programming UI binds each press-count (2..N) to a Blockly program.
 - **Physics fidelity**: differential-drive math is exact; speed/acceleration calibrated from Parallax specs (no real robot available for measurement). Hidden calibration panel for future tuning.
 

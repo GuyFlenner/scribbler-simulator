@@ -39,8 +39,10 @@ export function sampleCurve(
 
 // ---------------------------------------------------------------------------
 // Figure-8 ("Careful Driving") — lemniscate of Gerono centred on the board.
-// Minimum radius of curvature ≈ FIG8_A (at the lobe ends) — comfortably above
-// the bang-bang follower's tightest steerable radius.
+// NOTE: the self-crossing defeats bang-bang line followers (the sensors catch
+// the other branch at the X and veer off) — this board is for careful-driving
+// practice with motion blocks (drive/arc/pivot), not the press-4 follower.
+// The serpentine is the follower-friendly board and the grade 7-9 default.
 // ---------------------------------------------------------------------------
 
 const FIG8_A = 0.35;

@@ -140,8 +140,11 @@ export const GRADE_CONFIGS: Record<Grade, GradeConfig> = {
       sensorsCategory,
     ],
     starterProgram: grade79ProgramSample,
-    bundledBoardIds: ['track-figure8', 'track-serpentine'],
-    defaultBoardId: 'track-figure8',
+    // Serpentine first and default: the press-4 starter follower completes it
+    // end-to-end (validated). The figure-8's self-crossing defeats bang-bang
+    // followers — it's for careful-driving practice with motion blocks.
+    bundledBoardIds: ['track-serpentine', 'track-figure8'],
+    defaultBoardId: 'track-serpentine',
     randomBoard: null,
   },
 };

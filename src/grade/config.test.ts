@@ -44,6 +44,12 @@ describe('grade config — structure', () => {
     }
   });
 
+  it('grades 7-9 default to the serpentine — the board the starter follower is validated on', () => {
+    // The figure-8 self-crossing defeats the bang-bang follower (it loses the
+    // line at the X), so it must NOT be the tier's first experience.
+    expect(getGradeConfig('grade79').defaultBoardId).toBe('track-serpentine');
+  });
+
   it('starter press counts are within the 1..8 slot range and non-empty', () => {
     for (const g of GRADES) {
       for (const entry of getGradeConfig(g).starterProgram) {
