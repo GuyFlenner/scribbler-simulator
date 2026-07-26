@@ -49,6 +49,6 @@
     "typescript-eslint": "^8.62.1",
     "vite": "^6.0.3",
     "vitest": "^3.2.4",
-    "vitest-browser-react": "^0.2.0"
+    "vitest-browser-react": "^2.2.0"
   }
 }
