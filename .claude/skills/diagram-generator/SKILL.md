@@ -107,6 +107,7 @@ edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#555555;fontColor=#000000;fontS
 ### 4. Mandatory rules
 
 - **Every `<mxCell>` with visible text MUST have `fontColor=#000000`** — dark canvas themes render invisible text otherwise
+- **Every text-bearing cell MUST also have a non-transparent light `fillColor`** (never `fillColor=none` or a missing fillColor). Shapes already have one. The trap is **bare `text;` elements** (titles, standalone labels): with `fontColor=#000000` and no fill they render **black-on-dark-canvas → invisible in dark theme**. Give every `text;`/title/label a light fill (e.g. `fillColor=#eef2f7;strokeColor=none;` for a subtle title banner, or `#ffffff`). Edge labels are exempt only if they set `labelBackgroundColor=#ffffff`. Rule of thumb: **black text is only safe on a light fill you control — never on the canvas background.**
 - **Never use `shape=cylinder3` or `backgroundOutline=1`** — renders as solid black box in some themes
 - **Never use `collapsed="1"`** — hides children of swimlane groups
 - **High-degree nodes (3+ outgoing edges same direction)**: use explicit `exitX/exitY` to fan arrows
@@ -182,7 +183,30 @@ Label edges with the relationship name (e.g., "has", "belongs to").
 - Top-to-bottom flow for hierarchies and architectures
 - Group related components in swimlane containers
 - Standard node size: 120×60 for services, 100×40 for small labels
-- Spacing: 60px between nodes horizontally, 40px vertically
+- Spacing: baseline 60px between nodes horizontally, 40px vertically — but see §7b, which supersedes this for any presentation-grade diagram.
+
+### 7b. Spacing & routing that reads clean (learned from hand-cleaned diagrams)
+
+Cramped diagrams and edges that cut across boxes/text are the #1 quality complaint. Bias toward
+*more* whitespace and *simpler* edges — a wider canvas is free, a crossing line is not.
+
+- **Gaps:** leave **≥ 70px horizontal** between adjacent boxes on a flow spine and **≥ 60px
+  vertical** between rows/bands. When a text-heavy box sits next to another, err larger. Never let
+  two node rectangles touch or overlap. Grow the canvas rather than shrink the gaps.
+- **Satellite placement:** put a node that only relates to ONE spine node (e.g. an autoscaler for a
+  consumer, a DLQ for a topic) **directly above or below that node**, so its connector is a short
+  straight vertical — not a diagonal that crosses the neighbours. If two satellites both attach to
+  the spine, place each under *its own* partner, not both under one.
+- **Route long / return / control edges through the margins**, not across the middle: use the top
+  gutter (above the spine), the bottom gutter (below it, above any zone), or a side column. A
+  return arrow from the far end back to the start should hug the outer edge (small x like 20–40),
+  never bisect the diagram.
+- **Connect to the nearest clean face** of the target and give each edge its own lane. Two edges
+  sharing a corridor must run at **different x (verticals) or different y (horizontals)** so their
+  labels don't collide. Prefer `labelBackgroundColor=#ffffff` on every labelled edge.
+- **An edge must never pass *through* a node box or another edge's label.** If the straight
+  orthogonal route would clip a box, add explicit `Array` waypoints to route around it (through a
+  gap or margin). This is verified by the diagram-layout-reviewer (§13).
 
 ---
 
@@ -228,6 +252,7 @@ Use sequential IDs starting from `c1`, `c2`, ... for nodes and `e1`, `e2`, ... f
 Self-audit:
 [ ] <mxfile> wrapper present
 [ ] Every node has fontColor=#000000
+[ ] Every text-bearing cell has a light fillColor (NO bare `text;`/title/label without a fill — black-on-dark-canvas is invisible in dark theme)
 [ ] No shape=cylinder3 or backgroundOutline=1
 [ ] No collapsed="1" attributes
 [ ] High-degree nodes (3+) have explicit exitX/exitY
